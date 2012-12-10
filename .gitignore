@@ -1,3 +1,6 @@
+# ROS
+msg_gen
+
 *.py[cod]
 
 # C extensions
