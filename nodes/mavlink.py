@@ -14,6 +14,7 @@ class MavlinkNode:
                     "udp:" + export_host, input=False)
         self.conn = mavutil.mavlink_connection(device, baud=baudrate)
         self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude)
+        self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState)
 
     def run(self):
         rospy.init_node('rospilot_mavlink')
@@ -40,6 +41,10 @@ class MavlinkNode:
             if msg_type == "ATTITUDE":
                 self.pub_attitude.publish(msg.roll, msg.pitch, msg.yaw, 
                         msg.rollspeed, msg.pitchspeed, msg.yawspeed)
+            elif msg_type == "RC_CHANNELS_RAW":
+                self.pub_rcstate.publish([msg.chan1_raw, msg.chan2_raw, 
+                    msg.chan3_raw, msg.chan4_raw, msg.chan5_raw, msg.chan6_raw,
+                    msg.chan7_raw, msg.chan8_raw]) 
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
