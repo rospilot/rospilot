@@ -1,0 +1,3 @@
+<launch>
+	<node name="mavlink" pkg="rospilot" type="mavlink.py" respawn="false" output="screen" args="--baudrate=115200 --device=/dev/ttyACM3 --udp-export=127.0.0.1:8866" />
+</launch>

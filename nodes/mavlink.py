@@ -15,6 +15,25 @@ class MavlinkNode:
         self.conn = mavutil.mavlink_connection(device, baud=baudrate)
         self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude)
         self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState)
+        self.pub_basic_status = rospy.Publisher('basic_status', rospilot.msg.BasicStatus)
+        rospy.Subscriber("set_mode", rospilot.msg.BasicMode, self.handle_set_mode)
+
+    def handle_set_mode(self, data):
+        # XXX: This code should work, 
+        # but the APM doesn't seem to listen to set_mode messages :(
+        #See MAV_MODE_FLAG in pymavlink.mavlinkv10
+        #self.conn.mav.set_mode_send(self.conn.target_system,
+        #        209 if data.armed else 81, 0)
+
+        # So instead we fake the tranmitter signals 
+        self.conn.mav.rc_channels_override_send(self.conn.target_system, 
+                self.conn.target_component, 0, 0, 
+                1000, #throttle to zero
+                2000 if data.armed else 1000, #yaw full right to arm, left to disarm
+                0, 0, 0, 0)
+        rospy.sleep(5)
+        self.conn.mav.rc_channels_override_send(self.conn.target_system, 
+                self.conn.target_component, 0, 0, 0, 0, 0, 0, 0, 0)
 
     def run(self):
         rospy.init_node('rospilot_mavlink')
@@ -45,6 +64,9 @@ class MavlinkNode:
                 self.pub_rcstate.publish([msg.chan1_raw, msg.chan2_raw, 
                     msg.chan3_raw, msg.chan4_raw, msg.chan5_raw, msg.chan6_raw,
                     msg.chan7_raw, msg.chan8_raw]) 
+            elif msg_type == "HEARTBEAT":
+                self.pub_basic_status.publish(
+                        msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
