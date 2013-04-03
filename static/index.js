@@ -8,14 +8,43 @@ var app = angular.module('rospilot', ['ngResource'])
 .factory('Attitude', function ($resource) {
       return $resource('api/attitude');
   })
+.factory('RCState', function ($resource) {
+      return $resource('api/rcstate');
+  })
+.factory('OpticalFlow', function ($resource) {
+      return $resource('api/optical_flow');
+  })
+.controller('rcstate', function ($scope, $timeout, RCState) {
+  $scope.data = {'channel': []};
+  (function tick() {
+      RCState.get({}, function(rcstate) {
+          $scope.data = rcstate;
+          $timeout(tick, 1000);
+      });
+  })();
+})
+.controller('optical_flow', function ($scope, $timeout, OpticalFlow) {
+  $scope.data = {'x': 0, 'y': 0, 'quality': 0};
+  $scope.reset = function() {
+      $scope.data.x = 0;
+      $scope.data.y = 0;
+      $scope.data.$save();
+  };
+  (function tick() {
+      OpticalFlow.get({}, function(data) {
+          $scope.data = data;
+          $timeout(tick, 1000);
+      });
+  })();
+})
 .controller('status', function ($scope, $timeout, Status) {
   $scope.arm = function() {
       $scope.data.armed = true;
-      $scope.data.$save()
+      $scope.data.$save();
   };
   $scope.disarm = function() {
       $scope.data.armed = false;
-      $scope.data.$save()
+      $scope.data.$save();
   };
   (function tick() {
       Status.get({}, function(status) {

@@ -1,0 +1,5 @@
+<launch>
+	<node name="odometry" pkg="rospilot" type="odometry.py" respawn="false" output="screen" />
+	<node name="web_ui" pkg="rospilot" type="web_ui.py" respawn="false" output="screen" />
+    <include file="$(find px4flow_node)/launch/px4flow.launch" />
+</launch>

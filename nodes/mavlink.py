@@ -30,7 +30,7 @@ import rospilot.msg
 
 from optparse import OptionParser
 class MavlinkNode:
-    def __init__(self, device, baudrate, export_host):
+    def __init__(self, device, baudrate, export_host, allow_control):
         self.export_conn = None
         self.rate = 10
         if export_host:
@@ -42,6 +42,27 @@ class MavlinkNode:
         self.pub_gpsraw = rospy.Publisher('gpsraw', rospilot.msg.GPSRaw)
         self.pub_basic_status = rospy.Publisher('basic_status', rospilot.msg.BasicStatus)
         rospy.Subscriber("set_mode", rospilot.msg.BasicMode, self.handle_set_mode)
+        rospy.Subscriber("set_rc", rospilot.msg.RCState, self.handle_set_rc)
+        self.allow_control = allow_control.lower() == "true" or allow_control.lower() == "1"
+        self.enable_control = False
+        # Safety, in case radio has control enabled on start-up
+        self.enable_control_has_been_false = False
+
+    def reset_rc_override(self):
+        # Send 0 to reset the channel
+        self.conn.mav.rc_channels_override_send(
+                self.conn.target_system, self.conn.target_component, 
+                0, 0, 0, 0, 0, 0, 0 ,0)
+
+    def handle_set_rc(self, message):
+        if self.allow_control and self.enable_control and self.enable_control_has_been_false:
+            # channel 8 is ignored, since that's the enable control channel
+            self.conn.mav.rc_channels_override_send(
+                    self.conn.target_system, self.conn.target_component,
+                    message.channel[0], message.channel[1], 
+                    message.channel[2], message.channel[3],
+                    message.channel[4], message.channel[5],
+                    message.channel[6], 0)
 
     def handle_set_mode(self, data):
         # XXX: This code should work, 
@@ -89,6 +110,10 @@ class MavlinkNode:
                 self.pub_rcstate.publish([msg.chan1_raw, msg.chan2_raw, 
                     msg.chan3_raw, msg.chan4_raw, msg.chan5_raw, msg.chan6_raw,
                     msg.chan7_raw, msg.chan8_raw]) 
+                self.enable_control = msg.chan8_raw > 1700
+                if not self.enable_control:
+                    self.enable_control_has_been_false = True
+                    self.reset_rc_override()
             elif msg_type == "HEARTBEAT":
                 self.pub_basic_status.publish(
                         msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
@@ -103,6 +128,8 @@ if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
     parser.add_option("--baudrate", dest="baudrate", 
             type='int', help="serial port baud rate", default=115200)
+    parser.add_option("--allow-control", dest="allow_control", 
+            help="allow sending control signals to autopilot", default="false")
     parser.add_option("--device", dest="device", 
             default=None, help="serial device")
     parser.add_option("--udp-export", dest="export_host", 
@@ -110,5 +137,5 @@ if __name__ == '__main__':
     (opts, args) = parser.parse_args()
 
     node = MavlinkNode(device=opts.device, baudrate=opts.baudrate, 
-            export_host=opts.export_host)
+            export_host=opts.export_host, allow_control=opts.allow_control)
     node.run()

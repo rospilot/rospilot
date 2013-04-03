@@ -8,7 +8,10 @@
   </head>
   <body>
     <div id="map-canvas" style='height:400px;width:500px;'></div>
-    <div ng-controller='position'>{{data.latitude}}, {{data.longitude}}</div>
+    <div ng-controller='position'>
+      <div>Lat: {{data.latitude}}, Lng: {{data.longitude}}</div>
+      <div>Ground distance: {{data.ground_distance|number:3}}m</div>
+    </div>
     <div ng-controller='status'>
       <span ng-switch on='data.armed'>
         <span ng-switch-when='true'>
@@ -39,6 +42,15 @@
       <span>Roll: {{data.roll|number:4}}, 
         Pitch: {{data.pitch|number:4}}, 
         Yaw: {{data.yaw|number:4}}</span>
+    </div>
+    <div ng-controller='rcstate'>
+      RC channels: {{data.channel}}
+    </div>
+    <div ng-controller='optical_flow'>
+      Optical Flow: x: {{data.x}}, y: {{data.y}}, quality: {{data.quality}}
+      <a href='#' ng-click='reset()'>
+        reset optical flow
+      </a>
     </div>
   </body>
 </html>
