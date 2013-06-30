@@ -19,7 +19,11 @@ You should have received a copy of the GNU General Public License
 along with Rospilot.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+# These must be the first two imports, as they setup sys.path
 import roslib; roslib.load_manifest('rospilot')
+import rospilot
+# 
+
 import rospy
 from pymavlink import mavutil
 import rospilot.msg
