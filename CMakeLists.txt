@@ -28,6 +28,7 @@ add_message_files(
   BasicMode.msg
   BasicStatus.msg
   RCState.msg
+  GPSRaw.msg
 )
 
 ## Generate services in the 'srv' folder

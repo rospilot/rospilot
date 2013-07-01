@@ -39,6 +39,7 @@ class MavlinkNode:
         self.conn = mavutil.mavlink_connection(device, baud=baudrate)
         self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude)
         self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState)
+        self.pub_gpsraw = rospy.Publisher('gpsraw', rospilot.msg.GPSRaw)
         self.pub_basic_status = rospy.Publisher('basic_status', rospilot.msg.BasicStatus)
         rospy.Subscriber("set_mode", rospilot.msg.BasicMode, self.handle_set_mode)
 
@@ -91,6 +92,12 @@ class MavlinkNode:
             elif msg_type == "HEARTBEAT":
                 self.pub_basic_status.publish(
                         msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+            elif msg_type == "GPS_RAW_INT":
+                self.pub_gpsraw.publish(
+                        msg.time_usec, msg.fix_type, 
+                        msg.lat / float(10*1000*1000),
+                        msg.lon / float(10*1000*1000), 
+                        msg.alt / float(1000), msg.satellites_visible)
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
