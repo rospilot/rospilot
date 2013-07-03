@@ -24,122 +24,59 @@ import rospy
 from pymavlink import mavutil
 import rospilot.msg
 import json
+import cherrypy
+import threading
+import os
 
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+STATIC_PATH = os.path.dirname(os.path.abspath(__file__))
+STATIC_PATH = os.path.join(STATIC_PATH, "../static")
 
 PORT_NUMBER = 8085
 
-armed = None
-gps = None
+class CherrypyThread (threading.Thread):
+    def __init__(self, handler):
+        threading.Thread.__init__(self)
+        self.handler = handler
+    def run(self):
+        cherrypy.quickstart(self.handler)
 
-#This class will handles any incoming request from
-#the browser 
-class HttpHandler(BaseHTTPRequestHandler):
-    
-    #Handler for the GET requests
-    def do_GET(self):
-        js = """
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular-resource.min.js"></script>
-    <script>
+class API:
+    def __init__(self, node):
+        self.node = node
 
-    var global_marker = false;
-    var global_map = false;
+    @cherrypy.expose
+    def position(self):
+        return json.dumps({
+            'latitude': node.gps.latitude if node.gps else 1,
+            'longitude': node.gps.longitude if node.gps else 1})
 
-var app = angular.module('rospilot', ['ngResource'])
-.factory('Position', function ($resource) {
-        return $resource('api/position');
-    })
-.controller('position', function ($scope, $timeout, Position) {
-    $scope.data = {'latitude': 1, 'longitude': 1};
-    (function tick() {
-        Position.get({}, function(position) {
-            $scope.data = position;
-            // XXX: This should be moved
-            var pos = new google.maps.LatLng(position.latitude,
-                                             position.longitude);
-            if (global_marker) {
-                global_marker.setPosition(pos);
-            }
-            if (global_map) {
-                global_map.setCenter(pos);
-            }
-            $timeout(tick, 1000);
-        });
-    })();
-});
+class Index:
+    def __init__(self, node):
+        self.node = node
 
-function initialize() {
-  var myLatlng = new google.maps.LatLng(1,1);
-  var mapOptions = {
-    zoom: 18,
-    center: myLatlng,
-    mapTypeId: google.maps.MapTypeId.SATELLITE
-  }
-  global_map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-
-  global_marker = new google.maps.Marker({
-      position: myLatlng,
-      map: global_map,
-      title: 'GPS Map'
-  });
-}
-
-google.maps.event.addDomListener(window, 'load', initialize);
-
-    </script>
-        """
-        if 'api/position' in self.path:
-            self.send_response(200)
-            self.send_header('Content-type','application/json')
-            self.end_headers()
-            # Send the html message
-            self.wfile.write(
-                    json.dumps({
-                        'latitude': gps.latitude if gps else 1,
-                        'longitude': gps.longitude if gps else 1}))
-
-        else:
-            self.send_response(200)
-            self.send_header('Content-type','text/html')
-            self.end_headers()
-            # Send the html message
-            self.wfile.write(
-                    "<html ng-app=rospilot>"
-                    "<head>"
-                    + js + 
-                    "</head>"
-                    "<body>"
-                    "<div id=\"map-canvas\" style='height:400px;width:500px;'></div>"
-                    "<div ng-controller='position'>{{data.latitude}}, {{data.longitude}}</div>"
-                    "<h2" + (" style='color:red;'" if armed else "") + ">" 
-                    + ("ARMED" if armed else "DISARMED") + 
-                    "</h2>"
-                    "<a href='/arm'>"
-                    + ("disarm" if armed else "arm") + 
-                    "</a>"
-                    "</body>"
-                    "</html>")
-            if 'arm' in self.path:
-                node.send_arm(not armed)
-        return
+    @cherrypy.expose
+    def index(self):
+        return open(os.path.join(STATIC_PATH, "index.html"))
 
 class WebUiNode:
     def __init__(self):
         self.pub_set_mode = rospy.Publisher('set_mode', rospilot.msg.BasicMode)
         rospy.Subscriber("basic_status", rospilot.msg.BasicMode, self.handle_status)
         rospy.Subscriber("gpsraw", rospilot.msg.GPSRaw, self.handle_gps)
-        self.http_server = HTTPServer(('', PORT_NUMBER), HttpHandler)
-        self.http_server.timeout = 1.0
+        self.lock = threading.Lock()
+        self.armed = None
+        self.gps = None
+        cherrypy.server.socket_port = PORT_NUMBER
+        # No autoreloading
+        cherrypy.engine.autoreload.unsubscribe()
 
     def handle_status(self, data):
-        global armed
-        armed = data.armed
+        with self.lock:
+            self.armed = data.armed
 
     def handle_gps(self, data):
-        global gps
-        gps = data
+        with self.lock:
+            self.gps = data
 
     def send_arm(self, arm):
         self.pub_set_mode.publish(arm)
@@ -147,8 +84,12 @@ class WebUiNode:
     def run(self):
         rospy.init_node('rospilot_webui')
         rospy.loginfo("Web UI is running")
+        index = Index(self)
+        index.api = API(self)
+        CherrypyThread(index).start()
         while not rospy.is_shutdown():
-            self.http_server.handle_request()
+            pass
+        cherrypy.engine.exit()
 
 if __name__ == '__main__':
     node = WebUiNode()

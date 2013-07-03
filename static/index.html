@@ -1,0 +1,71 @@
+<html ng-app=rospilot>
+  <head>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular-resource.min.js"></script>
+    <script>
+    var global_marker = false;
+    var global_map = false;
+
+  var app = angular.module('rospilot', ['ngResource'])
+  .factory('Position', function ($resource) {
+          return $resource('api/position');
+      })
+  .controller('position', function ($scope, $timeout, Position) {
+      $scope.data = {'latitude': 1, 'longitude': 1};
+      (function tick() {
+          Position.get({}, function(position) {
+              $scope.data = position;
+              // XXX: This should be moved
+              var pos = new google.maps.LatLng(position.latitude,
+                                               position.longitude);
+              if (global_marker) {
+                  global_marker.setPosition(pos);
+              }
+              if (global_map) {
+                  global_map.setCenter(pos);
+              }
+              $timeout(tick, 1000);
+          });
+      })();
+  });
+
+  function initialize() {
+    var myLatlng = new google.maps.LatLng(1,1);
+    var mapOptions = {
+      zoom: 18,
+      center: myLatlng,
+      mapTypeId: google.maps.MapTypeId.SATELLITE
+    }
+    global_map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+    global_marker = new google.maps.Marker({
+        position: myLatlng,
+        map: global_map,
+        title: 'GPS Map'
+    });
+  }
+
+  google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas" style='height:400px;width:500px;'></div>
+    <div ng-controller='position'>{{data.latitude}}, {{data.longitude}}</div>
+    <!-- <h2 style='{% if armed %} color:red; {% endif %}'>
+     {% if armed %}
+       ARMED
+       {% else %}
+       DISARMED
+       {% endif %}
+    </h2>
+    <a href='/arm'>
+      {% if armed %}
+      disarm
+      {% else %}
+      arm
+      {% endif %}
+    </a> -->
+  </body>
+</html>
