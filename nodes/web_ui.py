@@ -33,13 +33,6 @@ STATIC_PATH = os.path.join(STATIC_PATH, "../static")
 
 PORT_NUMBER = 8085
 
-class CherrypyThread (threading.Thread):
-    def __init__(self, handler):
-        threading.Thread.__init__(self)
-        self.handler = handler
-    def run(self):
-        cherrypy.quickstart(self.handler)
-
 class API:
     def __init__(self, node):
         self.node = node
@@ -69,6 +62,9 @@ class WebUiNode:
         cherrypy.server.socket_port = PORT_NUMBER
         # No autoreloading
         cherrypy.engine.autoreload.unsubscribe()
+        index = Index(self)
+        index.api = API(self)
+        cherrypy.tree.mount(index)
 
     def handle_status(self, data):
         with self.lock:
@@ -84,9 +80,7 @@ class WebUiNode:
     def run(self):
         rospy.init_node('rospilot_webui')
         rospy.loginfo("Web UI is running")
-        index = Index(self)
-        index.api = API(self)
-        CherrypyThread(index).start()
+        cherrypy.engine.start()
         while not rospy.is_shutdown():
             pass
         cherrypy.engine.exit()
