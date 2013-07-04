@@ -62,9 +62,14 @@ class WebUiNode:
         cherrypy.server.socket_port = PORT_NUMBER
         # No autoreloading
         cherrypy.engine.autoreload.unsubscribe()
+        conf = {
+            '/static': {'tools.staticdir.on': True,
+                'tools.staticdir.dir': STATIC_PATH
+            }
+        }
         index = Index(self)
         index.api = API(self)
-        cherrypy.tree.mount(index)
+        cherrypy.tree.mount(index, config=conf)
 
     def handle_status(self, data):
         with self.lock:
