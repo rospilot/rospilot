@@ -4,23 +4,30 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular-resource.min.js"></script>
     <script src="/static/index.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">
   </head>
   <body>
     <div id="map-canvas" style='height:400px;width:500px;'></div>
     <div ng-controller='position'>{{data.latitude}}, {{data.longitude}}</div>
-    <!-- <h2 style='{% if armed %} color:red; {% endif %}'>
-     {% if armed %}
-       ARMED
-       {% else %}
-       DISARMED
-       {% endif %}
-    </h2>
-    <a href='/arm'>
-      {% if armed %}
-      disarm
-      {% else %}
-      arm
-      {% endif %}
-    </a> -->
+    <div ng-controller='status'>
+      <span ng-switch on='data.armed'>
+        <span ng-switch-when='true'>
+          <h2 style='color:red;'>
+            ARMED
+          </h2>
+          <a href='#' ng-click='disarm()'>
+            disarm
+          </a>
+        </span>
+        <span ng-switch-when='false'>
+          <h2>
+            DISARMED
+          </h2>
+          <a href='#' ng-click='arm()'>
+            arm
+          </a>
+        </span>
+      </span>
+    </div>
   </body>
 </html>

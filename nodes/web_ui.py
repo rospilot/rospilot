@@ -43,6 +43,14 @@ class API:
             'latitude': node.gps.latitude if node.gps else 1,
             'longitude': node.gps.longitude if node.gps else 1})
 
+    @cherrypy.expose
+    def status(self):
+        if cherrypy.request.method == 'GET':
+            return json.dumps({'armed': node.armed})
+        elif cherrypy.request.method == 'POST':
+            data = json.loads(cherrypy.request.body.read())
+            node.send_arm(data['armed'])
+
 class Index:
     def __init__(self, node):
         self.node = node
