@@ -42,6 +42,13 @@ class API:
         return json.dumps({
             'latitude': node.gps.latitude if node.gps else 1,
             'longitude': node.gps.longitude if node.gps else 1})
+    
+    @cherrypy.expose
+    def attitude(self):
+        return json.dumps({
+            'roll': node.attitude.roll if node.attitude else 0,
+            'pitch': node.attitude.pitch if node.attitude else 0,
+            'yaw': node.attitude.yaw if node.attitude else 0})
 
     @cherrypy.expose
     def status(self):
@@ -62,11 +69,16 @@ class Index:
 class WebUiNode:
     def __init__(self):
         self.pub_set_mode = rospy.Publisher('set_mode', rospilot.msg.BasicMode)
-        rospy.Subscriber("basic_status", rospilot.msg.BasicMode, self.handle_status)
-        rospy.Subscriber("gpsraw", rospilot.msg.GPSRaw, self.handle_gps)
+        rospy.Subscriber("basic_status", 
+                rospilot.msg.BasicMode, self.handle_status)
+        rospy.Subscriber("gpsraw", 
+                rospilot.msg.GPSRaw, self.handle_gps)
+        rospy.Subscriber("attitude", 
+                rospilot.msg.Attitude, self.handle_attitude)
         self.lock = threading.Lock()
         self.armed = None
         self.gps = None
+        self.attitude = None
         cherrypy.server.socket_port = PORT_NUMBER
         # No autoreloading
         cherrypy.engine.autoreload.unsubscribe()
@@ -78,6 +90,10 @@ class WebUiNode:
         index = Index(self)
         index.api = API(self)
         cherrypy.tree.mount(index, config=conf)
+
+    def handle_attitude(self, data):
+        with self.lock:
+            self.attitude = data
 
     def handle_status(self, data):
         with self.lock:

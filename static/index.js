@@ -5,6 +5,9 @@ var app = angular.module('rospilot', ['ngResource'])
 .factory('Position', function ($resource) {
       return $resource('api/position');
   })
+.factory('Attitude', function ($resource) {
+      return $resource('api/attitude');
+  })
 .controller('status', function ($scope, $timeout, Status) {
   $scope.arm = function() {
       $scope.data.armed = true;
@@ -44,6 +47,29 @@ var app = angular.module('rospilot', ['ngResource'])
                                            position.longitude);
           $scope.marker.setPosition(pos);
           $scope.map.setCenter(pos);
+          $timeout(tick, 1000);
+      });
+  })();
+})
+.controller('attitude', function ($scope, $timeout, Attitude) {
+  var compass = document.getElementById("compass");
+  var needle = null;
+  var translate = null;
+  compass.addEventListener('load', function() {
+      needle = compass.getSVGDocument().getElementById("needle");
+      translate = needle.getAttribute("transform");
+  });
+
+  (function tick() {
+      Attitude.get({}, function(attitude) {
+          if (translate != null) {
+              var x = needle.getBBox().width / 2.0;
+              var y = needle.getBBox().height / 2.0;
+              var yaw = attitude.yaw * 180 / Math.PI;
+              needle.setAttribute("transform", 
+                  "rotate(" + -yaw + " " + x + " " + y + ") "
+                  + translate);
+          }
           $timeout(tick, 1000);
       });
   })();
