@@ -30,8 +30,15 @@
       </span>
     </div>
     <div ng-controller='attitude'>
-      <object id="compass" data="/static/compass.svg" type="image/svg+xml">
-      </object>
+      <div>
+        <object id="compass" data="/static/compass.svg" type="image/svg+xml">
+        </object>
+        <object id="attitude_svg" data="/static/attitude.svg" type="image/svg+xml">
+        </object>
+      </div>
+      <span>Roll: {{data.roll|number:4}}, 
+        Pitch: {{data.pitch|number:4}}, 
+        Yaw: {{data.yaw|number:4}}</span>
     </div>
   </body>
 </html>

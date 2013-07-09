@@ -53,23 +53,47 @@ var app = angular.module('rospilot', ['ngResource'])
 })
 .controller('attitude', function ($scope, $timeout, Attitude) {
   var compass = document.getElementById("compass");
+  var attitude_svg = document.getElementById("attitude_svg");
   var needle = null;
-  var translate = null;
+  var needle_translate = null;
+  var roll_gauge = null;
+  var roll_gauge_translate = null;
+  var roll_needle = null;
   compass.addEventListener('load', function() {
       needle = compass.getSVGDocument().getElementById("needle");
-      translate = needle.getAttribute("transform");
+      needle_translate = needle.getAttribute("transform");
   });
+  attitude_svg.addEventListener('load', function() {
+      roll_needle = attitude_svg.getSVGDocument().getElementById("layer2");
+      roll_gauge = attitude_svg.getSVGDocument().getElementById("layer5");
+      roll_gauge_translate = roll_gauge.getAttribute("transform");
+  });
+  $scope.data = {'roll': 0, 'pitch': 0, 'yaw': 0};
 
   (function tick() {
       Attitude.get({}, function(attitude) {
-          if (translate != null) {
+          if (needle != null) {
               var x = needle.getBBox().width / 2.0;
               var y = needle.getBBox().height / 2.0;
               var yaw = attitude.yaw * 180 / Math.PI;
               needle.setAttribute("transform", 
                   "rotate(" + -yaw + " " + x + " " + y + ") "
-                  + translate);
+                  + needle_translate);
           }
+
+          if (roll_gauge != null) {
+              var x = roll_needle.getBBox().width / 2.0;
+              var y = roll_needle.getBBox().height / 2.0;
+              var roll = -attitude.roll * 180 / Math.PI;
+              var pitch = attitude.pitch * roll_gauge.getBBox().height / Math.PI;
+              roll_needle.setAttribute("transform", 
+                  "rotate(" + roll + " " + x + " " + y + ")");
+              roll_gauge.setAttribute("transform", 
+                  "rotate(" + roll + " " + x + " " + y + ") " +
+                  roll_gauge_translate + " translate(0 " + pitch + ")");
+          }
+
+          $scope.data = attitude;
           $timeout(tick, 1000);
       });
   })();
