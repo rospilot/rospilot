@@ -27,6 +27,7 @@ import rospilot
 import rospy
 from pymavlink import mavutil
 import rospilot.msg
+from geometry_msgs.msg import Vector3
 
 from optparse import OptionParser
 class MavlinkNode:
@@ -40,6 +41,7 @@ class MavlinkNode:
         self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude)
         self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState)
         self.pub_gpsraw = rospy.Publisher('gpsraw', rospilot.msg.GPSRaw)
+        self.pub_imuraw = rospy.Publisher('imuraw', rospilot.msg.IMURaw)
         self.pub_basic_status = rospy.Publisher('basic_status', rospilot.msg.BasicStatus)
         rospy.Subscriber("set_mode", rospilot.msg.BasicMode, self.handle_set_mode)
         rospy.Subscriber("set_rc", rospilot.msg.RCState, self.handle_set_rc)
@@ -114,6 +116,8 @@ class MavlinkNode:
                 if not self.enable_control:
                     self.enable_control_has_been_false = True
                     self.reset_rc_override()
+            elif msg_type == "RC_CHANNELS_SCALED":
+                pass
             elif msg_type == "HEARTBEAT":
                 self.pub_basic_status.publish(
                         msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
@@ -123,6 +127,12 @@ class MavlinkNode:
                         msg.lat / float(10*1000*1000),
                         msg.lon / float(10*1000*1000), 
                         msg.alt / float(1000), msg.satellites_visible)
+            elif msg_type == "RAW_IMU":
+                self.pub_imuraw.publish(
+                        msg.time_usec, 
+                        Vector3(msg.xgyro, msg.ygyro, msg.zgyro), 
+                        Vector3(msg.xacc, msg.yacc, msg.zacc), 
+                        Vector3(msg.xmag, msg.ymag, msg.zmag))
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")

@@ -30,6 +30,7 @@ import os
 import px_comm.msg
 import std_srvs.srv
 import geometry_msgs.msg
+from geometry_msgs.msg import Vector3
 import tf
 
 STATIC_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -37,9 +38,22 @@ STATIC_PATH = os.path.join(STATIC_PATH, "../static")
 
 PORT_NUMBER = 8085
 
+def _vector3_to_dict(vec):
+    return {'x': vec.x, 'y': vec.y, 'z': vec.z}
+
 class API:
     def __init__(self, node):
         self.node = node
+
+    @cherrypy.expose
+    def imu(self):
+        gyro = _vector3_to_dict(node.imu.gyro if node.imu else Vector3())
+        accel = _vector3_to_dict(node.imu.accel if node.imu else Vector3())
+        mag = _vector3_to_dict(node.imu.mag if node.imu else Vector3())
+        return json.dumps({
+            'gyro': gyro, 
+            'accel': accel,
+            'mag': mag})
 
     @cherrypy.expose
     def position(self):
@@ -104,6 +118,8 @@ class WebUiNode:
         self.tf_listener = None
         rospy.Subscriber("basic_status", 
                 rospilot.msg.BasicMode, self.handle_status)
+        rospy.Subscriber("imuraw", 
+                rospilot.msg.IMURaw, self.handle_imu)
         rospy.Subscriber("gpsraw", 
                 rospilot.msg.GPSRaw, self.handle_gps)
         rospy.Subscriber("attitude", 
@@ -124,6 +140,7 @@ class WebUiNode:
         self.lock = threading.Lock()
         self.armed = None
         self.gps = None
+        self.imu = None
         self.attitude = None
         cherrypy.server.socket_port = PORT_NUMBER
         # No autoreloading
@@ -160,6 +177,10 @@ class WebUiNode:
     def handle_status(self, data):
         with self.lock:
             self.armed = data.armed
+
+    def handle_imu(self, data):
+        with self.lock:
+            self.imu = data
 
     def handle_gps(self, data):
         with self.lock:

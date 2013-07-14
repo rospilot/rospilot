@@ -52,5 +52,16 @@
         reset optical flow
       </a>
     </div>
+    <div ng-controller='imu'>
+      <div>
+        Gyro: x: {{data.gyro.x}}, y: {{data.gyro.y}}, z: {{data.gyro.z}}
+      </div>
+      <div>
+        Accel: x: {{data.accel.x}}, y: {{data.accel.y}}, z: {{data.accel.z}}
+      </div>
+      <div>
+        Mag: x: {{data.mag.x}}, y: {{data.mag.y}}, z: {{data.mag.z}}
+      </div>
+    </div>
   </body>
 </html>

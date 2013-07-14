@@ -11,6 +11,9 @@ var app = angular.module('rospilot', ['ngResource'])
 .factory('RCState', function ($resource) {
       return $resource('api/rcstate');
   })
+.factory('IMU', function ($resource) {
+      return $resource('api/imu');
+  })
 .factory('OpticalFlow', function ($resource) {
       return $resource('api/optical_flow');
   })
@@ -19,6 +22,19 @@ var app = angular.module('rospilot', ['ngResource'])
   (function tick() {
       RCState.get({}, function(rcstate) {
           $scope.data = rcstate;
+          $timeout(tick, 1000);
+      });
+  })();
+})
+.controller('imu', function ($scope, $timeout, IMU) {
+  $scope.data = {
+      'gyro': {'x': 0, 'y': 0, 'z': 0},
+      'accel': {'x': 0, 'y': 0, 'z': 0},
+      'mag': {'x': 0, 'y': 0, 'z': 0}
+  };
+  (function tick() {
+      IMU.get({}, function(data) {
+          $scope.data = data;
           $timeout(tick, 1000);
       });
   })();
