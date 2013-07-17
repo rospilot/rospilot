@@ -3,6 +3,8 @@
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular-resource.min.js"></script>
+    <script src="/static/jquery-2.0.3.min.js"></script>
+    <script src="/static/highcharts.js"></script>
     <script src="/static/index.js"></script>
     <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">
   </head>
@@ -62,6 +64,7 @@
       <div>
         Mag: x: {{data.mag.x}}, y: {{data.mag.y}}, z: {{data.mag.z}}
       </div>
+      <div id="accel_z_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
     </div>
   </body>
 </html>
