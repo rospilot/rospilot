@@ -31,6 +31,7 @@ add_message_files(
   GPSRaw.msg
   IMURaw.msg
   OpticalFlow.msg
+  PositionEstimate.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -1,0 +1,1 @@
+libatlas-base-dev gfortran python-opencv

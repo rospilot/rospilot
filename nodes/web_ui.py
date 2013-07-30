@@ -56,6 +56,12 @@ class API:
             'mag': mag})
 
     @cherrypy.expose
+    def position_estimate(self):
+        return json.dumps({'position': {
+            'x': node.position_estimate.position.x if node.position_estimate else 0,
+            'y': node.position_estimate.position.y if node.position_estimate else 0}})
+
+    @cherrypy.expose
     def position(self):
         ground_distance = 0
         if node.distances:
@@ -120,6 +126,8 @@ class WebUiNode:
                 rospilot.msg.BasicMode, self.handle_status)
         rospy.Subscriber("imuraw", 
                 rospilot.msg.IMURaw, self.handle_imu)
+        rospy.Subscriber("position_estimate", 
+                rospilot.msg.PositionEstimate, self.handle_position_estimate)
         rospy.Subscriber("gpsraw", 
                 rospilot.msg.GPSRaw, self.handle_gps)
         rospy.Subscriber("attitude", 
@@ -141,6 +149,7 @@ class WebUiNode:
         self.armed = None
         self.gps = None
         self.imu = None
+        self.position_estimate = None
         self.attitude = None
         cherrypy.server.socket_port = PORT_NUMBER
         # No autoreloading
@@ -161,6 +170,10 @@ class WebUiNode:
     def handle_attitude(self, data):
         with self.lock:
             self.attitude = data
+    
+    def handle_position_estimate(self, data):
+        with self.lock:
+            self.position_estimate = data
 
     def handle_odometry(self, data):
         with self.lock:

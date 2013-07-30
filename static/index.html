@@ -11,7 +11,9 @@
   <body>
     <div id="map-canvas" style='height:400px;width:500px;'></div>
     <div ng-controller='position'>
-      <div>Lat: {{data.latitude}}, Lng: {{data.longitude}}</div>
+      <div>Raw Lat: {{data.latitude}}, Lng: {{data.longitude}}</div>
+      <div>Estimate Position: x: {{estimate.position.x|number:3}}m, 
+        y: {{estimate.position.y|number:3}}m</div>
       <div>Ground distance: {{data.ground_distance|number:3}}m</div>
     </div>
     <div ng-controller='status'>

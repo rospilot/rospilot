@@ -2,6 +2,9 @@ var app = angular.module('rospilot', ['ngResource'])
 .factory('Status', function ($resource) {
       return $resource('api/status');
   })
+.factory('PositionEstimate', function ($resource) {
+      return $resource('api/position_estimate');
+  })
 .factory('Position', function ($resource) {
       return $resource('api/position');
   })
@@ -72,7 +75,7 @@ var app = angular.module('rospilot', ['ngResource'])
       });
   })();
 })
-.controller('position', function ($scope, $timeout, Position) {
+.controller('position', function ($scope, $timeout, Position, PositionEstimate) {
   var myLatlng = new google.maps.LatLng(37.77,122.4);
   var mapOptions = {
     zoom: 18,
@@ -86,6 +89,13 @@ var app = angular.module('rospilot', ['ngResource'])
       map: $scope.map,
       title: 'GPS Map'
   });
+
+  (function tick2() {
+      PositionEstimate.get({}, function(estimate) {
+          $scope.estimate = estimate;
+          $timeout(tick2, 1000);
+      });
+  })();
 
   (function tick() {
       Position.get({}, function(position) {

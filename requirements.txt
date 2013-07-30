@@ -1,2 +1,4 @@
 CherryPy==3.2.4
 pyserial==2.6
+pykalman==0.9.5
+scipy==0.12.0

@@ -24,8 +24,8 @@ import rospilot
 # 
 
 import rospy
-from pymavlink import mavutil
 import rospilot.msg
+from pymavlink import mavutil
 from geometry_msgs.msg import Vector3
 
 from optparse import OptionParser
@@ -129,9 +129,9 @@ class MavlinkNode:
             elif msg_type == "RAW_IMU":
                 self.pub_imuraw.publish(
                         msg.time_usec, 
-                        Vector3(msg.xgyro, msg.ygyro, msg.zgyro), 
-                        Vector3(msg.xacc, msg.yacc, msg.zacc), 
-                        Vector3(msg.xmag, msg.ymag, msg.zmag))
+                        Vector3(msg.xgyro / 100.0, msg.ygyro / 100.0, msg.zgyro / 100.0), 
+                        Vector3(msg.xacc / 100.0, msg.yacc / 100.0, msg.zacc / 100.0), 
+                        Vector3(msg.xmag / 100.0, msg.ymag / 100.0, msg.zmag / 100.0))
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
