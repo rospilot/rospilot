@@ -30,6 +30,7 @@ add_message_files(
   RCState.msg
   GPSRaw.msg
   IMURaw.msg
+  OpticalFlow.msg
 )
 
 ## Generate services in the 'srv' folder

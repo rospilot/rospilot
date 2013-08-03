@@ -1,6 +1,7 @@
 <launch>
 	<node name="mavlink" pkg="rospilot" type="mavlink.py" respawn="false" output="screen" args="--baudrate=115200 --device=/dev/ttyACM0 --udp-export=127.0.0.1:8866" />
 	<node name="web_ui" pkg="rospilot" type="web_ui.py" respawn="false" output="screen" />
+	<node name="optical_flow" pkg="rospilot" type="optical_flow.py" respawn="false" output="screen" />
     <node name="odometry" pkg="rospilot" type="odometry.py" respawn="false" output="screen" />
     <node pkg="tf" type="static_transform_publisher" name="px4flow_transform" args="0 0 0 -1.0471975512 0 3.14159265359 px4flow body 100" />
     <include file="$(find px4flow)/launch/px4flow.launch" />
