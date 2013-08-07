@@ -1,5 +1,5 @@
 <launch>
-	<node name="mavlink" pkg="rospilot" type="mavlink.py" respawn="false" output="screen" args="--baudrate=115200 --device=/dev/ttyACM0 --udp-export=127.0.0.1:8866" />
+	<node name="mavlink" pkg="rospilot" type="mavlink.py" respawn="false" output="screen" args="--baudrate=115200 --device=/dev/ardupilot --udp-export=127.0.0.1:8866" />
 	<node name="web_ui" pkg="rospilot" type="web_ui.py" respawn="false" output="screen" />
 	<node name="optical_flow" pkg="rospilot" type="optical_flow.py" respawn="false" output="screen" />
 	<node name="position_estimator" pkg="rospilot" type="position_estimator.py" 

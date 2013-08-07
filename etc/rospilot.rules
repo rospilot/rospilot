@@ -1,0 +1,5 @@
+# Copy this file to /etc/udev/rules.d/
+# It sets up symlinks for all the usb devices that talk over serial
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0010", MODE="0666", GROUP="dialout", SYMLINK+="ardupilot"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="26ac", ATTRS{idProduct}=="0015", MODE="0666", GROUP="dialout", SYMLINK+="px4flow"
