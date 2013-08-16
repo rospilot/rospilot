@@ -51,7 +51,7 @@ class API:
         accel = _vector3_to_dict(node.imu.accel if node.imu else Vector3())
         mag = _vector3_to_dict(node.imu.mag if node.imu else Vector3())
         return json.dumps({
-            'gyro': gyro, 
+            'gyro': gyro,
             'accel': accel,
             'mag': mag})
 
@@ -72,7 +72,7 @@ class API:
             'latitude': node.gps.latitude if node.gps else 1,
             'longitude': node.gps.longitude if node.gps else 1,
             'ground_distance': ground_distance})
-    
+
     @cherrypy.expose
     def optical_flow(self):
         if cherrypy.request.method == 'GET':
@@ -88,14 +88,14 @@ class API:
             data = json.loads(cherrypy.request.body.read())
             if data.get('x', 1) == 0 and data.get('y', 1) == 0:
                 node.reset_odometry()
-    
+
     @cherrypy.expose
     def attitude(self):
         return json.dumps({
             'roll': node.attitude.roll if node.attitude else 0,
             'pitch': node.attitude.pitch if node.attitude else 0,
             'yaw': node.attitude.yaw if node.attitude else 0})
-    
+
     @cherrypy.expose
     def rcstate(self):
         return json.dumps({
@@ -116,29 +116,29 @@ class Index:
     @cherrypy.expose
     def index(self):
         return open(os.path.join(STATIC_PATH, "index.html"))
-    
+
 class WebUiNode:
     def __init__(self):
-        self.reset_odometry = rospy.ServiceProxy('reset_odometry', std_srvs.srv.Empty) 
+        self.reset_odometry = rospy.ServiceProxy('reset_odometry', std_srvs.srv.Empty)
         self.pub_set_mode = rospy.Publisher('set_mode', rospilot.msg.BasicMode)
         self.tf_listener = None
-        rospy.Subscriber("basic_status", 
+        rospy.Subscriber("basic_status",
                 rospilot.msg.BasicMode, self.handle_status)
-        rospy.Subscriber("imuraw", 
+        rospy.Subscriber("imuraw",
                 rospilot.msg.IMURaw, self.handle_imu)
-        rospy.Subscriber("position_estimate", 
+        rospy.Subscriber("position_estimate",
                 rospilot.msg.PositionEstimate, self.handle_position_estimate)
-        rospy.Subscriber("gpsraw", 
+        rospy.Subscriber("gpsraw",
                 rospilot.msg.GPSRaw, self.handle_gps)
-        rospy.Subscriber("attitude", 
+        rospy.Subscriber("attitude",
                 rospilot.msg.Attitude, self.handle_attitude)
-        rospy.Subscriber("px4flow/opt_flow", 
+        rospy.Subscriber("px4flow/opt_flow",
                 px_comm.msg.OpticalFlow, self.handle_px4flow)
-        rospy.Subscriber('odometry', 
+        rospy.Subscriber('odometry',
                 geometry_msgs.msg.Point, self.handle_odometry)
-        rospy.Subscriber('op_control', 
+        rospy.Subscriber('op_control',
                 geometry_msgs.msg.Vector3, self.handle_control)
-        rospy.Subscriber('rcstate', 
+        rospy.Subscriber('rcstate',
                 rospilot.msg.RCState, self.handle_rcstate)
         self.qualities = []
         self.distances = []
@@ -152,6 +152,7 @@ class WebUiNode:
         self.position_estimate = None
         self.attitude = None
         cherrypy.server.socket_port = PORT_NUMBER
+        cherrypy.server.socket_host = '0.0.0.0'
         # No autoreloading
         cherrypy.engine.autoreload.unsubscribe()
         conf = {
@@ -170,7 +171,7 @@ class WebUiNode:
     def handle_attitude(self, data):
         with self.lock:
             self.attitude = data
-    
+
     def handle_position_estimate(self, data):
         with self.lock:
             self.position_estimate = data
@@ -182,7 +183,7 @@ class WebUiNode:
     def handle_rcstate(self, data):
         with self.lock:
             self.rcstate = data
-    
+
     def handle_control(self, data):
         with self.lock:
             self.control = data
