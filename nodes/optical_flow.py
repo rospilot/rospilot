@@ -29,22 +29,26 @@ import numpy
 import math
 import cv2
 import threading
+from optparse import OptionParser
 from rospilot.pid import *
 
+
 class OpticalFlowNode:
-    def __init__(self):
+    def __init__(self, video_device_num):
         self.ground_distance = 0
         self.roll = 0
         self.pitch = 0
         self.lock = threading.Lock()
 
         rospy.init_node("rospilot_odometry")
-        rospy.Subscriber("attitude", rospilot.msg.Attitude, 
-                self.handle_attitude)
-        rospy.Subscriber("px4flow/opt_flow", px_comm.msg.OpticalFlow, 
-                self.handle_optical_flow)
-        self.optical_flow = rospy.Publisher('optical_flow', rospilot.msg.OpticalFlow)
-        self.camera = cv2.VideoCapture(1)
+        rospy.Subscriber("attitude", rospilot.msg.Attitude,
+                         self.handle_attitude)
+        rospy.Subscriber("px4flow/opt_flow", px_comm.msg.OpticalFlow,
+                         self.handle_optical_flow)
+        self.optical_flow = rospy.Publisher('optical_flow',
+                                            rospilot.msg.OpticalFlow)
+        self.video_device_num = int(video_device_num)
+        self.camera = cv2.VideoCapture(self.video_device_num)
         self.resolution_x = 640
         self.resolution_y = 480
         # TODO: measure the field of view
@@ -73,14 +77,20 @@ class OpticalFlowNode:
         quality_level = 0.05
         min_dist = 1
         while not rospy.is_shutdown():
-            _,orig_frame = self.camera.read()
+            read_status, orig_frame = self.camera.read()
+            if not read_status:
+                rospy.logerr("Failed to read from video device %d. "
+                             "Check that the device is connected, "
+                             "and that you have permission to read from it.",
+                             self.video_device_num)
+                break
             # need to convert to greyscale before finding features
             frame = cv2.cvtColor(orig_frame, cv2.COLOR_BGR2GRAY)
             if self.last_frame is None:
                 self.last_frame = frame
 
-            features = cv2.goodFeaturesToTrack(self.last_frame, max_features, 
-                    quality_level, min_dist)
+            features = cv2.goodFeaturesToTrack(self.last_frame, max_features,
+                                               quality_level, min_dist)
             new_features = []
             status = []
             errs = []
@@ -127,7 +137,7 @@ class OpticalFlowNode:
                 dy *= self.calc_scaler(self.resolution_y, self.field_of_view_y)
                 dy *= distance
                 deltas.append((math.sqrt(dx**2 + dy**2), dx, dy))
-                
+
             deltas.sort()
             # Remove the top and bottom 5%
             l = len(deltas)
@@ -143,10 +153,14 @@ class OpticalFlowNode:
             self.optical_flow.publish(message)
 
 if __name__ == "__main__":
-    node = OpticalFlowNode()
+    parser = OptionParser("rospilot.py <options>")
+    parser.add_option("--video_device_num", dest="video_device_num",
+            type='int', help="device number", default=0)
+    (opts, args) = parser.parse_args()
+    node = OpticalFlowNode(video_device_num=opts.video_device_num)
     node.run()
 
-        
+
 
 
 
