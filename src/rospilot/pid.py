@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+
 class PidController:
     def __init__(self, kp, ki, kd):
         self.kp = kp
@@ -30,7 +31,7 @@ class PidController:
         self.dt = 0
 
     def update(self, val, dt):
-        self.i += val*dt
+        self.i += val * dt
         self.last_val = self.val
         self.val = val
         self.dt = dt
@@ -42,6 +43,4 @@ class PidController:
             d = self.kd * (self.val - self.last_val) / self.dt
         else:
             d = 0
-        return  p + i + d
-
-
+        return p + i + d
