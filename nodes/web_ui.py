@@ -217,8 +217,7 @@ class WebUiNode:
         self.init()
         rospy.loginfo("Web UI is running")
         cherrypy.engine.start()
-        while not rospy.is_shutdown():
-            pass
+        rospy.spin()
         cherrypy.engine.exit()
 
 if __name__ == '__main__':
