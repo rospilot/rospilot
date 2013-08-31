@@ -76,19 +76,22 @@ var app = angular.module('rospilot', ['ngResource'])
   })();
 })
 .controller('position', function ($scope, $timeout, Position, PositionEstimate) {
-  var myLatlng = new google.maps.LatLng(37.77,122.4);
-  var mapOptions = {
-    zoom: 18,
-    center: myLatlng,
-    mapTypeId: google.maps.MapTypeId.SATELLITE
-  }
-  $scope.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+  // If we don't have an internet connection, Google Maps won't have loaded
+  if (typeof(google) != 'undefined') {
+    var myLatlng = new google.maps.LatLng(37.77,122.4);
+    var mapOptions = {
+        zoom: 18,
+        center: myLatlng,
+        mapTypeId: google.maps.MapTypeId.SATELLITE
+    }
+    $scope.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-  $scope.marker = new google.maps.Marker({
-      position: myLatlng,
-      map: $scope.map,
-      title: 'GPS Map'
-  });
+    $scope.marker = new google.maps.Marker({
+        position: myLatlng,
+        map: $scope.map,
+        title: 'GPS Map'
+    });
+  }
 
   (function tick2() {
       PositionEstimate.get({}, function(estimate) {
@@ -100,11 +103,13 @@ var app = angular.module('rospilot', ['ngResource'])
   (function tick() {
       Position.get({}, function(position) {
           $scope.data = position;
-          // XXX: This should be moved
-          var pos = new google.maps.LatLng(position.latitude,
-                                           position.longitude);
-          $scope.marker.setPosition(pos);
-          $scope.map.setCenter(pos);
+          if (typeof(google) != 'undefined') {
+            // XXX: This should be moved
+            var pos = new google.maps.LatLng(position.latitude,
+                                            position.longitude);
+            $scope.marker.setPosition(pos);
+            $scope.map.setCenter(pos);
+          }
           $timeout(tick, 1000);
       });
   })();
