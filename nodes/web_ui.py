@@ -38,8 +38,10 @@ STATIC_PATH = os.path.join(STATIC_PATH, "../static")
 
 PORT_NUMBER = 8085
 
+
 def _vector3_to_dict(vec):
     return {'x': vec.x, 'y': vec.y, 'z': vec.z}
+
 
 class API:
     def __init__(self, node):
@@ -57,9 +59,11 @@ class API:
 
     @cherrypy.expose
     def position_estimate(self):
-        return json.dumps({'position': {
-            'x': node.position_estimate.position.x if node.position_estimate else 0,
-            'y': node.position_estimate.position.y if node.position_estimate else 0}})
+        position = _vector3_to_dict(node.position_estimate.position if
+                                    node.position_estimate else Vector3())
+        velocity = _vector3_to_dict(node.position_estimate.velocity if
+                                    node.position_estimate else Vector3())
+        return json.dumps({'position': position, 'velocity': velocity})
 
     @cherrypy.expose
     def position(self):
@@ -109,6 +113,7 @@ class API:
             data = json.loads(cherrypy.request.body.read())
             node.send_arm(data['armed'])
 
+
 class Index:
     def __init__(self, node):
         self.node = node
@@ -116,6 +121,7 @@ class Index:
     @cherrypy.expose
     def index(self):
         return open(os.path.join(STATIC_PATH, "index.html"))
+
 
 class WebUiNode:
     def __init__(self):

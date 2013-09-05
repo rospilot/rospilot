@@ -25,13 +25,10 @@ import rospilot.msg
 import threading
 import pykalman
 import time
-import random
 import px_comm.msg
-import std_srvs.srv
-import geometry_msgs.msg
 import numpy as np
-import numpy.ma
 from geometry_msgs.msg import Vector3
+
 
 class NaiveFilter:
     def __init__(self):
@@ -74,40 +71,40 @@ class NaiveFilter:
     def get(self):
         return [self.pos, self.vel, self.acc]
 
+
 class PositionFilter:
-    def __init__(self):
+    def __init__(self, sensor_variance):
         self.kalman = pykalman.KalmanFilter(
                 transition_covariance=0.000001*np.eye(3), n_dim_obs=1)
         self.state = [0, 0, 0]
-        self.covariance = 0.000001*np.eye(3)
+        self.sensor_variance = sensor_variance
+        self.covariance = sensor_variance*np.eye(3)
         self.last_time = None
 
-    def observe(self, pos, vel, acc):
+    def observe(self, pos):
         if self.last_time is None:
             self.last_time = time.time()
             return
-        vel = vel if vel is not None else numpy.ma.masked
-        acc = acc if acc is not None else numpy.ma.masked
         t = time.time()
         dt = t - self.last_time
         self.last_time = t
-        
+
         # Enforce one microsecond has always passed
         if dt < 1e-6:
             rospy.logerr("dt < 1e-6")
             return
 
         self.state, self.covariance = self.kalman.filter_update(
-                self.state, self.covariance, 
-                [vel],
+                self.state, self.covariance,
+                [pos],
                 transition_matrix=np.array([
-                    [1, dt, 0], 
+                    [1, dt, 0],
                     [0, 1, dt],
                     [0, 0, 0]]),
                 observation_matrix=np.array([
-                    [0, 1, 0],
+                    [1, 0, 0],
                     ]),
-                observation_covariance=np.array(0.000001*np.eye(1)))
+                observation_covariance=np.array(self.sensor_variance*np.eye(1)))
 
     def get_pos(self):
         return self.state[0]
@@ -121,32 +118,45 @@ class PositionFilter:
     def get(self):
         return self.state
 
+
 class PositionEstimatorNode:
     def __init__(self):
+        rospy.init_node('rospilot_position_estimator')
         self.pub_position_estimate = rospy.Publisher('position_estimate',
-                rospilot.msg.PositionEstimate)
-        rospy.Subscriber("optical_flow", 
-                rospilot.msg.OpticalFlow, self.handle_optical_flow)
+                                                     rospilot.msg.PositionEstimate)
+        rospy.Subscriber("px4flow/opt_flow",
+                         px_comm.msg.OpticalFlow, self.handle_px4flow)
+        rospy.Subscriber("optical_flow",
+                         rospilot.msg.OpticalFlow, self.handle_optical_flow)
         self.lock = threading.Lock()
         self.naive_filter_x = NaiveFilter()
-        self.pos_filter_x = PositionFilter()
         self.naive_filter_y = NaiveFilter()
-        self.pos_filter_y = PositionFilter()
+        self.pos_filter_z = PositionFilter(sensor_variance=0.0001)
+        self.c = 0
+
+    def _publish(self):
+        self.pub_position_estimate.publish(
+            Vector3(self.naive_filter_x.get_pos(),
+                    self.naive_filter_y.get_pos(),
+                    self.pos_filter_z.get_pos()),
+            Vector3(self.naive_filter_x.get_vel(),
+                    self.naive_filter_y.get_vel(),
+                    self.pos_filter_z.get_vel()))
+
+    def handle_px4flow(self, data):
+        with self.lock:
+            self.pos_filter_z.observe(data.ground_distance)
+            self._publish()
 
     def handle_optical_flow(self, data):
         with self.lock:
             self.naive_filter_x.observe(None, data.x, None)
-            self.pos_filter_x.observe(None, data.x, None)
             self.naive_filter_y.observe(None, data.y, None)
-            self.pos_filter_y.observe(None, data.y, None)
-            self.pub_position_estimate.publish(Vector3(self.naive_filter_x.get_pos(), 
-                    self.naive_filter_y.get_pos(), 0.0))
-    
+            self._publish()
+
     def run(self):
-        rospy.init_node('rospilot_position_estimator')
         rospy.spin()
 
 if __name__ == '__main__':
     node = PositionEstimatorNode()
     node.run()
-
