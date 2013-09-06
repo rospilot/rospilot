@@ -96,7 +96,10 @@ var app = angular.module('rospilot', ['ngResource'])
   (function tick2() {
       PositionEstimate.get({}, function(estimate) {
           $scope.estimate = estimate;
-          $timeout(tick2, 1000);
+          var series = $('#position_z_chart').highcharts().series[0];
+          var x = (new Date()).getTime();
+          series.addPoint([x, estimate.position.z], true, true);
+          $timeout(tick2, 100);
       });
   })();
 
@@ -109,8 +112,11 @@ var app = angular.module('rospilot', ['ngResource'])
                                             position.longitude);
             $scope.marker.setPosition(pos);
             $scope.map.setCenter(pos);
+            var series = $('#position_z_chart').highcharts().series[1];
+            var x = (new Date()).getTime();
+            series.addPoint([x, position.ground_distance], true, true);
           }
-          $timeout(tick, 1000);
+          $timeout(tick, 100);
       });
   })();
 })
@@ -214,6 +220,77 @@ $(document).ready(function() {
                     i;
 
                 for (i = -19; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: 0
+                    });
+                }
+                return data;
+            })()
+        }]
+    });
+    $('#position_z_chart').highcharts({
+        chart: {
+            type: 'spline',
+            animation: Highcharts.svg, // don't animate in old IE
+            marginRight: 10,
+        },
+        title: {
+            text: 'Altitude'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickPixelInterval: 150
+        },
+        yAxis: {
+            title: {
+                text: 'Value'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            formatter: function() {
+                    return '<b>'+ this.series.name +'</b><br/>'+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
+                    Highcharts.numberFormat(this.y, 2);
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        exporting: {
+            enabled: false
+        },
+        series: [
+        {
+            name: 'estimate',
+            data: (function() {
+                var data = [],
+                    time = (new Date()).getTime(),
+                    i;
+
+                for (i = -99; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: 0
+                    });
+                }
+                return data;
+            })()
+        },
+        {
+            name: 'data',
+            color: 'red',
+            data: (function() {
+                var data = [],
+                    time = (new Date()).getTime(),
+                    i;
+
+                for (i = -99; i <= 0; i++) {
                     data.push({
                         x: time + i * 1000,
                         y: 0

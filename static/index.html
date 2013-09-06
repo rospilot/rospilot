@@ -19,6 +19,7 @@
         y: {{estimate.velocity.y|number:3}}m/s,
         z: {{estimate.velocity.z|number:3}}m/s</div>
       <div>Ground distance: {{data.ground_distance|number:3}}m</div>
+      <div id="position_z_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
     </div>
     <div ng-controller='status'>
       <span ng-switch on='data.armed'>
