@@ -150,8 +150,8 @@ class PositionEstimatorNode:
 
     def handle_optical_flow(self, data):
         with self.lock:
-            self.naive_filter_x.observe(None, data.x, None)
-            self.naive_filter_y.observe(None, data.y, None)
+            self.naive_filter_x.observe(data.x + self.naive_filter_x.get_pos(), None, None)
+            self.naive_filter_y.observe(data.y + self.naive_filter_y.get_pos(), None, None)
             self._publish()
 
     def run(self):
