@@ -1,4 +1,16 @@
 CherryPy==3.2.4
-pyserial==2.6
+PyYAML==3.10
+catkin-pkg==0.1.19
+distribute==0.6.31
+docutils==0.11
+gevent==0.13.8
+gevent-socketio==0.3.5-rc2
+gevent-websocket==0.3.6
+greenlet==0.4.1
+numpy==1.7.1
 pykalman==0.9.5
+pyserial==2.6
+python-dateutil==2.1
+rospkg==1.0.23
 scipy==0.12.0
+six==1.4.1
