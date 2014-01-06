@@ -1,1 +1,1 @@
-libatlas-base-dev gfortran python-opencv
+libatlas-base-dev gfortran python-opencv libevent-dev
