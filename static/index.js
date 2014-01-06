@@ -17,9 +17,31 @@ var app = angular.module('rospilot', ['ngResource'])
 .factory('IMU', function ($resource) {
       return $resource('api/imu');
   })
+.factory('Waypoints', function ($resource) {
+      return $resource('api/waypoints');
+  })
 .factory('OpticalFlow', function ($resource) {
       return $resource('api/optical_flow');
   })
+.controller('waypoints', function ($scope, $timeout, Waypoints) {
+  $scope.data = {'waypoints': []};
+  $scope.come_here = function() {
+      navigator.geolocation.getCurrentPosition(function(location){
+          $scope.data.waypoints = [{
+              'latitude': location.coords.latitude,
+              'longitude': location.coords.longitude,
+              'altitude': 3.0
+          }];
+          $scope.data.$save();
+      });
+  };
+  (function tick() {
+      Waypoints.get({}, function(waypoints) {
+          $scope.data = waypoints;
+          $timeout(tick, 1000);
+      });
+  })();
+})
 .controller('rcstate', function ($scope, $timeout, RCState) {
   $scope.data = {'channel': []};
   (function tick() {

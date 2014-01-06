@@ -44,20 +44,44 @@ class MavlinkNode:
         self.pub_imuraw = rospy.Publisher('imuraw', rospilot.msg.IMURaw)
         self.pub_basic_status = rospy.Publisher('basic_status',
                                                 rospilot.msg.BasicStatus)
+        self.pub_waypoints = rospy.Publisher('waypoints',
+                                                rospilot.msg.Waypoints)
         rospy.Subscriber("set_mode", rospilot.msg.BasicMode,
                          self.handle_set_mode)
         rospy.Subscriber("set_rc", rospilot.msg.RCState,
                          self.handle_set_rc)
+        rospy.Subscriber("set_waypoints", rospilot.msg.Waypoints,
+                         self.handle_set_waypoints)
         self.allow_control = allow_control.lower() in ["true", "1"]
         self.enable_control = False
         # Safety, in case radio has control enabled on start-up
         self.enable_control_has_been_false = False
+
+        # Waypoints are read and written using a stateful API
+        # this buffer stores the queued writes/partial reads
+        self.waypoint_buffer = []
+        self.num_waypoints = 0
+        self.waypoint_read_in_progress = False
+        self.waypoint_write_in_progress = False
 
     def reset_rc_override(self):
         # Send 0 to reset the channel
         self.conn.mav.rc_channels_override_send(
             self.conn.target_system, self.conn.target_component,
             0, 0, 0, 0, 0, 0, 0, 0)
+
+    def handle_set_waypoints(self, message):
+        if self.waypoint_read_in_progress or self.waypoint_write_in_progress:
+            rospy.logwarn("Can't write waypoints because a read/write is already in progress")
+            return
+        self.waypoint_write_in_progress = True
+        self.waypoint_buffer = message.waypoints
+
+        if message.waypoints:
+            self.conn.mav.mission_count_send(
+                self.conn.target_system,
+                self.conn.target_component,
+                len(message.waypoints))
 
     def handle_set_rc(self, message):
         if self.allow_control and self.enable_control and \
@@ -143,6 +167,65 @@ class MavlinkNode:
                     Vector3(msg.xgyro / 100.0, msg.ygyro / 100.0, msg.zgyro / 100.0),
                     Vector3(msg.xacc / 100.0, msg.yacc / 100.0, msg.zacc / 100.0),
                     Vector3(msg.xmag / 100.0, msg.ymag / 100.0, msg.zmag / 100.0))
+            elif msg_type == "MISSION_COUNT":
+                if not self.waypoint_read_in_progress:
+                    rospy.logwarn("Did not expect MISSION_COUNT message")
+                else:
+                    self.num_waypoints = msg.count
+                    self.waypoint_buffer = []
+                    if msg.count > 0:
+                        # Request the first waypoint
+                        self.conn.mav.mission_request_send(
+                            self.conn.target_system,
+                            self.conn.target_component,
+                            0)
+            elif msg_type == "MISSION_REQUEST":
+                if not self.waypoint_write_in_progress:
+                    rospy.logwarn("Waypoint write not in progress, but received a request for a waypoint")
+                else:
+                    waypoint = self.waypoint_buffer[msg.seq]
+                    self.conn.mav.mission_item_send(
+                        self.conn.target_system,
+                        self.conn.target_component,
+                        msg.seq,
+                        mavutil.mavlink.MAV_FRAME_GLOBAL,
+                        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                        1 if msg.seq == 0 else 0,  # Set current
+                        1,  # Auto continue after this waypoint
+                        1.0,  # "reached waypoint" is +/- 1.0m
+                        5.0,  # Stay for 5 secs then move on
+                        1.0,  # Stay within 1.0m for LOITER
+                        0,  # Face north on arrival
+                        waypoint.latitude,  # Latitude
+                        waypoint.longitude,  # Longitude
+                        waypoint.altitude)  # Altitude
+            elif msg_type == "MISSION_ACK":
+                if not self.waypoint_write_in_progress:
+                    rospy.logwarn("Did not expect MISSION_ACK no write in progress")
+                # NOTE: APM is suppose to return MAV_CMD_ACK_OK, but it seems
+                # to return 0
+                elif msg.type not in (0, mavutil.mavlink.MAV_CMD_ACK_OK):
+                    rospy.logerr("Bad MISSION_ACK: %d", msg.type)
+                    self.waypoint_write_in_progress = False
+                else:
+                    # All waypoints have been sent, read them back
+                    self.waypoint_write_in_progress = False
+                    self.conn.mav.mission_request_list_send(
+                        self.conn.target_system,
+                        self.conn.target_component)
+                    self.waypoint_read_in_progress = True
+            elif msg_type == "MISSION_ITEM":
+                if not self.waypoint_read_in_progress:
+                    rospy.logwarn("Did not expect MISSION_ITEM, no read in progress")
+                else:
+                    self.waypoint_buffer.append(rospilot.msg.Waypoint(msg.x, msg.y, msg.z))
+                    if self.num_waypoints == len(self.waypoint_buffer):
+                        self.conn.mav.mission_ack_send(
+                            self.conn.target_system,
+                            self.conn.target_component,
+                            mavutil.mavlink.MAV_CMD_ACK_OK)
+                        self.pub_waypoints.publish(self.waypoint_buffer)
+                        self.waypoint_read_in_progress = False
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
