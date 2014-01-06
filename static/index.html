@@ -21,6 +21,16 @@
       <div>Ground distance: {{data.ground_distance|number:3}}m</div>
       <div id="position_z_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
     </div>
+    <div ng-controller='waypoints'>
+      <h2>Waypoints:</h2>
+      <ol>
+        <li ng-repeat="waypoint in data.waypoints">
+          Lat: {{waypoint.latitude}}, Lng: {{waypoint.longitude}}, 
+          Alt: {{waypoint.altitude}}
+        </li>
+      </ol>
+      <a href='#' ng-click='come_here()'>Come here</a>
+    </div>
     <div ng-controller='status'>
       <span ng-switch on='data.armed'>
         <span ng-switch-when='true'>

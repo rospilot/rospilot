@@ -78,6 +78,22 @@ class API:
             'ground_distance': ground_distance})
 
     @cherrypy.expose
+    def waypoints(self):
+        if cherrypy.request.method == 'GET':
+            waypoints = []
+            for waypoint in node.waypoints:
+                waypoints.append({'latitude': waypoint.latitude,
+                                'longitude': waypoint.longitude,
+                                'altitude': waypoint.altitude})
+            return json.dumps({'waypoints': waypoints})
+        elif cherrypy.request.method == 'POST':
+            data = json.loads(cherrypy.request.body.read())
+            waypoints = data.get('waypoints', [])
+            if len(waypoints) == 1:
+                waypoint = waypoints[0]
+                node.pub_waypoints.publish([rospilot.msg.Waypoint(**waypoint)])
+
+    @cherrypy.expose
     def optical_flow(self):
         if cherrypy.request.method == 'GET':
             quality = 0
@@ -127,6 +143,7 @@ class WebUiNode:
     def __init__(self):
         self.reset_odometry = rospy.ServiceProxy('reset_odometry', std_srvs.srv.Empty)
         self.pub_set_mode = rospy.Publisher('set_mode', rospilot.msg.BasicMode)
+        self.pub_waypoints = rospy.Publisher('set_waypoints', rospilot.msg.Waypoints)
         self.tf_listener = None
         rospy.Subscriber("basic_status",
                 rospilot.msg.BasicMode, self.handle_status)
@@ -146,6 +163,8 @@ class WebUiNode:
                 geometry_msgs.msg.Vector3, self.handle_control)
         rospy.Subscriber('rcstate',
                 rospilot.msg.RCState, self.handle_rcstate)
+        rospy.Subscriber('waypoints',
+                rospilot.msg.Waypoints, self.handle_waypoints)
         self.qualities = []
         self.distances = []
         self.odometry = None
@@ -157,6 +176,7 @@ class WebUiNode:
         self.imu = None
         self.position_estimate = None
         self.attitude = None
+        self.waypoints = []
         cherrypy.server.socket_port = PORT_NUMBER
         cherrypy.server.socket_host = '0.0.0.0'
         # No autoreloading
@@ -177,6 +197,10 @@ class WebUiNode:
     def handle_attitude(self, data):
         with self.lock:
             self.attitude = data
+
+    def handle_waypoints(self, data):
+        with self.lock:
+            self.waypoints = data.waypoints
 
     def handle_position_estimate(self, data):
         with self.lock:
