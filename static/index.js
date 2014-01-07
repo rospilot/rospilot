@@ -1,4 +1,10 @@
-var app = angular.module('rospilot', ['ngResource'])
+angular.module('rospilot', ['ngRoute', 'ngResource'])
+.config(function($routeProvider) {
+    $routeProvider
+    .when("/graphs", {templateUrl:'static/graphs.html', controller:'graphs'})
+    .when("/flight_control", {templateUrl: 'static/flight_control.html', controller:'position'})
+    .otherwise({redirectTo:"/flight_control"});
+})
 .factory('Status', function ($resource) {
       return $resource('api/status');
   })
@@ -23,6 +29,9 @@ var app = angular.module('rospilot', ['ngResource'])
 .factory('OpticalFlow', function ($resource) {
       return $resource('api/optical_flow');
   })
+.controller('rospilot', function ($scope, $route) {
+    $scope.$route = $route;
+})
 .controller('waypoints', function ($scope, $timeout, Waypoints) {
   $scope.data = {'waypoints': []};
   $scope.come_here = function() {
@@ -60,9 +69,11 @@ var app = angular.module('rospilot', ['ngResource'])
   (function tick() {
       IMU.get({}, function(data) {
           $scope.data = data;
-          var series = $('#accel_z_chart').highcharts().series[0];
-          var x = (new Date()).getTime();
-          series.addPoint([x, data.accel.z], true, true);
+          if ($('#accel_z_chart').length > 0) {
+            var series = $('#accel_z_chart').highcharts().series[0];
+            var x = (new Date()).getTime();
+            series.addPoint([x, data.accel.z], true, true);
+          }
           $timeout(tick, 1000);
       });
   })();
@@ -99,7 +110,7 @@ var app = angular.module('rospilot', ['ngResource'])
 })
 .controller('position', function ($scope, $timeout, Position, PositionEstimate) {
   // If we don't have an internet connection, Google Maps won't have loaded
-  if (typeof(google) != 'undefined') {
+  if (typeof(google) != 'undefined' && document.getElementById('map-canvas')) {
     var myLatlng = new google.maps.LatLng(37.77,122.4);
     var mapOptions = {
         zoom: 18,
@@ -118,9 +129,11 @@ var app = angular.module('rospilot', ['ngResource'])
   (function tick2() {
       PositionEstimate.get({}, function(estimate) {
           $scope.estimate = estimate;
-          var series = $('#position_z_chart').highcharts().series[0];
-          var x = (new Date()).getTime();
-          series.addPoint([x, estimate.position.z], true, true);
+          if ($('#position_z_chart').length > 0) {
+            var series = $('#position_z_chart').highcharts().series[0];
+            var x = (new Date()).getTime();
+            series.addPoint([x, estimate.position.z], true, true);
+          }
           $timeout(tick2, 100);
       });
   })();
@@ -128,12 +141,14 @@ var app = angular.module('rospilot', ['ngResource'])
   (function tick() {
       Position.get({}, function(position) {
           $scope.data = position;
-          if (typeof(google) != 'undefined') {
+          if (typeof($scope.map) != 'undefined') {
             // XXX: This should be moved
             var pos = new google.maps.LatLng(position.latitude,
                                             position.longitude);
             $scope.marker.setPosition(pos);
             $scope.map.setCenter(pos);
+          }
+          if ($('#position_z_chart').length > 0) {
             var series = $('#position_z_chart').highcharts().series[1];
             var x = (new Date()).getTime();
             series.addPoint([x, position.ground_distance], true, true);
@@ -188,138 +203,156 @@ var app = angular.module('rospilot', ['ngResource'])
           $timeout(tick, 1000);
       });
   })();
-});
+})
+.controller('graphs', function($scope) {
+  Highcharts.setOptions({
+      global: {
+          useUTC: false
+      }
+  });
 
-$(document).ready(function() {
-    Highcharts.setOptions({
-        global: {
-            useUTC: false
+  var chart;
+  $('#accel_z_chart').highcharts({
+    chart: {
+        type: 'spline',
+        animation: false,
+        marginRight: 10,
+    },
+    title: {
+        text: 'Accelerometer'
+    },
+    xAxis: {
+        type: 'datetime',
+        tickPixelInterval: 150
+    },
+    yAxis: {
+        title: {
+            text: 'Value'
+        },
+        plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#808080'
+        }]
+    },
+    tooltip: {
+        formatter: function() {
+                return '<b>'+ this.series.name +'</b><br/>'+
+                Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
+                Highcharts.numberFormat(this.y, 2);
         }
-    });
+    },
+    legend: {
+        enabled: false
+    },
+    exporting: {
+        enabled: false
+    },
+    series: [{
+        name: 'data',
+        data: (function() {
+            var data = [],
+                time = (new Date()).getTime(),
+                i;
 
-    var chart;
-    $('#accel_z_chart').highcharts({
-        chart: {
-            type: 'spline',
-            animation: Highcharts.svg, // don't animate in old IE
-            marginRight: 10,
-        },
-        title: {
-            text: 'Accelerometer'
-        },
-        xAxis: {
-            type: 'datetime',
-            tickPixelInterval: 150
-        },
-        yAxis: {
-            title: {
-                text: 'Value'
-            },
-            plotLines: [{
-                value: 0,
-                width: 1,
-                color: '#808080'
-            }]
-        },
-        tooltip: {
-            formatter: function() {
-                    return '<b>'+ this.series.name +'</b><br/>'+
-                    Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
-                    Highcharts.numberFormat(this.y, 2);
+            for (i = -19; i <= 0; i++) {
+                data.push({
+                    x: time + i * 1000,
+                    y: 0
+                });
             }
-        },
-        legend: {
-            enabled: false
-        },
-        exporting: {
-            enabled: false
-        },
-        series: [{
-            name: 'data',
-            data: (function() {
-                var data = [],
-                    time = (new Date()).getTime(),
-                    i;
-
-                for (i = -19; i <= 0; i++) {
-                    data.push({
-                        x: time + i * 1000,
-                        y: 0
-                    });
-                }
-                return data;
-            })()
-        }]
-    });
-    $('#position_z_chart').highcharts({
-        chart: {
-            type: 'spline',
-            animation: Highcharts.svg, // don't animate in old IE
-            marginRight: 10,
-        },
+            return data;
+        })()
+    }]
+  });
+  $('#position_z_chart').highcharts({
+    chart: {
+        type: 'spline',
+        animation: false,
+        marginRight: 10,
+    },
+    title: {
+        text: 'Altitude'
+    },
+    xAxis: {
+        type: 'datetime',
+        tickPixelInterval: 150
+    },
+    yAxis: {
         title: {
-            text: 'Altitude'
+            text: 'Value'
         },
-        xAxis: {
-            type: 'datetime',
-            tickPixelInterval: 150
-        },
-        yAxis: {
-            title: {
-                text: 'Value'
-            },
-            plotLines: [{
-                value: 0,
-                width: 1,
-                color: '#808080'
-            }]
-        },
-        tooltip: {
-            formatter: function() {
-                    return '<b>'+ this.series.name +'</b><br/>'+
-                    Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
-                    Highcharts.numberFormat(this.y, 2);
-            }
-        },
-        legend: {
-            enabled: false
-        },
-        exporting: {
-            enabled: false
-        },
-        series: [
-        {
-            name: 'estimate',
-            data: (function() {
-                var data = [],
-                    time = (new Date()).getTime(),
-                    i;
-
-                for (i = -99; i <= 0; i++) {
-                    data.push({
-                        x: time + i * 1000,
-                        y: 0
-                    });
-                }
-                return data;
-            })()
-        },
-        {
-            name: 'data',
-            color: 'red',
-            data: (function() {
-                var data = [],
-                    time = (new Date()).getTime(),
-                    i;
-
-                for (i = -99; i <= 0; i++) {
-                    data.push({
-                        x: time + i * 1000,
-                        y: 0
-                    });
-                }
-                return data;
-            })()
+        plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#808080'
         }]
-    });
+    },
+    tooltip: {
+        formatter: function() {
+                return '<b>'+ this.series.name +'</b><br/>'+
+                Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
+                Highcharts.numberFormat(this.y, 2);
+        }
+    },
+    legend: {
+        enabled: false
+    },
+    exporting: {
+        enabled: false
+    },
+    series: [
+    {
+        name: 'estimate',
+        data: (function() {
+            var data = [],
+                time = (new Date()).getTime(),
+                i;
+
+            for (i = -99; i <= 0; i++) {
+                data.push({
+                    x: time + i * 1000,
+                    y: 0
+                });
+            }
+            return data;
+        })()
+    },
+    {
+        name: 'data',
+        color: 'red',
+        data: (function() {
+            var data = [],
+                time = (new Date()).getTime(),
+                i;
+
+            for (i = -99; i <= 0; i++) {
+                data.push({
+                    x: time + i * 1000,
+                    y: 0
+                });
+            }
+            return data;
+        })()
+    }]
+  });
+})
+.directive('activeClass', function($location) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs, controller) {
+            var css = attrs.activeClass;
+            var a = element.find('a');
+            var href = a.attr('href');
+            href = href.substring(1);
+            scope.location = $location;
+            scope.$watch('location.path()', function(path) {
+                if (href === path) {
+                    element.addClass(css);
+                } else {
+                    element.removeClass(css);
+                }
+            });
+        }
+    };
 });

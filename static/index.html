@@ -1,87 +1,47 @@
-<html ng-app=rospilot>
+<!DOCTYPE html>
+<html ng-app=rospilot lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="/favicon.png">
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-    <script src="/static/angular.min.js"></script>
-    <script src="/static/angular-resource.min.js"></script>
+    <script src="/static/angular.js"></script>
+    <script src="/static/angular-resource.js"></script>
+    <script src="/static/angular-route.js"></script>
     <script src="/static/jquery-2.0.3.min.js"></script>
     <script src="/static/highcharts.js"></script>
     <script src="/static/index.js"></script>
+    <script src="/static/bootstrap.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/index.css">
+    <title>Rospilot</title>
   </head>
-  <body>
-    <div id="map-canvas" style='height:400px;width:500px;'></div>
-    <div ng-controller='position'>
-      <div>Raw Lat: {{data.latitude}}, Lng: {{data.longitude}}</div>
-      <div>Estimated Position: x: {{estimate.position.x|number:3}}m, 
-        y: {{estimate.position.y|number:3}}m,
-        z: {{estimate.position.z|number:3}}m</div>
-      <div>Estimated Velocity: x: {{estimate.velocity.x|number:3}}m/s, 
-        y: {{estimate.velocity.y|number:3}}m/s,
-        z: {{estimate.velocity.z|number:3}}m/s</div>
-      <div>Ground distance: {{data.ground_distance|number:3}}m</div>
-      <div id="position_z_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
-    </div>
-    <div ng-controller='waypoints'>
-      <h2>Waypoints:</h2>
-      <ol>
-        <li ng-repeat="waypoint in data.waypoints">
-          Lat: {{waypoint.latitude}}, Lng: {{waypoint.longitude}}, 
-          Alt: {{waypoint.altitude}}
-        </li>
-      </ol>
-      <a href='#' ng-click='come_here()'>Come here</a>
-    </div>
-    <div ng-controller='status'>
-      <span ng-switch on='data.armed'>
-        <span ng-switch-when='true'>
-          <h2 style='color:red;'>
-            ARMED
-          </h2>
-          <a href='#' ng-click='disarm()'>
-            disarm
-          </a>
-        </span>
-        <span ng-switch-when='false'>
-          <h2>
-            DISARMED
-          </h2>
-          <a href='#' ng-click='arm()'>
-            arm
-          </a>
-        </span>
-      </span>
-    </div>
-    <div ng-controller='attitude'>
-      <div>
-        <object id="compass" data="/static/compass.svg" type="image/svg+xml">
-        </object>
-        <object id="attitude_svg" data="/static/attitude.svg" type="image/svg+xml">
-        </object>
+
+  <body ng-controller='rospilot'>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Rospilot</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li active-class="active"><a href="#/flight_control">Flight Control</a></li>
+            <li active-class="active"><a href="#/graphs">Graphs</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
       </div>
-      <span>Roll: {{data.roll|number:4}}, 
-        Pitch: {{data.pitch|number:4}}, 
-        Yaw: {{data.yaw|number:4}}</span>
-    </div>
-    <div ng-controller='rcstate'>
-      RC channels: {{data.channel}}
-    </div>
-    <div ng-controller='optical_flow'>
-      Optical Flow: x: {{data.x}}, y: {{data.y}}, quality: {{data.quality}}
-      <a href='#' ng-click='reset()'>
-        reset optical flow
-      </a>
-    </div>
-    <div ng-controller='imu'>
-      <div>
-        Gyro: x: {{data.gyro.x}}, y: {{data.gyro.y}}, z: {{data.gyro.z}}
-      </div>
-      <div>
-        Accel: x: {{data.accel.x}}, y: {{data.accel.y}}, z: {{data.accel.z}}
-      </div>
-      <div>
-        Mag: x: {{data.mag.x}}, y: {{data.mag.y}}, z: {{data.mag.z}}
-      </div>
-      <div id="accel_z_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+    </div><!-- end navbar -->
+    <div class="container">
+      <div ng-view></div>
     </div>
   </body>
 </html>

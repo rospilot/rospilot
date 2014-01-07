@@ -1,0 +1,7 @@
+body {
+    padding-top: 50px;
+}
+
+#flight_control_actions button {
+    width: 100%;
+}
