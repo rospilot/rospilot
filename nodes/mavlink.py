@@ -75,13 +75,15 @@ class MavlinkNode:
             rospy.logwarn("Can't write waypoints because a read/write is already in progress")
             return
         self.waypoint_write_in_progress = True
-        self.waypoint_buffer = message.waypoints
+        # XXX: APM seems to overwrite index 0, so insert the first waypoint
+        # twice
+        self.waypoint_buffer = [message.waypoints[0]] + message.waypoints
 
         if message.waypoints:
             self.conn.mav.mission_count_send(
                 self.conn.target_system,
                 self.conn.target_component,
-                len(message.waypoints))
+                len(self.waypoint_buffer))
 
     def handle_set_rc(self, message):
         if self.allow_control and self.enable_control and \
@@ -125,6 +127,11 @@ class MavlinkNode:
             self.conn.target_system,
             self.conn.target_component, mavutil.mavlink.MAV_DATA_STREAM_ALL,
             self.rate, 1)
+        # Send request to read waypoints
+        self.conn.mav.mission_request_list_send(
+            self.conn.target_system,
+            self.conn.target_component)
+        self.waypoint_read_in_progress = True
         while not rospy.is_shutdown():
             rospy.sleep(0.001)
             msg = self.conn.recv_match(blocking=False)
@@ -173,22 +180,29 @@ class MavlinkNode:
                 else:
                     self.num_waypoints = msg.count
                     self.waypoint_buffer = []
-                    if msg.count > 0:
+                    # Ignore the first one, because it's some magic waypoint
+                    if msg.count > 1:
                         # Request the first waypoint
                         self.conn.mav.mission_request_send(
                             self.conn.target_system,
                             self.conn.target_component,
-                            0)
+                            1)
             elif msg_type == "MISSION_REQUEST":
                 if not self.waypoint_write_in_progress:
                     rospy.logwarn("Waypoint write not in progress, but received a request for a waypoint")
                 else:
                     waypoint = self.waypoint_buffer[msg.seq]
+                    frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+                    if msg.seq == 0:
+                        # Waypoint zero seems to be special, and uses the
+                        # GLOBAL frame. It also is magically reset in the
+                        # firmware, so this probably doesn't matter.
+                        frame = mavutil.mavlink.MAV_FRAME_GLOBAL
                     self.conn.mav.mission_item_send(
                         self.conn.target_system,
                         self.conn.target_component,
                         msg.seq,
-                        mavutil.mavlink.MAV_FRAME_GLOBAL,
+                        frame,
                         mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
                         1 if msg.seq == 0 else 0,  # Set current
                         1,  # Auto continue after this waypoint
@@ -219,13 +233,18 @@ class MavlinkNode:
                     rospy.logwarn("Did not expect MISSION_ITEM, no read in progress")
                 else:
                     self.waypoint_buffer.append(rospilot.msg.Waypoint(msg.x, msg.y, msg.z))
-                    if self.num_waypoints == len(self.waypoint_buffer):
+                    if self.num_waypoints == msg.seq + 1:
                         self.conn.mav.mission_ack_send(
                             self.conn.target_system,
                             self.conn.target_component,
                             mavutil.mavlink.MAV_CMD_ACK_OK)
                         self.pub_waypoints.publish(self.waypoint_buffer)
                         self.waypoint_read_in_progress = False
+                    else:
+                        self.conn.mav.mission_request_send(
+                            self.conn.target_system,
+                            self.conn.target_component,
+                            msg.seq + 1)
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")

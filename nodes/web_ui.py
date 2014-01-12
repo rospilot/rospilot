@@ -89,9 +89,8 @@ class API:
         elif cherrypy.request.method == 'POST':
             data = json.loads(cherrypy.request.body.read())
             waypoints = data.get('waypoints', [])
-            if len(waypoints) == 1:
-                waypoint = waypoints[0]
-                node.pub_waypoints.publish([rospilot.msg.Waypoint(**waypoint)])
+            waypoints = map(lambda x: rospilot.msg.Waypoint(**x), waypoints)
+            node.pub_waypoints.publish(waypoints)
 
     @cherrypy.expose
     def optical_flow(self):

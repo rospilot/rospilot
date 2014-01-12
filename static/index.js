@@ -30,7 +30,7 @@ var app = angular.module('rospilot', ['ngResource'])
           $scope.data.waypoints = [{
               'latitude': location.coords.latitude,
               'longitude': location.coords.longitude,
-              'altitude': 3.0
+              'altitude': 5.0
           }];
           $scope.data.$save();
       });
