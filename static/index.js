@@ -108,23 +108,77 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       });
   })();
 })
-.controller('position', function ($scope, $timeout, Position, PositionEstimate) {
+.controller('position', function ($scope, $timeout, Position, PositionEstimate, Waypoints) {
+  $scope.waypoint_data = {'waypoints': []};
   // If we don't have an internet connection, Google Maps won't have loaded
   if (typeof(google) != 'undefined' && document.getElementById('map-canvas')) {
-    var myLatlng = new google.maps.LatLng(37.77,122.4);
-    var mapOptions = {
-        zoom: 18,
-        center: myLatlng,
-        mapTypeId: google.maps.MapTypeId.SATELLITE
-    }
-    $scope.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+    $scope.map = new GMaps({
+        div: '#map-canvas',
+        lat: 37.77,
+        lng: -122.4,
+        zoom: 17,
+        mapType: 'satellite'
+    });
 
-    $scope.marker = new google.maps.Marker({
-        position: myLatlng,
-        map: $scope.map,
-        title: 'GPS Map'
+    $scope.map.addMarker({
+        lat: 37.77,
+        lng: -122.4,
+        title: 'Multicopter',
+        icon: '/static/red-marker.png'
+    });
+    $scope.marker = $scope.map.markers[0]
+    $scope.map.addMarker({
+        lat: 0,
+        lng: 0,
+        title: 'Waypoint',
+        icon: '/static/green-marker.png'
+    });
+    $scope.waypoint = $scope.map.markers[1];
+
+    $scope.map.setContextMenu({
+        control: 'map',
+        options: [
+            {
+                title: 'Set Waypoint',
+                name: 'set_waypoint',
+                action: function(e) {
+                    $scope.waypoint_data.waypoints = [{
+                        'latitude': e.latLng.lat(),
+                        'longitude': e.latLng.lng(),
+                        'altitude': 5.0
+                    }];
+                    $scope.waypoint_data.$save();
+                },
+            }
+        ]
     });
   }
+
+  // GMaps doesn't have touch support, so add our own long press detection
+  google.maps.event.addListener($scope.map.map, 'mousedown', function(e) {
+      $scope.longpress_promise = $timeout(function() {
+        $scope.map.buildContextMenu('map', e)
+      }, 1000);
+  });
+  google.maps.event.addListener($scope.map.map, 'mouseup', function(e) {
+      $timeout.cancel($scope.longpress_promise);
+  });
+  google.maps.event.addListener($scope.map.map, 'dragstart', function(e) {
+      $timeout.cancel($scope.longpress_promise);
+  });
+  
+  (function tick3() {
+      Waypoints.get({}, function(data) {
+          $scope.waypoint_data = data;
+          if (data.waypoints.length > 0) {
+              var lat = data.waypoints[0].latitude;
+              var lng = data.waypoints[0].longitude;
+              var pos = new google.maps.LatLng(lat, lng);
+              $scope.waypoint.setPosition(pos);
+          }
+          $timeout(tick3, 1000);
+      });
+  })();
 
   (function tick2() {
       PositionEstimate.get({}, function(estimate) {
@@ -146,7 +200,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
             var pos = new google.maps.LatLng(position.latitude,
                                             position.longitude);
             $scope.marker.setPosition(pos);
-            $scope.map.setCenter(pos);
+            $scope.map.setCenter(position.latitude, position.longitude);
           }
           if ($('#position_z_chart').length > 0) {
             var series = $('#position_z_chart').highcharts().series[1];
