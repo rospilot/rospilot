@@ -19,9 +19,20 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .config(function($routeProvider) {
     $routeProvider
     .when("/graphs", {templateUrl:'static/graphs.html', controller:'graphs'})
+    .when("/camera", {templateUrl:'static/camera.html', controller:'camera'})
     .when("/flight_control", {templateUrl: 'static/flight_control.html', controller:'position'})
     .otherwise({redirectTo:"/flight_control"});
 })
+.factory('Camera', function ($resource) {
+      return $resource('api/camera', null, 
+          {take_picture: {method: "POST", params:{'action': 'take_picture'}},
+           start_recording: {method: "POST", params: {"action": "record"}},
+           stop_recording: {method: "POST", params: {'action': 'stop'}}
+          });
+  })
+.factory('Media', function ($resource) {
+      return $resource('api/media');
+  })
 .factory('Status', function ($resource) {
       return $resource('api/status');
   })
@@ -407,6 +418,33 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
         })()
     }]
   });
+})
+.controller('camera', function($scope, $timeout, Media, Camera) {
+  $scope.media = {'objs': []};
+
+  (function tick() {
+      Media.get({}, function(data) {
+          if (data.objs.length != $scope.media.objs.length) {
+            $scope.media = data;
+          }
+          $timeout(tick, 1000);
+      });
+  })();
+
+  $scope.server_name = window.location.hostname;
+  $scope.take_picture = function() {
+    Camera.take_picture();
+  };
+
+  $scope.recording = false;
+  $scope.toggle_recording = function() {
+    if ($scope.recording) {
+      Camera.stop_recording();
+    } else {
+      Camera.start_recording();
+    }
+    $scope.recording = !$scope.recording;
+  }
 })
 .directive('activeClass', function($location) {
     return {

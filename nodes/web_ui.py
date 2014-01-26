@@ -30,8 +30,13 @@ import os
 import px_comm.msg
 import std_srvs.srv
 import geometry_msgs.msg
+import sensor_msgs.msg
+import cv_bridge
+import cv2
+import numpy
 from geometry_msgs.msg import Vector3
 import tf
+import urllib2
 
 STATIC_PATH = os.path.dirname(os.path.abspath(__file__))
 STATIC_PATH = os.path.join(STATIC_PATH, "../static")
@@ -56,6 +61,36 @@ class API:
             'gyro': gyro,
             'accel': accel,
             'mag': mag})
+
+    @cherrypy.expose
+    def media(self):
+        paths = os.listdir(self.node.media_path)
+        paths = ['/media/' + path for path in paths]
+        objs = []
+        for path in reversed(sorted(paths)):
+            if path.endswith('jpg'):
+                objs.append({"type": "image", "url": path})
+            else:
+                objs.append({"type": "video", "url": path})
+        return json.dumps({'objs': objs})
+
+    @cherrypy.expose
+    def camera(self, action):
+        if cherrypy.request.method == 'GET':
+            url = 'http://localhost:8080/snapshot?topic=/camera/image_raw'
+            resp = urllib2.urlopen(url)
+            cherrypy.response.headers['Content-Type'] = resp.info()['Content-Type']
+            return resp.read()
+        elif cherrypy.request.method == 'POST':
+            if action == 'take_picture':
+                name = self.node.take_picture()
+                return json.dumps({'url': '/media/' + name})
+            elif action == 'record':
+                self.node.start_recording()
+            elif action == 'stop':
+                self.node.stop_recording()
+            else:
+                return json.dumps({"error": "bad action"})
 
     @cherrypy.expose
     def position_estimate(self):
@@ -164,6 +199,8 @@ class WebUiNode:
                 rospilot.msg.RCState, self.handle_rcstate)
         rospy.Subscriber('waypoints',
                 rospilot.msg.Waypoints, self.handle_waypoints)
+        rospy.Subscriber('camera/image_raw',
+                sensor_msgs.msg.Image, self.handle_image)
         self.qualities = []
         self.distances = []
         self.odometry = None
@@ -176,6 +213,12 @@ class WebUiNode:
         self.position_estimate = None
         self.attitude = None
         self.waypoints = []
+        self.last_image = None
+        self.recording = False
+        self.media_path = os.path.expanduser('~/.rospilot/media')
+        if not os.path.exists(self.media_path):
+            os.makedirs(self.media_path)
+
         cherrypy.server.socket_port = PORT_NUMBER
         cherrypy.server.socket_host = '0.0.0.0'
         # No autoreloading
@@ -183,6 +226,9 @@ class WebUiNode:
         conf = {
             '/static': {'tools.staticdir.on': True,
                 'tools.staticdir.dir': STATIC_PATH
+            },
+            '/media': {'tools.staticdir.on': True,
+                'tools.staticdir.dir': self.media_path
             }
         }
         index = Index(self)
@@ -192,6 +238,10 @@ class WebUiNode:
     def init(self):
         """Called after rospy.init_node()"""
         self.tf_listener = tf.TransformListener()
+
+    def handle_image(self, data):
+        with self.lock:
+            self.last_image = data
 
     def handle_attitude(self, data):
         with self.lock:
@@ -240,6 +290,39 @@ class WebUiNode:
 
     def send_arm(self, arm):
         self.pub_set_mode.publish(arm)
+
+    def next_media_id(self):
+        files = os.listdir(self.media_path)
+        files = [img.split('.')[0] for img in files]
+        return max([int(img) for img in files]) + 1 if files else 0
+
+    def start_recording(self):
+        with self.lock:
+            if self.recording:
+                rospy.logwarn("Can't start recording. We're already recording")
+            self.recording = True
+
+    def stop_recording(self):
+        with self.lock:
+            if self.recording:
+                self.take_picture()
+            else:
+                rospy.logwarn("Can't stop recording. We're not recording")
+            self.recording = False
+
+    def take_picture(self):
+        next_id = self.next_media_id()
+
+        filename = "{0:05}.jpg".format(next_id)
+        path = "{0}/{1}".format(self.media_path, filename)
+
+        image = cv_bridge.CvBridge().imgmsg_to_cv(self.last_image,
+                                                    desired_encoding="bgr8")
+        # cv_bridge returns a cv2.cv.cvmat
+        image = numpy.asarray(image)
+        cv2.imwrite(path, image)
+
+        return filename
 
     def run(self):
         rospy.init_node('rospilot_webui')

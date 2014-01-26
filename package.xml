@@ -56,6 +56,8 @@
   <run_depend>std_srvs</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>opencv2</run_depend>
+  <run_depend>mjpeg_server</run_depend>
+  <run_depend>usb_cam</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

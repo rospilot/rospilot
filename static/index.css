@@ -5,3 +5,20 @@ body {
 #flight_control_actions button {
     width: 100%;
 }
+
+.camera-thumbnail {
+    position: relative;
+    padding-bottom: 5px;
+}
+
+.camera-thumbnail img {
+    width: 160px;
+    height: 120px;
+}
+
+.camera-thumbnail i.fa {
+    position: absolute;
+    left: 17%;
+    top: 28%;
+    color: white;
+}

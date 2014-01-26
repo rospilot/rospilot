@@ -1,0 +1,38 @@
+<div class="row">
+  <div class="col-md-4 col-md-offset-8">
+    <h2>Snapshots</h2>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-7 col-md-offset-1">
+    <a href="" ng-click="take_picture(); $event.stopPropogation();">
+      <img ng-src="http://{{server_name}}:8080/stream?topic=/camera/image_raw">
+    </a>
+    <div style="padding-top:5px;">
+      <button type="button" class="btn btn-primary" ng-click='toggle_recording()'>
+        <span ng-hide="recording">
+          <i class="fa fa-video-camera" style="padding-right:7px;"> </i>Record
+        </span>
+        <span ng-show="recording">
+          <i class="fa fa-stop" style="padding-right:7px;"> </i>Stop
+        </span>
+      </button>
+      <button type="button" class="btn btn-primary" ng-click='take_picture()'>
+        <i class="fa fa-camera" style="padding-right:7px;"> </i>Take picture
+      </button>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="row" id="snapshots">
+      <div class="col-md-12" ng-repeat="obj in media.objs">
+        <div class="camera-thumbnail">
+          <i ng-if="obj.type == 'video'" class="fa fa-youtube-play fa-3x"></i>
+          <img ng-src="{{obj.url}}">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
