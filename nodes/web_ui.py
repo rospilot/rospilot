@@ -302,11 +302,13 @@ class WebUiNode:
             if self.recording:
                 rospy.logwarn("Can't start recording. We're already recording")
             self.recording = True
+            rospy.ServiceProxy('start_record')
 
     def stop_recording(self):
         with self.lock:
             if self.recording:
                 self.take_picture()
+                rospy.ServiceProxy('stop_record')
             else:
                 rospy.logwarn("Can't stop recording. We're not recording")
             self.recording = False
