@@ -179,6 +179,8 @@ class WebUiNode:
         self.pub_set_mode = rospy.Publisher('set_mode', rospilot.msg.BasicMode)
         self.pub_waypoints = rospy.Publisher('set_waypoints', rospilot.msg.Waypoints)
         self.tf_listener = None
+	self.start_record_proxy = rospy.ServiceProxy('start_record', std_srvs.srv.Empty)
+	self.stop_record_proxy 	= rospy.ServiceProxy('stop_record',  std_srvs.srv.Empty)
         rospy.Subscriber("basic_status",
                 rospilot.msg.BasicMode, self.handle_status)
         rospy.Subscriber("imuraw",
@@ -302,16 +304,12 @@ class WebUiNode:
             if self.recording:
                 rospy.logwarn("Can't start recording. We're already recording")
             self.recording = True
-            rospy.ServiceProxy('start_record')
+	    (self.start_record_proxy)()
 
     def stop_recording(self):
         with self.lock:
-            if self.recording:
-                self.take_picture()
-                rospy.ServiceProxy('stop_record')
-            else:
-                rospy.logwarn("Can't stop recording. We're not recording")
             self.recording = False
+	    (self.stop_record_proxy)()
 
     def take_picture(self):
         next_id = self.next_media_id()
