@@ -234,6 +234,7 @@ class WebUiNode:
         index = Index(self)
         index.api = API(self)
         cherrypy.tree.mount(index, config=conf)
+        cherrypy.log.screen = False
 
     def init(self):
         """Called after rospy.init_node()"""
