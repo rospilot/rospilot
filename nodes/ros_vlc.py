@@ -37,3 +37,15 @@ class VlcNode:
 
     def handle_stop_record(self):
         self.recorder.stop_record()
+
+    def run(self):
+        rospy.loginfo("Vlc Node Initialized and waiting...")
+        rospy.spin()
+
+if __name__ == '__main__':
+    # parser = OptionParser("rospilot.py <options>")
+    # parser.add_option(
+    #     "--baudrate", dest="baudrate",
+    #     type='int', help="serial port baud rate", default=115200)
+    node = VlcNode()
+    node.run()
