@@ -1,15 +1,42 @@
 <launch>
-	<node name="mavlink" pkg="rospilot" type="mavlink.py" respawn="false" output="screen" args="--baudrate=115200 --device=/dev/ardupilot --udp-export=127.0.0.1:8866" />
-	<node name="web_ui" pkg="rospilot" type="web_ui.py" respawn="false" output="screen" />
-	<node name="position_estimator" pkg="rospilot" type="position_estimator.py" 
-        respawn="false" output="screen" />
-    	<node name="odometry" pkg="rospilot" type="odometry.py" respawn="false" output="screen" />
-	<node name="vlc"
-	      pkg="rospilot"
-	      type="ros_vlc.py"
-	      respawn="false"
-	      output="screen"/>
-    <node pkg="tf" type="static_transform_publisher" name="px4flow_transform" args="0 0 0 -1.0471975512 0 3.14159265359 px4flow body 100" />
-	<!--node name="camera" pkg="usb_cam" type="usb_cam_node" respawn="false" output="screen" />
-	<node name="mjpeg" pkg="mjpeg_server" type="mjpeg_server" respawn="false" output="screen" /-->
+<node name="mavlink"
+      pkg="rospilot"
+      type="mavlink.py"
+      respawn="false"
+      output="screen"
+      args="--baudrate=115200 --device=/dev/ardupilot --udp-export=127.0.0.1:8866" />
+<node name="web_ui"
+      pkg="rospilot"
+      type="web_ui.py"
+      respawn="false"
+      output="screen" />
+<node name="position_estimator"
+      pkg="rospilot"
+      type="position_estimator.py" 
+             respawn="false"
+             output="screen" />
+<node name="odometry"
+      pkg="rospilot"
+      type="odometry.py"
+      respawn="false"
+      output="screen" />
+<node pkg="tf"
+      type="static_transform_publisher"
+      name="px4flow_transform"
+      args="0 0 0 -1.0471975512 0 3.14159265359 px4flow body 100" />
+<node name="vlc"
+      pkg="rospilot"
+      type="ros_vlc.py"
+      respawn="false"
+      output="screen"/>
+<node name="camera"
+      pkg="usb_cam"
+      type="usb_cam_node"
+      respawn="false"
+      output="screen" />
+<node name="mjpeg"
+      pkg="mjpeg_server"
+      type="mjpeg_server"
+      respawn="false"
+      output="screen" />
 </launch>

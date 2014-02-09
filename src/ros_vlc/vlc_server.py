@@ -48,8 +48,8 @@ class VlcRecorder:
   @example:
   recorder = VlcRecorder("http://0.0.0.0:8080", "/tmp/bordicon.wmv")
   '''
-  def __init__(self, mrl, dest_path):
-    self.sout         = ':sout=#standard{mux=wmv,dst=%s,access=file}' % (dest_path)
+  def __init__(self, mrl, dest_path, mux = "wmv"):
+    self.sout         = ':sout=#standard{mux=%s,dst=%s,access=file}' % (mux, dest_path)
     self.vlc_instance = vlc.Instance()
     self.vlc_media    = vlc.libvlc_media_new_location(self.vlc_instance, mrl)
     vlc.libvlc_media_add_option(self.vlc_media, self.sout)
