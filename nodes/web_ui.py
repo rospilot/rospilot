@@ -34,6 +34,7 @@ import sensor_msgs.msg
 from geometry_msgs.msg import Vector3
 import tf
 import urllib2
+import time
 from optparse import OptionParser
 
 STATIC_PATH = os.path.dirname(os.path.abspath(__file__))
