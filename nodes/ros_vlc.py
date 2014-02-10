@@ -31,9 +31,11 @@ class VlcNode:
     def handle_start_record(self, empty_message):
         date =  VlcNode.media_time()
         self.recorder.start_record("%s/vid.%s.mjpeg" % (self.media_path, date))
+        return std_srvs.srv.EmptyResponse()
 
     def handle_stop_record(self, empty_message):
         self.recorder.stop_record()
+        return std_srvs.srv.EmptyResponse()
 
     # NOTE: Not tested.
     def handle_take_snapshot(self, empty_message):
@@ -56,7 +58,7 @@ if __name__ == '__main__':
         "--input_stream",
         dest    = "input_stream",
         help    = "Media Resource Location of incoming stream",
-        default = "http://0.0.0.0:8080/stream?topic=/camera/image_raw")
+        default = "http://0.0.0.0:8080/stream?topic=/camera/image_raw/compressed")
     (opts, args) = parser.parse_args()
     print opts.media_path
     node = VlcNode(
