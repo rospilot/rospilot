@@ -31,9 +31,6 @@ import px_comm.msg
 import std_srvs.srv
 import geometry_msgs.msg
 import sensor_msgs.msg
-import cv_bridge
-import cv2
-import numpy
 from geometry_msgs.msg import Vector3
 import tf
 import urllib2
@@ -78,7 +75,7 @@ class API:
     @cherrypy.expose
     def camera(self, action):
         if cherrypy.request.method == 'GET':
-            url = 'http://localhost:8080/snapshot?topic=/camera/image_raw'
+            url = 'http://localhost:8080/snapshot?topic=/camera/image_raw/compressed'
             resp = urllib2.urlopen(url)
             cherrypy.response.headers['Content-Type'] = resp.info()['Content-Type']
             return resp.read()
@@ -202,8 +199,8 @@ class WebUiNode:
                 rospilot.msg.RCState, self.handle_rcstate)
         rospy.Subscriber('waypoints',
                 rospilot.msg.Waypoints, self.handle_waypoints)
-        rospy.Subscriber('camera/image_raw',
-                sensor_msgs.msg.Image, self.handle_image)
+        rospy.Subscriber('camera/image_raw/compressed',
+                sensor_msgs.msg.CompressedImage, self.handle_image)
         self.qualities = []
         self.distances = []
         self.odometry = None
@@ -313,18 +310,16 @@ class WebUiNode:
             (self.stop_record_proxy)()
 
     def take_picture(self):
-        next_id = self.next_media_id()
+        with self.lock:
+            next_id = self.next_media_id()
 
-        filename = "{0:05}.jpg".format(next_id)
-        path = "{0}/{1}".format(self.media_path, filename)
+            filename = "{0:05}.jpg".format(next_id)
+            path = "{0}/{1}".format(self.media_path, filename)
 
-        image = cv_bridge.CvBridge().imgmsg_to_cv(self.last_image,
-                                                    desired_encoding="bgr8")
-        # cv_bridge returns a cv2.cv.cvmat
-        image = numpy.asarray(image)
-        cv2.imwrite(path, image)
+            with open(path, 'w') as f:
+                f.write(self.last_image.data)
 
-        return filename
+            return filename
 
     def run(self):
         rospy.init_node('rospilot_webui')
