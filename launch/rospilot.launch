@@ -33,12 +33,15 @@
       args="--media_path=~/.rospilot/media" />
 <node name="camera"
       pkg="usb_cam"
-      type="usb_cam_node"
+      type="raw_usb_cam_node"
       respawn="false"
-      output="screen" />
+      output="screen">
+    <param name="image_width" value="960" />
+    <param name="image_height" value="720" />
+</node>
 <node name="mjpeg"
       pkg="mjpeg_server"
-      type="mjpeg_server"
+      type="raw_mjpeg_server"
       respawn="false"
       output="screen" />
 </launch>

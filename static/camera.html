@@ -7,7 +7,7 @@
 <div class="row">
   <div class="col-md-7 col-md-offset-1">
     <a href="" ng-click="take_picture(); $event.stopPropogation();">
-      <img ng-src="http://{{server_name}}:8080/stream?topic=/camera/image_raw">
+      <img width=640 height=480 ng-src="http://{{server_name}}:8080/stream?topic=/camera/image_raw/compressed">
     </a>
     <div style="padding-top:5px;">
       <button type="button" class="btn btn-primary" ng-click='toggle_recording()'>
