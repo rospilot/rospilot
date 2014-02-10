@@ -11,7 +11,7 @@ import os
 
 class VlcNode:
     def __init__(self, mrl, media_path):
-        self.recorder   = server.VlcRecorder( mrl = mrl, mux = "ts")
+        self.recorder   = server.VlcRecorder( mrl = mrl, mux = "wmv")
         self.media_path = os.path.expanduser(media_path)
 
         if not os.path.exists(self.media_path):

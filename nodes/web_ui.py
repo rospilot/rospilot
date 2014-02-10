@@ -296,9 +296,7 @@ class WebUiNode:
         self.pub_set_mode.publish(arm)
 
     def next_media_id(self):
-        files = os.listdir(self.media_path)
-        files = [img.split('.')[0] for img in files]
-        return max([int(img) for img in files]) + 1 if files else 0
+        return int(round(time.time() * 1000))
 
     def start_recording(self):
         with self.lock:

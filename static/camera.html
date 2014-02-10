@@ -28,8 +28,8 @@
     <div class="row" id="snapshots">
       <div class="col-md-12" ng-repeat="obj in media.objs">
         <div class="camera-thumbnail">
-          <i ng-if="obj.type == 'video'" class="fa fa-youtube-play fa-3x"></i>
-          <img ng-src="{{obj.url}}">
+          <a ng-if="obj.type == 'video'" class="fa fa-youtube-play fa-3x" ng-href="{{obj.url}}">
+          <img ng-if="obj.type == 'image'" ng-src="{{obj.url}}">
         </div>
       </div>
     </div>
