@@ -1,1 +1,1 @@
-libatlas-base-dev gfortran python-opencv libevent-dev ros-hydro-self-test ros-hydro-camera-info-manager ros-hydro-camera-info-manager-py
+libatlas-base-dev gfortran python-opencv libevent-dev ros-hydro-self-test ros-hydro-camera-info-manager ros-hydro-camera-info-manager-py libvlc5
