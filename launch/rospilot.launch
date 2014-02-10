@@ -9,7 +9,8 @@
       pkg="rospilot"
       type="web_ui.py"
       respawn="false"
-      output="screen" />
+      output="screen"
+      args="--media_path=~/.rospilot/media" />
 <node name="position_estimator"
       pkg="rospilot"
       type="position_estimator.py" 
@@ -28,7 +29,8 @@
       pkg="rospilot"
       type="ros_vlc.py"
       respawn="false"
-      output="screen"/>
+      output="screen"
+      args="--media_path=~/.rospilot/media" />
 <node name="camera"
       pkg="usb_cam"
       type="usb_cam_node"

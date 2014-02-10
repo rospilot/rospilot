@@ -134,7 +134,7 @@ class MavlinkNode:
         self.waypoint_read_in_progress = True
         while not rospy.is_shutdown():
             rospy.sleep(0.001)
-            msg = self.conn.recv_match(blocking=False)
+            msg = self.conn.recv_match(blocking=True)
             if not msg:
                 continue
             msg_type = msg.get_type()

@@ -48,18 +48,25 @@ class VlcRecorder:
   @example:
   recorder = VlcRecorder("http://0.0.0.0:8080", "/tmp/bordicon.wmv")
   '''
-  def __init__(self, mrl, dest_path, mux = "wmv"):
-    self.sout         = ':sout=#standard{mux=%s,dst=%s,access=file}' % (mux, dest_path)
+  def __init__(self, mrl, mux):
+    self.mux          = mux
     self.vlc_instance = vlc.Instance()
     self.vlc_media    = vlc.libvlc_media_new_location(self.vlc_instance, mrl)
-    vlc.libvlc_media_add_option(self.vlc_media, self.sout)
-    vlc.libvlc_media_add_option(self.vlc_media, ':snapshot-path=%s' % dest_path)
-    vlc.libvlc_media_add_option(self.vlc_media, ':snapshot-format=png')
-    self.vlc_player = vlc.libvlc_media_player_new_from_media(self.vlc_media)
+    self.vlc_player   = vlc.libvlc_media_player_new_from_media(self.vlc_media)
 
-  def start_record(self):
+  @classmethod
+  def generate_sout(self, mux, dest):
+    return ':sout=#standard{mux=%s,dst=%s,access=file}' % (mux, dest)
+
+  def start_record(self, dest):
+    vlc.libvlc_media_add_option(self.vlc_media,
+                                VlcRecorder.generate_sout(self.mux, dest))
     vlc.libvlc_media_player_play(self.vlc_player)
 
   def stop_record(self):
     vlc.libvlc_media_player_stop(self.vlc_player)
 
+  def take_snapshot(self, path, width, height):
+    vlc.libvlc_media_add_option(self.vlc_media, ':snapshot-path=%s' % path)
+    vlc.libvlc_media_add_option(self.vlc_media, ':snapshot-format=png')
+    vlc.libvlc_video_take_snapshot(self.vlc_player, mrl, width, height)

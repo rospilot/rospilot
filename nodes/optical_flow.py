@@ -191,7 +191,7 @@ class OpticalFlowNode:
                     bridge.cv_to_imgmsg(cv2.cv.fromarray(debug_image), "bgr8"))
 
 if __name__ == "__main__":
-    parser = OptionParser("rospilot.py <options>")
+    parser = OptionParser("optical_flow.py <options>")
     parser.add_option("--video_device_num", dest="video_device_num",
                       type='int', help="device number", default=0)
     parser.add_option("--debug", action="store_true", dest="debug",
@@ -200,13 +200,3 @@ if __name__ == "__main__":
     node = OpticalFlowNode(video_device_num=opts.video_device_num,
                            debug=opts.debug)
     node.run()
-
-
-
-
-
-
-
-
-
-
