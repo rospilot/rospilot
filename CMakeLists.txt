@@ -32,8 +32,6 @@ add_message_files(
   Waypoint.msg
   Waypoints.msg
   IMURaw.msg
-  OpticalFlow.msg
-  PositionEstimate.msg
 )
 
 ## Generate services in the 'srv' folder

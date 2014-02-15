@@ -27,12 +27,10 @@ import json
 import cherrypy
 import threading
 import os
-import px_comm.msg
 import std_srvs.srv
 import geometry_msgs.msg
 import sensor_msgs.msg
 from geometry_msgs.msg import Vector3
-import tf
 import urllib2
 import time
 from optparse import OptionParser
@@ -92,19 +90,8 @@ class API:
                 return json.dumps({"error": "bad action"})
 
     @cherrypy.expose
-    def position_estimate(self):
-        position = _vector3_to_dict(node.position_estimate.position if
-                                    node.position_estimate else Vector3())
-        velocity = _vector3_to_dict(node.position_estimate.velocity if
-                                    node.position_estimate else Vector3())
-        return json.dumps({'position': position, 'velocity': velocity})
-
-    @cherrypy.expose
     def position(self):
         ground_distance = 0
-        if node.distances:
-            distances = node.distances[-10:]
-            ground_distance = sum(distances) / max(1, len(distances))
 
         return json.dumps({
             'latitude': node.gps.latitude if node.gps else 1,
@@ -125,22 +112,6 @@ class API:
             waypoints = data.get('waypoints', [])
             waypoints = map(lambda x: rospilot.msg.Waypoint(**x), waypoints)
             node.pub_waypoints.publish(waypoints)
-
-    @cherrypy.expose
-    def optical_flow(self):
-        if cherrypy.request.method == 'GET':
-            quality = 0
-            if node.qualities:
-                qualities = node.qualities[-10:]
-                quality = sum(qualities) / max(1, len(qualities))
-            return json.dumps({
-                'x': node.odometry.x if node.odometry else 0,
-                'y': node.odometry.y if node.odometry else 0,
-                'quality': quality})
-        elif cherrypy.request.method == 'POST':
-            data = json.loads(cherrypy.request.body.read())
-            if data.get('x', 1) == 0 and data.get('y', 1) == 0:
-                node.reset_odometry()
 
     @cherrypy.expose
     def attitude(self):
@@ -174,44 +145,29 @@ class Index:
 
 class WebUiNode:
     def __init__(self, media_path):
-        self.reset_odometry = rospy.ServiceProxy('reset_odometry', std_srvs.srv.Empty)
         self.pub_set_mode = rospy.Publisher('set_mode', rospilot.msg.BasicMode)
         self.pub_waypoints = rospy.Publisher('set_waypoints', rospilot.msg.Waypoints)
-        self.tf_listener = None
         self.start_record_proxy = rospy.ServiceProxy('start_record', std_srvs.srv.Empty)
         self.stop_record_proxy 	= rospy.ServiceProxy('stop_record',  std_srvs.srv.Empty)
         rospy.Subscriber("basic_status",
                 rospilot.msg.BasicMode, self.handle_status)
         rospy.Subscriber("imuraw",
                 rospilot.msg.IMURaw, self.handle_imu)
-        rospy.Subscriber("position_estimate",
-                rospilot.msg.PositionEstimate, self.handle_position_estimate)
         rospy.Subscriber("gpsraw",
                 rospilot.msg.GPSRaw, self.handle_gps)
         rospy.Subscriber("attitude",
                 rospilot.msg.Attitude, self.handle_attitude)
-        rospy.Subscriber("px4flow/opt_flow",
-                px_comm.msg.OpticalFlow, self.handle_px4flow)
-        rospy.Subscriber('odometry',
-                geometry_msgs.msg.Point, self.handle_odometry)
-        rospy.Subscriber('op_control',
-                geometry_msgs.msg.Vector3, self.handle_control)
         rospy.Subscriber('rcstate',
                 rospilot.msg.RCState, self.handle_rcstate)
         rospy.Subscriber('waypoints',
                 rospilot.msg.Waypoints, self.handle_waypoints)
         rospy.Subscriber('camera/image_raw/compressed',
                 sensor_msgs.msg.CompressedImage, self.handle_image)
-        self.qualities = []
-        self.distances = []
-        self.odometry = None
-        self.control = None
         self.rcstate = None
         self.lock = threading.Lock()
         self.armed = None
         self.gps = None
         self.imu = None
-        self.position_estimate = None
         self.attitude = None
         self.waypoints = []
         self.last_image = None
@@ -239,7 +195,7 @@ class WebUiNode:
 
     def init(self):
         """Called after rospy.init_node()"""
-        self.tf_listener = tf.TransformListener()
+        pass
 
     def handle_image(self, data):
         with self.lock:
@@ -253,21 +209,9 @@ class WebUiNode:
         with self.lock:
             self.waypoints = data.waypoints
 
-    def handle_position_estimate(self, data):
-        with self.lock:
-            self.position_estimate = data
-
-    def handle_odometry(self, data):
-        with self.lock:
-            self.odometry = data
-
     def handle_rcstate(self, data):
         with self.lock:
             self.rcstate = data
-
-    def handle_control(self, data):
-        with self.lock:
-            self.control = data
 
     def handle_status(self, data):
         with self.lock:
@@ -280,15 +224,6 @@ class WebUiNode:
     def handle_gps(self, data):
         with self.lock:
             self.gps = data
-
-    def handle_px4flow(self, data):
-        with self.lock:
-            self.qualities.append(data.quality)
-            self.distances.append(data.ground_distance)
-            while len(self.qualities) > 100:
-                self.qualities.pop(0)
-            while len(self.distances) > 100:
-                self.distances.pop(0)
 
     def send_arm(self, arm):
         self.pub_set_mode.publish(arm)

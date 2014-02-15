@@ -24,14 +24,6 @@
          </button>
         </div>
       </li>
-
-      <li>
-        <div ng-controller='optical_flow'>
-          <button type="button" class="btn" ng-click='reset()'>
-            Reset Optical Flow
-          </button>
-        </div>
-      </li>
     </ul>
   </div>
 
@@ -70,21 +62,11 @@
       </div>
       <div ng-controller='position'>
         <div>Raw Lat: {{data.latitude}}, Lng: {{data.longitude}}</div>
-        <div>Estimated Position: x: {{estimate.position.x|number:3}}m, 
-          y: {{estimate.position.y|number:3}}m,
-          z: {{estimate.position.z|number:3}}m</div>
-        <div>Estimated Velocity: x: {{estimate.velocity.x|number:3}}m/s, 
-          y: {{estimate.velocity.y|number:3}}m/s,
-          z: {{estimate.velocity.z|number:3}}m/s</div>
         <div>Ground distance: {{data.ground_distance|number:3}}m</div>
       </div>
 
       <div ng-controller='rcstate'>
         RC channels: {{data.channel}}
-      </div>
-
-      <div ng-controller='optical_flow'>
-        Optical Flow: x: {{data.x}}, y: {{data.y}}, quality: {{data.quality}}
       </div>
 
       <div ng-controller='imu'>

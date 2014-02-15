@@ -11,20 +11,6 @@
       respawn="false"
       output="screen"
       args="--media_path=~/.rospilot/media" />
-<node name="position_estimator"
-      pkg="rospilot"
-      type="position_estimator.py" 
-             respawn="false"
-             output="screen" />
-<node name="odometry"
-      pkg="rospilot"
-      type="odometry.py"
-      respawn="false"
-      output="screen" />
-<node pkg="tf"
-      type="static_transform_publisher"
-      name="px4flow_transform"
-      args="0 0 0 -1.0471975512 0 3.14159265359 px4flow body 100" />
 <node name="vlc"
       pkg="rospilot"
       type="ros_vlc.py"

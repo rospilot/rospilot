@@ -36,9 +36,6 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .factory('Status', function ($resource) {
       return $resource('api/status');
   })
-.factory('PositionEstimate', function ($resource) {
-      return $resource('api/position_estimate');
-  })
 .factory('Position', function ($resource) {
       return $resource('api/position');
   })
@@ -53,9 +50,6 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   })
 .factory('Waypoints', function ($resource) {
       return $resource('api/waypoints');
-  })
-.factory('OpticalFlow', function ($resource) {
-      return $resource('api/optical_flow');
   })
 .controller('rospilot', function ($scope, $route) {
     $scope.$route = $route;
@@ -106,20 +100,6 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       });
   })();
 })
-.controller('optical_flow', function ($scope, $timeout, OpticalFlow) {
-  $scope.data = {'x': 0, 'y': 0, 'quality': 0};
-  $scope.reset = function() {
-      $scope.data.x = 0;
-      $scope.data.y = 0;
-      $scope.data.$save();
-  };
-  (function tick() {
-      OpticalFlow.get({}, function(data) {
-          $scope.data = data;
-          $timeout(tick, 1000);
-      });
-  })();
-})
 .controller('status', function ($scope, $timeout, Status) {
   $scope.arm = function() {
       $scope.data.armed = true;
@@ -136,7 +116,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       });
   })();
 })
-.controller('position', function ($scope, $timeout, Position, PositionEstimate, Waypoints) {
+.controller('position', function ($scope, $timeout, Position, Waypoints) {
   $scope.waypoint_data = {'waypoints': []};
   // If we don't have an internet connection, Google Maps won't have loaded
   if (typeof(google) != 'undefined' && document.getElementById('map-canvas')) {
@@ -205,18 +185,6 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
               $scope.waypoint.setPosition(pos);
           }
           $timeout(tick3, 1000);
-      });
-  })();
-
-  (function tick2() {
-      PositionEstimate.get({}, function(estimate) {
-          $scope.estimate = estimate;
-          if ($('#position_z_chart').length > 0) {
-            var series = $('#position_z_chart').highcharts().series[0];
-            var x = (new Date()).getTime();
-            series.addPoint([x, estimate.position.z], true, true);
-          }
-          $timeout(tick2, 100);
       });
   })();
 
@@ -384,22 +352,6 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
         enabled: false
     },
     series: [
-    {
-        name: 'estimate',
-        data: (function() {
-            var data = [],
-                time = (new Date()).getTime(),
-                i;
-
-            for (i = -99; i <= 0; i++) {
-                data.push({
-                    x: time + i * 1000,
-                    y: 0
-                });
-            }
-            return data;
-        })()
-    },
     {
         name: 'data',
         color: 'red',
