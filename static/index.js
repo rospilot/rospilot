@@ -23,34 +23,77 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     .when("/flight_control", {templateUrl: 'static/flight_control.html', controller:'position'})
     .otherwise({redirectTo:"/flight_control"});
 })
-.factory('Camera', function ($resource) {
-      return $resource('api/camera', null, 
-          {take_picture: {method: "POST", params:{'action': 'take_picture'}},
-           start_recording: {method: "POST", params: {"action": "record"}},
-           stop_recording: {method: "POST", params: {'action': 'stop'}}
-          });
-  })
+.factory('ROS', function() {
+    var url = 'ws://' + window.location.hostname + ':8088';
+    var ros = new ROSLIB.Ros({url: url});
+    return ros;
+})
+.factory('$rosservice', function(ROS) {
+    return function(service, type) {
+        var service = new ROSLIB.Service({
+            ros : ROS,
+            name : service,
+            messageType : type
+        });
+        return function(request, callback) {
+            if (typeof request === 'undefined') {
+                request = new ROSLIB.ServiceRequest({});
+            }
+            if (typeof callback === 'undefined') {
+                callback = function(result) {};
+            }
+            
+            service.callService(request, callback);
+        };
+    };
+})
+.factory('$rostopic', function(ROS) {
+    return function(topic, type) {
+        return new ROSLIB.Topic({
+            ros : ROS,
+            name : topic,
+            messageType : type
+        });
+    };
+})
+.factory('Camera', function ($rosservice) {
+    return {
+        take_picture: $rosservice('/take_picture', 'std_srvs/Empty'),
+        start_recording: $rosservice('/start_record', 'std_srvs/Empty'),
+        stop_recording: $rosservice('/stop_record', 'std_srvs/Empty')
+    };
+})
 .factory('Media', function ($resource) {
       return $resource('api/media');
-  })
-.factory('Status', function ($resource) {
-      return $resource('api/status');
-  })
-.factory('Position', function ($resource) {
-      return $resource('api/position');
-  })
-.factory('Attitude', function ($resource) {
-      return $resource('api/attitude');
-  })
-.factory('RCState', function ($resource) {
-      return $resource('api/rcstate');
-  })
-.factory('IMU', function ($resource) {
-      return $resource('api/imu');
-  })
-.factory('Waypoints', function ($resource) {
-      return $resource('api/waypoints');
-  })
+})
+.factory('Status', function ($rostopic, $rosservice) {
+      return {
+          subscribe: function(callback) {
+              $rostopic('/basic_status', 'rospilot/BasicStatus').subscribe(callback);
+          },
+          set: $rosservice('/set_mode', 'rospilot/SetBasicMode')
+      };
+})
+.factory('Position', function ($rostopic) {
+      return $rostopic('/gpsraw', 'rospilot/GPSRaw');
+})
+.factory('Attitude', function ($rostopic) {
+      return $rostopic('/attitude', 'rospilot/Attitude');
+})
+.factory('RCState', function ($rostopic) {
+      return $rostopic('/rcstate', 'rospilot/RCState');
+})
+.factory('IMU', function ($rostopic) {
+      return $rostopic('/imuraw', 'rospilot/IMURaw');
+})
+.factory('Waypoints', function ($rostopic, $rosservice) {
+      return {
+          subscribe: function(callback) {
+              $rostopic('/waypoints', 'rospilot/Waypoints').subscribe(callback);
+          },
+          set: $rosservice('/set_waypoints', 'rospilot/SetWaypoints')
+      };
+})
 .controller('rospilot', function ($scope, $route) {
     $scope.$route = $route;
 })
@@ -58,63 +101,55 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   $scope.data = {'waypoints': []};
   $scope.come_here = function() {
       navigator.geolocation.getCurrentPosition(function(location){
-          $scope.data.waypoints = [{
+          var waypoints = new ROSLIB.ServiceRequest({
+              waypoints: [{
               'latitude': location.coords.latitude,
               'longitude': location.coords.longitude,
               'altitude': 5.0
-          }];
-          $scope.data.$save();
+          }]});
+          Waypoints.set(waypoints);
       });
   };
-  (function tick() {
-      Waypoints.get({}, function(waypoints) {
-          $scope.data = waypoints;
-          $timeout(tick, 1000);
-      });
-  })();
+  Waypoints.subscribe(function(waypoints) {
+      $scope.data = waypoints;
+  });
 })
-.controller('rcstate', function ($scope, $timeout, RCState) {
+.controller('rcstate', function ($scope, RCState) {
   $scope.data = {'channel': []};
-  (function tick() {
-      RCState.get({}, function(rcstate) {
-          $scope.data = rcstate;
-          $timeout(tick, 1000);
-      });
-  })();
+  RCState.subscribe(function(rcstate) {
+      $scope.data = rcstate;
+  });
 })
-.controller('imu', function ($scope, $timeout, IMU) {
+.controller('imu', function ($scope, IMU) {
   $scope.data = {
       'gyro': {'x': 0, 'y': 0, 'z': 0},
       'accel': {'x': 0, 'y': 0, 'z': 0},
       'mag': {'x': 0, 'y': 0, 'z': 0}
   };
-  (function tick() {
-      IMU.get({}, function(data) {
-          $scope.data = data;
-          if ($('#accel_z_chart').length > 0) {
-            var series = $('#accel_z_chart').highcharts().series[0];
-            var x = (new Date()).getTime();
-            series.addPoint([x, data.accel.z], true, true);
-          }
-          $timeout(tick, 1000);
-      });
-  })();
+  IMU.subscribe(function(data) {
+      $scope.data = data;
+      if ($('#accel_z_chart').length > 0) {
+        var series = $('#accel_z_chart').highcharts().series[0];
+        var x = (new Date()).getTime();
+        series.addPoint([x, data.accel.z], true, true);
+      }
+  });
 })
 .controller('status', function ($scope, $timeout, Status) {
+  $scope.data = {armed: false};
   $scope.arm = function() {
-      $scope.data.armed = true;
-      $scope.data.$save();
+      Status.set(new ROSLIB.ServiceRequest({
+          armed: true
+      }));
   };
   $scope.disarm = function() {
-      $scope.data.armed = false;
-      $scope.data.$save();
+      Status.set(new ROSLIB.ServiceRequest({
+          armed: false
+      }));
   };
-  (function tick() {
-      Status.get({}, function(status) {
-          $scope.data = status;
-          $timeout(tick, 1000);
-      });
-  })();
+  Status.subscribe(function(status) {
+      $scope.data = status;
+  });
 })
 .controller('position', function ($scope, $timeout, Position, Waypoints) {
   $scope.waypoint_data = {'waypoints': []};
@@ -175,39 +210,28 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       $timeout.cancel($scope.longpress_promise);
   });
   
-  (function tick3() {
-      Waypoints.get({}, function(data) {
-          $scope.waypoint_data = data;
-          if (data.waypoints.length > 0) {
-              var lat = data.waypoints[0].latitude;
-              var lng = data.waypoints[0].longitude;
-              var pos = new google.maps.LatLng(lat, lng);
-              $scope.waypoint.setPosition(pos);
-          }
-          $timeout(tick3, 1000);
-      });
-  })();
+  Waypoints.subscribe(function(data) {
+      $scope.waypoint_data = data;
+      if (data.waypoints.length > 0) {
+          var lat = data.waypoints[0].latitude;
+          var lng = data.waypoints[0].longitude;
+          var pos = new google.maps.LatLng(lat, lng);
+          $scope.waypoint.setPosition(pos);
+      }
+  });
 
-  (function tick() {
-      Position.get({}, function(position) {
-          $scope.data = position;
-          if (typeof($scope.map) != 'undefined') {
-            // XXX: This should be moved
-            var pos = new google.maps.LatLng(position.latitude,
-                                            position.longitude);
-            $scope.marker.setPosition(pos);
-            $scope.map.setCenter(position.latitude, position.longitude);
-          }
-          if ($('#position_z_chart').length > 0) {
-            var series = $('#position_z_chart').highcharts().series[1];
-            var x = (new Date()).getTime();
-            series.addPoint([x, position.ground_distance], true, true);
-          }
-          $timeout(tick, 100);
-      });
-  })();
+  Position.subscribe(function(position) {
+      $scope.data = position;
+      if (typeof($scope.map) != 'undefined') {
+        // XXX: This should be moved
+        var pos = new google.maps.LatLng(position.latitude,
+                                        position.longitude);
+        $scope.marker.setPosition(pos);
+        $scope.map.setCenter(position.latitude, position.longitude);
+      }
+  });
 })
-.controller('attitude', function ($scope, $timeout, Attitude) {
+.controller('attitude', function ($scope, Attitude) {
   var compass = document.getElementById("compass");
   var attitude_svg = document.getElementById("attitude_svg");
   var needle = null;
@@ -226,33 +250,30 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   });
   $scope.data = {'roll': 0, 'pitch': 0, 'yaw': 0};
 
-  (function tick() {
-      Attitude.get({}, function(attitude) {
-          if (needle != null) {
-              var x = needle.getBBox().width / 2.0;
-              var y = needle.getBBox().height / 2.0;
-              var yaw = attitude.yaw * 180 / Math.PI;
-              needle.setAttribute("transform", 
-                  "rotate(" + -yaw + " " + x + " " + y + ") "
-                  + needle_translate);
-          }
+  Attitude.subscribe(function(attitude) {
+      if (needle != null) {
+          var x = needle.getBBox().width / 2.0;
+          var y = needle.getBBox().height / 2.0;
+          var yaw = attitude.yaw * 180 / Math.PI;
+          needle.setAttribute("transform", 
+              "rotate(" + -yaw + " " + x + " " + y + ") "
+              + needle_translate);
+      }
 
-          if (roll_gauge != null) {
-              var x = roll_needle.getBBox().width / 2.0;
-              var y = roll_needle.getBBox().height / 2.0;
-              var roll = -attitude.roll * 180 / Math.PI;
-              var pitch = attitude.pitch * roll_gauge.getBBox().height / Math.PI;
-              roll_needle.setAttribute("transform", 
-                  "rotate(" + roll + " " + x + " " + y + ")");
-              roll_gauge.setAttribute("transform", 
-                  "rotate(" + roll + " " + x + " " + y + ") " +
-                  roll_gauge_translate + " translate(0 " + pitch + ")");
-          }
+      if (roll_gauge != null) {
+          var x = roll_needle.getBBox().width / 2.0;
+          var y = roll_needle.getBBox().height / 2.0;
+          var roll = -attitude.roll * 180 / Math.PI;
+          var pitch = attitude.pitch * roll_gauge.getBBox().height / Math.PI;
+          roll_needle.setAttribute("transform", 
+              "rotate(" + roll + " " + x + " " + y + ")");
+          roll_gauge.setAttribute("transform", 
+              "rotate(" + roll + " " + x + " " + y + ") " +
+              roll_gauge_translate + " translate(0 " + pitch + ")");
+      }
 
-          $scope.data = attitude;
-          $timeout(tick, 1000);
-      });
-  })();
+      $scope.data = attitude;
+  });
 })
 .controller('graphs', function($scope) {
   Highcharts.setOptions({
@@ -315,61 +336,6 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
         })()
     }]
   });
-  $('#position_z_chart').highcharts({
-    chart: {
-        type: 'spline',
-        animation: false,
-        marginRight: 10,
-    },
-    title: {
-        text: 'Altitude'
-    },
-    xAxis: {
-        type: 'datetime',
-        tickPixelInterval: 150
-    },
-    yAxis: {
-        title: {
-            text: 'Value'
-        },
-        plotLines: [{
-            value: 0,
-            width: 1,
-            color: '#808080'
-        }]
-    },
-    tooltip: {
-        formatter: function() {
-                return '<b>'+ this.series.name +'</b><br/>'+
-                Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
-                Highcharts.numberFormat(this.y, 2);
-        }
-    },
-    legend: {
-        enabled: false
-    },
-    exporting: {
-        enabled: false
-    },
-    series: [
-    {
-        name: 'data',
-        color: 'red',
-        data: (function() {
-            var data = [],
-                time = (new Date()).getTime(),
-                i;
-
-            for (i = -99; i <= 0; i++) {
-                data.push({
-                    x: time + i * 1000,
-                    y: 0
-                });
-            }
-            return data;
-        })()
-    }]
-  });
 })
 .controller('camera', function($scope, $timeout, Media, Camera) {
   $scope.media = {'objs': []};
@@ -384,9 +350,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   })();
 
   $scope.server_name = window.location.hostname;
-  $scope.take_picture = function() {
-    Camera.take_picture();
-  };
+  $scope.take_picture = Camera.take_picture;
 
   $scope.recording = false;
   $scope.toggle_recording = function() {
@@ -396,7 +360,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       Camera.start_recording();
     }
     $scope.recording = !$scope.recording;
-  }
+  };
 })
 .directive('activeClass', function($location) {
     return {

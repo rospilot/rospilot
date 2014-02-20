@@ -19,18 +19,13 @@ limitations under the License.
 '''
 
 import roslib; roslib.load_manifest('rospilot')
-import rospilot
 import rospy
-from pymavlink import mavutil
-import rospilot.msg
 import json
 import cherrypy
 import threading
 import os
 import std_srvs.srv
-import geometry_msgs.msg
 import sensor_msgs.msg
-from geometry_msgs.msg import Vector3
 import urllib2
 import time
 from optparse import OptionParser
@@ -41,23 +36,9 @@ STATIC_PATH = os.path.join(STATIC_PATH, "../static")
 PORT_NUMBER = 8085
 
 
-def _vector3_to_dict(vec):
-    return {'x': vec.x, 'y': vec.y, 'z': vec.z}
-
-
-class API:
+class API(object):
     def __init__(self, node):
         self.node = node
-
-    @cherrypy.expose
-    def imu(self):
-        gyro = _vector3_to_dict(node.imu.gyro if node.imu else Vector3())
-        accel = _vector3_to_dict(node.imu.accel if node.imu else Vector3())
-        mag = _vector3_to_dict(node.imu.mag if node.imu else Vector3())
-        return json.dumps({
-            'gyro': gyro,
-            'accel': accel,
-            'mag': mag})
 
     @cherrypy.expose
     def media(self):
@@ -73,105 +54,27 @@ class API:
 
     @cherrypy.expose
     def camera(self, action):
-        if cherrypy.request.method == 'GET':
-            url = 'http://localhost:8080/snapshot?topic=/camera/image_raw/compressed'
-            resp = urllib2.urlopen(url)
-            cherrypy.response.headers['Content-Type'] = resp.info()['Content-Type']
-            return resp.read()
-        elif cherrypy.request.method == 'POST':
-            if action == 'take_picture':
-                name = self.node.take_picture()
-                return json.dumps({'url': '/media/' + name})
-            elif action == 'record':
-                self.node.start_recording()
-            elif action == 'stop':
-                self.node.stop_recording()
-            else:
-                return json.dumps({"error": "bad action"})
-
-    @cherrypy.expose
-    def position(self):
-        ground_distance = 0
-
-        return json.dumps({
-            'latitude': node.gps.latitude if node.gps else 1,
-            'longitude': node.gps.longitude if node.gps else 1,
-            'ground_distance': ground_distance})
-
-    @cherrypy.expose
-    def waypoints(self):
-        if cherrypy.request.method == 'GET':
-            waypoints = []
-            for waypoint in node.waypoints:
-                waypoints.append({'latitude': waypoint.latitude,
-                                'longitude': waypoint.longitude,
-                                'altitude': waypoint.altitude})
-            return json.dumps({'waypoints': waypoints})
-        elif cherrypy.request.method == 'POST':
-            data = json.loads(cherrypy.request.body.read())
-            waypoints = data.get('waypoints', [])
-            waypoints = map(lambda x: rospilot.msg.Waypoint(**x), waypoints)
-            node.pub_waypoints.publish(waypoints)
-
-    @cherrypy.expose
-    def attitude(self):
-        return json.dumps({
-            'roll': node.attitude.roll if node.attitude else 0,
-            'pitch': node.attitude.pitch if node.attitude else 0,
-            'yaw': node.attitude.yaw if node.attitude else 0})
-
-    @cherrypy.expose
-    def rcstate(self):
-        return json.dumps({
-            'channel': node.rcstate.channel if node.rcstate else []})
-
-    @cherrypy.expose
-    def status(self):
-        if cherrypy.request.method == 'GET':
-            return json.dumps({'armed': node.armed})
-        elif cherrypy.request.method == 'POST':
-            data = json.loads(cherrypy.request.body.read())
-            node.send_arm(data['armed'])
+        url = 'http://localhost:8080/snapshot?topic=/camera/image_raw/compressed'
+        resp = urllib2.urlopen(url)
+        cherrypy.response.headers['Content-Type'] = resp.info()['Content-Type']
+        return resp.read()
 
 
-class Index:
-    def __init__(self, node):
-        self.node = node
-
+class Index(object):
     @cherrypy.expose
     def index(self):
         return open(os.path.join(STATIC_PATH, "index.html"))
 
 
-class WebUiNode:
+class WebUiNode(object):
     def __init__(self, media_path):
-        self.pub_set_mode = rospy.Publisher('set_mode', rospilot.msg.BasicMode)
-        self.pub_waypoints = rospy.Publisher('set_waypoints', rospilot.msg.Waypoints)
-        self.start_record_proxy = rospy.ServiceProxy('start_record', std_srvs.srv.Empty)
-        self.stop_record_proxy 	= rospy.ServiceProxy('stop_record',  std_srvs.srv.Empty)
-        rospy.Subscriber("basic_status",
-                rospilot.msg.BasicMode, self.handle_status)
-        rospy.Subscriber("imuraw",
-                rospilot.msg.IMURaw, self.handle_imu)
-        rospy.Subscriber("gpsraw",
-                rospilot.msg.GPSRaw, self.handle_gps)
-        rospy.Subscriber("attitude",
-                rospilot.msg.Attitude, self.handle_attitude)
-        rospy.Subscriber('rcstate',
-                rospilot.msg.RCState, self.handle_rcstate)
-        rospy.Subscriber('waypoints',
-                rospilot.msg.Waypoints, self.handle_waypoints)
         rospy.Subscriber('camera/image_raw/compressed',
                 sensor_msgs.msg.CompressedImage, self.handle_image)
-        self.rcstate = None
+        rospy.Service('take_picture',
+                      std_srvs.srv.Empty,
+                      self.take_picture)
         self.lock = threading.Lock()
-        self.armed = None
-        self.gps = None
-        self.imu = None
-        self.attitude = None
-        self.waypoints = []
         self.last_image = None
-        self.recording = False
         self.media_path = os.path.expanduser(media_path)
         if not os.path.exists(self.media_path):
             os.makedirs(self.media_path)
@@ -188,64 +91,18 @@ class WebUiNode:
                 'tools.staticdir.dir': self.media_path
             }
         }
-        index = Index(self)
+        index = Index()
         index.api = API(self)
         cherrypy.tree.mount(index, config=conf)
         cherrypy.log.screen = False
-
-    def init(self):
-        """Called after rospy.init_node()"""
-        pass
 
     def handle_image(self, data):
         with self.lock:
             self.last_image = data
 
-    def handle_attitude(self, data):
+    def take_picture(self, request):
         with self.lock:
-            self.attitude = data
-
-    def handle_waypoints(self, data):
-        with self.lock:
-            self.waypoints = data.waypoints
-
-    def handle_rcstate(self, data):
-        with self.lock:
-            self.rcstate = data
-
-    def handle_status(self, data):
-        with self.lock:
-            self.armed = data.armed
-
-    def handle_imu(self, data):
-        with self.lock:
-            self.imu = data
-
-    def handle_gps(self, data):
-        with self.lock:
-            self.gps = data
-
-    def send_arm(self, arm):
-        self.pub_set_mode.publish(arm)
-
-    def next_media_id(self):
-        return int(round(time.time() * 1000))
-
-    def start_recording(self):
-        with self.lock:
-            if self.recording:
-                rospy.logwarn("Can't start recording. We're already recording")
-            self.recording = True
-            (self.start_record_proxy)()
-
-    def stop_recording(self):
-        with self.lock:
-            self.recording = False
-            (self.stop_record_proxy)()
-
-    def take_picture(self):
-        with self.lock:
-            next_id = self.next_media_id()
+            next_id = int(round(time.time() * 1000))
 
             filename = "{0:05}.jpg".format(next_id)
             path = "{0}/{1}".format(self.media_path, filename)
@@ -253,11 +110,8 @@ class WebUiNode:
             with open(path, 'w') as f:
                 f.write(self.last_image.data)
 
-            return filename
-
     def run(self):
         rospy.init_node('rospilot_webui')
-        self.init()
         rospy.loginfo("Web UI is running")
         cherrypy.engine.start()
         rospy.spin()

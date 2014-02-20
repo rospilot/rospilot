@@ -25,7 +25,6 @@ catkin_python_setup()
 add_message_files(
   FILES
   Attitude.msg
-  BasicMode.msg
   BasicStatus.msg
   RCState.msg
   GPSRaw.msg
@@ -35,11 +34,11 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  SetBasicMode.srv
+  SetWaypoints.srv
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

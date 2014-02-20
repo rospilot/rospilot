@@ -24,10 +24,14 @@
       output="screen">
     <param name="image_width" value="960" />
     <param name="image_height" value="720" />
+    <param name="video_device" value="/dev/video6" />
 </node>
 <node name="mjpeg"
       pkg="mjpeg_server"
       type="raw_mjpeg_server"
       respawn="false"
       output="screen" />
+<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
+     <arg name="port" value="8088"/>
+</include>
 </launch>

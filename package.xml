@@ -56,6 +56,7 @@
   <run_depend>opencv2</run_depend>
   <run_depend>mjpeg_server</run_depend>
   <run_depend>usb_cam</run_depend>
+  <run_depend>rosbridge_suite</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

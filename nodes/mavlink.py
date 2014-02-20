@@ -25,6 +25,7 @@ import rospilot
 
 import rospy
 import rospilot.msg
+import rospilot.srv
 from pymavlink import mavutil
 from geometry_msgs.msg import Vector3
 from optparse import OptionParser
@@ -46,12 +47,14 @@ class MavlinkNode:
                                                 rospilot.msg.BasicStatus)
         self.pub_waypoints = rospy.Publisher('waypoints',
                                                 rospilot.msg.Waypoints)
-        rospy.Subscriber("set_mode", rospilot.msg.BasicMode,
-                         self.handle_set_mode)
         rospy.Subscriber("set_rc", rospilot.msg.RCState,
                          self.handle_set_rc)
-        rospy.Subscriber("set_waypoints", rospilot.msg.Waypoints,
-                         self.handle_set_waypoints)
+        rospy.Service('set_waypoints',
+                      rospilot.srv.SetWaypoints,
+                      self.handle_set_waypoints)
+        rospy.Service('set_mode',
+                      rospilot.srv.SetBasicMode,
+                      self.handle_set_mode)
         self.allow_control = allow_control.lower() in ["true", "1"]
         self.enable_control = False
         # Safety, in case radio has control enabled on start-up
@@ -85,6 +88,8 @@ class MavlinkNode:
                 self.conn.target_component,
                 len(self.waypoint_buffer))
 
+        return rospilot.srv.SetWaypointsResponse()
+
     def handle_set_rc(self, message):
         if self.allow_control and self.enable_control and \
            self.enable_control_has_been_false:
@@ -115,6 +120,8 @@ class MavlinkNode:
         self.conn.mav.rc_channels_override_send(
             self.conn.target_system,
             self.conn.target_component, 0, 0, 0, 0, 0, 0, 0, 0)
+
+        return rospilot.srv.SetBasicModeResponse()
 
     def run(self):
         rospy.init_node('rospilot_mavlink')
