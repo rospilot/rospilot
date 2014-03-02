@@ -18,7 +18,7 @@
       output="screen"
       args="--media_path=~/.rospilot/media" />
 <node name="camera"
-      pkg="usb_cam"
+      pkg="rospilot_deps"
       type="raw_usb_cam_node"
       respawn="false"
       output="screen">
@@ -27,7 +27,7 @@
     <param name="video_device" value="/dev/video6" />
 </node>
 <node name="mjpeg"
-      pkg="mjpeg_server"
+      pkg="rospilot_deps"
       type="raw_mjpeg_server"
       respawn="false"
       output="screen" />
