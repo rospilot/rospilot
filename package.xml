@@ -55,6 +55,7 @@
   <run_depend>rospilot_deps</run_depend>
   <run_depend>rosbridge_suite</run_depend>
   <run_depend>python-cherrypy</run_depend>
+  <run_depend>python-pymavlink</run_depend>
   <run_depend>libvlc</run_depend>
 
 
