@@ -24,7 +24,7 @@
       output="screen">
     <param name="image_width" value="960" />
     <param name="image_height" value="720" />
-    <param name="video_device" value="/dev/video2" />
+    <param name="video_device" value="/dev/video1" />
 </node>
 <node name="mjpeg"
       pkg="rospilot_deps"

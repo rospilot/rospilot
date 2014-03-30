@@ -44,17 +44,14 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
-  <build_depend>opencv2</build_depend>
-  <build_depend>cv_bridge</build_depend>
   <build_depend>message_generation</build_depend>
 
+  <run_depend>rospy</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>opencv2</run_depend>
   <run_depend>rospilot_deps</run_depend>
   <run_depend>rosbridge_suite</run_depend>
   <run_depend>python-cherrypy</run_depend>
