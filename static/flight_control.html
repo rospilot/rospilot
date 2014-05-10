@@ -44,7 +44,7 @@
     <div ng-controller='waypoints'>
       <h2>Waypoints</h2>
       <ol>
-        <li ng-repeat="waypoint in data.waypoints">
+        <li ng-repeat="waypoint in waypoints">
           Lat: {{waypoint.latitude|number:6}}, Lng: {{waypoint.longitude|number:6}}, 
           Alt: {{waypoint.altitude|number:3}}m
         </li>

@@ -20,7 +20,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $routeProvider
     .when("/graphs", {templateUrl:'static/graphs.html', controller:'graphs'})
     .when("/camera", {templateUrl:'static/camera.html', controller:'camera'})
-    .when("/flight_control", {templateUrl: 'static/flight_control.html', controller:'position'})
+    .when("/flight_control", {templateUrl: 'static/flight_control.html', controller: 'position'})
     .otherwise({redirectTo:"/flight_control"});
 })
 .factory('ROS', function() {
@@ -98,7 +98,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $scope.$route = $route;
 })
 .controller('waypoints', function ($scope, $timeout, Waypoints) {
-  $scope.data = {'waypoints': []};
+  $scope.waypoints = [];
   $scope.come_here = function() {
       navigator.geolocation.getCurrentPosition(function(location){
           var waypoints = new ROSLIB.ServiceRequest({
@@ -111,7 +111,9 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       });
   };
   Waypoints.subscribe(function(waypoints) {
-      $scope.data = waypoints;
+      $scope.waypoints = waypoints.waypoints;
+      // XXX: This shouldn't be necessary
+      $scope.$apply();
   });
 })
 .controller('rcstate', function ($scope, RCState) {
@@ -185,12 +187,13 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
                 title: 'Set Waypoint',
                 name: 'set_waypoint',
                 action: function(e) {
-                    $scope.waypoint_data.waypoints = [{
+                    var waypoints = new ROSLIB.ServiceRequest({
+                        waypoints: [{
                         'latitude': e.latLng.lat(),
                         'longitude': e.latLng.lng(),
                         'altitude': 5.0
-                    }];
-                    $scope.waypoint_data.$save();
+                    }]});
+                    Waypoints.set(waypoints);
                 },
             }
         ]

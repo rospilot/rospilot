@@ -19,7 +19,8 @@ limitations under the License.
 '''
 
 # These must be the first two imports, as they setup sys.path
-import roslib; roslib.load_manifest('rospilot')
+import roslib
+roslib.load_manifest('rospilot')
 import rospilot
 #
 
@@ -29,6 +30,7 @@ import rospilot.srv
 from pymavlink import mavutil
 from geometry_msgs.msg import Vector3
 from optparse import OptionParser
+from time import time
 
 
 class MavlinkNode:
@@ -46,7 +48,7 @@ class MavlinkNode:
         self.pub_basic_status = rospy.Publisher('basic_status',
                                                 rospilot.msg.BasicStatus)
         self.pub_waypoints = rospy.Publisher('waypoints',
-                                                rospilot.msg.Waypoints)
+                                             rospilot.msg.Waypoints)
         rospy.Subscriber("set_rc", rospilot.msg.RCState,
                          self.handle_set_rc)
         rospy.Service('set_waypoints',
@@ -104,8 +106,8 @@ class MavlinkNode:
     def handle_set_mode(self, data):
         # XXX: This code should work,
         # but the APM doesn't seem to listen to set_mode messages :(
-        #See MAV_MODE_FLAG in pymavlink.mavlinkv10
-        #self.conn.mav.set_mode_send(self.conn.target_system,
+        # See MAV_MODE_FLAG in pymavlink.mavlinkv10
+        # self.conn.mav.set_mode_send(self.conn.target_system,
         #        209 if data.armed else 81, 0)
 
         # So instead we fake the tranmitter signals
@@ -123,6 +125,14 @@ class MavlinkNode:
 
         return rospilot.srv.SetBasicModeResponse()
 
+    def request_waypoints(self):
+        if self.waypoint_read_in_progress or self.waypoint_write_in_progress:
+            return
+        self.conn.mav.mission_request_list_send(
+            self.conn.target_system,
+            self.conn.target_component)
+        self.waypoint_read_in_progress = True
+
     def run(self):
         rospy.init_node('rospilot_mavlink')
         rospy.loginfo("Waiting for heartbeat")
@@ -135,13 +145,14 @@ class MavlinkNode:
             self.conn.target_component, mavutil.mavlink.MAV_DATA_STREAM_ALL,
             self.rate, 1)
         # Send request to read waypoints
-        self.conn.mav.mission_request_list_send(
-            self.conn.target_system,
-            self.conn.target_component)
-        self.waypoint_read_in_progress = True
+        self.request_waypoints()
+        last_waypoint_read = time()
         while not rospy.is_shutdown():
             rospy.sleep(0.001)
             msg = self.conn.recv_match(blocking=True)
+            if time() - last_waypoint_read > 10:
+                last_waypoint_read = time()
+                self.request_waypoints()
             if not msg:
                 continue
             msg_type = msg.get_type()
