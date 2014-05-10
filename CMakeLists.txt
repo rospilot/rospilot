@@ -4,9 +4,13 @@ project(rospilot)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation roslint)
 
 catkin_python_setup()
+
+file(GLOB python_source_files nodes/*.py)
+roslint_python(${python_source_files})
+roslint_add_test()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

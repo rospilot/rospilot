@@ -7,6 +7,17 @@ rospilot
 
 I am providing code in this repository to you under an open source license. Because this is my personal repository, the license you receive to my code is from me and not from my employer (Facebook).
 
+
+Running linter
+==============
+catkin_make roslint_rospilot
+
+
+Running tests
+=============
+catkin_make test
+
+
 PX4
 ========
 * Steps
