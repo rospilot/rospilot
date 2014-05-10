@@ -27,6 +27,7 @@ import rospilot
 import rospy
 import rospilot.msg
 import rospilot.srv
+from serial.serialutil import SerialException
 from pymavlink import mavutil
 from geometry_msgs.msg import Vector3
 from optparse import OptionParser
@@ -134,7 +135,6 @@ class MavlinkNode:
         self.waypoint_read_in_progress = True
 
     def run(self):
-        rospy.init_node('rospilot_mavlink')
         rospy.loginfo("Waiting for heartbeat")
         self.conn.wait_heartbeat()
         rospy.loginfo("Got heartbeat. Waiting 10secs for APM to be ready")
@@ -280,7 +280,15 @@ if __name__ == '__main__':
         default=None, help="UDP host/port to send copy of MAVLink data to")
     (opts, args) = parser.parse_args()
 
-    node = MavlinkNode(
-        device=opts.device, baudrate=opts.baudrate,
-        export_host=opts.export_host, allow_control=opts.allow_control)
-    node.run()
+    rospy.init_node('rospilot_mavlink')
+    node = None
+    while not rospy.is_shutdown() and node is None:
+        try:
+            node = MavlinkNode(
+                device=opts.device, baudrate=opts.baudrate,
+                export_host=opts.export_host, allow_control=opts.allow_control)
+        except SerialException as e:
+            rospy.logerr("Failed to initialize mavlink node: " + str(e))
+            rospy.sleep(5)
+    if node:
+        node.run()

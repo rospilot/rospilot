@@ -2,6 +2,7 @@
 
 import roslib
 roslib.load_manifest('rospilot')
+import rospilot # noqa  need this line because it sets up the sys.path
 import rospy
 from vlc_server import server
 import std_srvs.srv
@@ -62,7 +63,6 @@ if __name__ == '__main__':
         help="Media Resource Location of incoming stream",
         default="http://0.0.0.0:8080/stream?topic=/camera/image_raw/compressed")
     (opts, args) = parser.parse_args()
-    print opts.media_path
     node = VlcNode(
         mrl=opts.input_stream,
         media_path=opts.media_path)
