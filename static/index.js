@@ -20,6 +20,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $routeProvider
     .when("/graphs", {templateUrl:'static/graphs.html', controller:'graphs'})
     .when("/camera", {templateUrl:'static/camera.html', controller:'camera'})
+    .when("/settings", {templateUrl:'static/settings.html', controller:'settings'})
     .when("/flight_control", {templateUrl: 'static/flight_control.html', controller: 'position'})
     .otherwise({redirectTo:"/flight_control"});
 })
@@ -35,16 +36,27 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
             name : service,
             messageType : type
         });
-        return function(request, callback) {
-            if (typeof request === 'undefined') {
-                request = new ROSLIB.ServiceRequest({});
+        return function(args, callback) {
+            if (typeof args === 'undefined') {
+                args = {};
             }
             if (typeof callback === 'undefined') {
                 callback = function(result) {};
             }
-            
-            service.callService(request, callback);
+            service.callService(new ROSLIB.ServiceRequest(args), callback);
         };
+    };
+})
+.factory('$rosparam', function(ROS) {
+    return {
+        get: function(key, callback) {
+            var param = new ROSLIB.Param({ros: ROS, name: key});
+            param.get(callback);
+        },
+        set: function(key, value) {
+            var param = new ROSLIB.Param({ros: ROS, name: key});
+            param.set(value);
+        }
     };
 })
 .factory('$rostopic', function(ROS) {
@@ -97,16 +109,37 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .controller('rospilot', function ($scope, $route) {
     $scope.$route = $route;
 })
+.controller('settings', function ($scope, $rosparam, $rosservice) {
+    var globService = $rosservice('/glob', 'rospilot/Glob');
+    $scope.selected_video_device = '';
+    $scope.video_devices = [];
+    $rosparam.get('/camera/video_device',
+        function(value) {
+            $scope.selected_video_device = value;
+            // XXX: This shouldn't be necessary
+            $scope.$apply();
+        }
+    );
+    globService({pattern: '/dev/video*'}, function(result) {
+        $scope.video_devices = result.paths.sort();
+    });
+
+    $scope.$watch('selected_video_device', function(new_device) {
+        if (new_device) {
+            $rosparam.set('/camera/video_device', new_device);
+        }
+    });
+})
 .controller('waypoints', function ($scope, $timeout, Waypoints) {
   $scope.waypoints = [];
   $scope.come_here = function() {
       navigator.geolocation.getCurrentPosition(function(location){
-          var waypoints = new ROSLIB.ServiceRequest({
+          var waypoints = {
               waypoints: [{
               'latitude': location.coords.latitude,
               'longitude': location.coords.longitude,
               'altitude': 5.0
-          }]});
+          }]};
           Waypoints.set(waypoints);
       });
   };
@@ -140,14 +173,14 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .controller('status', function ($scope, $timeout, Status) {
   $scope.data = {armed: false};
   $scope.arm = function() {
-      Status.set(new ROSLIB.ServiceRequest({
+      Status.set({
           armed: true
-      }));
+      });
   };
   $scope.disarm = function() {
-      Status.set(new ROSLIB.ServiceRequest({
+      Status.set({
           armed: false
-      }));
+      });
   };
   Status.subscribe(function(status) {
       $scope.data = status;
@@ -187,12 +220,12 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
                 title: 'Set Waypoint',
                 name: 'set_waypoint',
                 action: function(e) {
-                    var waypoints = new ROSLIB.ServiceRequest({
+                    var waypoints = {
                         waypoints: [{
                         'latitude': e.latLng.lat(),
                         'longitude': e.latLng.lng(),
                         'altitude': 5.0
-                    }]});
+                    }]};
                     Waypoints.set(waypoints);
                 },
             }

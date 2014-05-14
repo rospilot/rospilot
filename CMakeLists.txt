@@ -42,6 +42,7 @@ add_service_files(
   FILES
   SetBasicMode.srv
   SetWaypoints.srv
+  Glob.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

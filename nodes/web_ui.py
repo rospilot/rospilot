@@ -25,7 +25,9 @@ import json
 import cherrypy
 import threading
 import os
+import glob
 import std_srvs.srv
+import rospilot.srv
 import sensor_msgs.msg
 import urllib2
 import time
@@ -74,6 +76,9 @@ class WebUiNode(object):
         rospy.Service('take_picture',
                       std_srvs.srv.Empty,
                       self.take_picture)
+        rospy.Service('glob',
+                      rospilot.srv.Glob,
+                      self.handle_glob)
         self.lock = threading.Lock()
         self.last_image = None
         self.media_path = os.path.expanduser(media_path)
@@ -100,6 +105,9 @@ class WebUiNode(object):
     def handle_image(self, data):
         with self.lock:
             self.last_image = data
+
+    def handle_glob(self, request):
+        return rospilot.srv.GlobResponse(glob.glob(request.pattern))
 
     def take_picture(self, request):
         with self.lock:

@@ -2,7 +2,7 @@
 
 import roslib
 roslib.load_manifest('rospilot')
-import rospilot # noqa  need this line because it sets up the sys.path
+import rospilot  # noqa  need this line because it sets up the sys.path
 import rospy
 from vlc_server import server
 import std_srvs.srv
