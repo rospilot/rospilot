@@ -28,6 +28,11 @@
  * and cobs() encodes the data using 
  * "Consistent Overhead Byte Stuffing" (Cheshire & Baker 1997)
  *
+ * Output data:
+ * accelerometer: divide by 32,768 to get to units (2gs)
+ * gyro: divide by 32,768 to get to units (250deg/s)
+ * magnetometer: divide by 1024 to get to units (gauss)
+ *
  * Commands:
  * mode=idle             Stops reading data and sending output
  * mode=json             Start reading and sending json
