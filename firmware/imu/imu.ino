@@ -46,12 +46,12 @@
 #include "COBS.h"
 #include "imu.h"
 #include "MPU6050.h"
-
-#define address 0x1E // HMC5883 address
+#include "HMC5883L.h"
 
 #define IDLE 0
 #define JSON 1
 #define BINARY 2
+#define ERROR_MODE 3
 #define COMMAND_BUFFER_LEN 128
 
 uint8_t id;
@@ -65,6 +65,7 @@ long maxReadTimeUs;
 long maxOutputTimeUs;
 
 MPU6050 mpu;
+HMC5883L mag;
 
 SensorReadings state;
 
@@ -80,43 +81,39 @@ void setup()
   
     Serial.begin(9600);
     Wire.begin();
-    
-    // Set mode
-    Wire.beginTransmission(address);
-    // Mode register
-    Wire.write(0x02);
-    // Continuous mode
-    Wire.write(0x00); 
-    Wire.endTransmission();
-    
-    // Change update rate to 75Hz
-    Wire.beginTransmission(address);
-    // Config register 
-    Wire.write(0x00);
-    // Update rate 75Hz
-    Wire.write(0x18);
-    Wire.endTransmission();
+
+    // Do not call initialize() here, because that sets the device to SINGLE mode.
+    // Once it's in single mode, you have to make a measurement before you 
+    // can change the mode, otherwise it just ends up in IDLE mode.
+    mag.setMode(HMC5883L_MODE_CONTINUOUS);
+    // Set rate to 75Hz
+    mag.setDataRate(HMC5883L_RATE_75);
+    mag.setSampleAveraging(HMC5883L_AVERAGING_1);
     
     mpu.initialize();
-
     // Set rate to 8khz / (1 + rate) 
     mpu.setRate(7);
-
     // Set bandwidth to ~260Hz
-    mpu.setDLPFMode(0);
-
+    mpu.setDLPFMode(MPU6050_DLPF_BW_256);
     // Gyro range +/- 250deg/sec
-    mpu.setFullScaleGyroRange(0);
-
+    mpu.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
     // Accel up to 2g
-    mpu.setFullScaleAccelRange(0);
-
+    mpu.setFullScaleAccelRange(MPU6050_ACCEL_FS_2);
     // Enable interrupts
     mpu.setIntDataReadyEnabled(true);
+
+    if (!mag.testConnection() || !mpu.testConnection()) {
+        mode = ERROR_MODE;
+    }
 }
 
 void loop()
 {
+    if (mode == ERROR_MODE) {
+        Serial.println(F("Hardware failure"));
+        return;
+    }
+
     unsigned long start = micros();
 
     if (mode != IDLE) {
@@ -164,29 +161,8 @@ void loop()
 
 void readMagnetometer(SensorReadings *readings)
 {
-    // Set address pointer to first data register
-    // register is auto advanced after each read
-    Wire.beginTransmission(address);
-    Wire.write(0x03);
-    Wire.endTransmission();
-    
-    Wire.requestFrom(address, 6);
-  
-    if (6 <= Wire.available()){
-        // X MSB
-        readings->mx = Wire.read() << 8;
-        // X LSB
-        readings->mx |= Wire.read();
-    
-        // Z MSB 
-        readings->mz = Wire.read() << 8;
-        // Z LSB
-        readings->mz |= Wire.read();
-    
-        // Y MSB
-        readings->my = Wire.read() << 8;
-        // Y LSB 
-        readings->my |= Wire.read();
+    if (mag.getReadyStatus()) {
+        mag.getHeading(&(readings->mx), &(readings->my), &(readings->mz));
     }
 }
 
@@ -278,6 +254,10 @@ void toLittleEndian(uint8_t* buffer, int value)
 
 void processCommand(char* c)
 {
+    if (mode == ERROR_MODE) {
+        // Stay in error mode.
+        return;
+    }
     String command(c);
     if (command.equalsIgnoreCase("mode=json")) {
         mode = JSON;
