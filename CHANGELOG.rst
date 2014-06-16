@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2014-06-15)
+------------------
 * Remove pymavlink dependency
 * Switch to a library for the HMC5883 communication
 * Add more documentation
