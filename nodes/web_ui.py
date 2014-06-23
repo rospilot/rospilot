@@ -31,10 +31,10 @@ import rospilot.srv
 import sensor_msgs.msg
 import urllib2
 import time
+import pkg_resources
 from optparse import OptionParser
 
-STATIC_PATH = os.path.dirname(os.path.abspath(__file__))
-STATIC_PATH = os.path.join(STATIC_PATH, "../static")
+STATIC_PATH = pkg_resources.resource_filename('rospilot.assets', '')
 
 PORT_NUMBER = 8085
 

@@ -102,8 +102,9 @@ catkin_package(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
+file(GLOB nodes nodes/*)
 install(PROGRAMS
-  nodes/mavlink.py
+  ${nodes}
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -125,6 +126,11 @@ install(PROGRAMS
 install(FILES
   etc/rospilot.rules
   DESTINATION /etc/udev/rules.d/
+)
+
+install(FILES
+  launch/rospilot.launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 #############
