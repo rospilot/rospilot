@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2014-06-28)
+------------------
 * Change web_ui to use pkg_resources for static assets
 * Add udev rule to installation targets
 * Contributors: Christopher Berner
