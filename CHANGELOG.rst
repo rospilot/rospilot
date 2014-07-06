@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2014-07-05)
+------------------
 * Use more standard compliant glob syntax
 * Make .gitignore less aggressive
 * Contributors: Christopher Berner
