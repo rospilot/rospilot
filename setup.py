@@ -7,7 +7,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup(
     packages=['rospilot', 'rospilot.assets', 'vlc_server'],
     package_dir={'': 'src'},
-    package_data={'rospilot.assets': ['*', '**/*']},
+    package_data={'rospilot.assets': ['*.*', '*/*.*', '*/*/*.*']},
     requires=['std_msgs', 'rospy']
 )
 
