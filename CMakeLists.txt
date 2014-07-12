@@ -108,6 +108,12 @@ install(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+file(GLOB scripts scripts/*.sh)
+install(PROGRAMS
+  ${scripts}
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 ## Mark executables and/or libraries for installation
 # install(TARGETS rospilot rospilot_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -126,6 +132,11 @@ install(PROGRAMS
 install(FILES
   etc/rospilot.rules
   DESTINATION /etc/udev/rules.d/
+)
+
+install(PROGRAMS
+  etc/init.d/rospilot
+  DESTINATION /etc/init.d/
 )
 
 install(FILES
