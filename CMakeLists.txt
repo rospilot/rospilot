@@ -5,6 +5,8 @@ project(rospilot)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation roslint)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(libgphoto2 REQUIRED libgphoto2)
 
 catkin_python_setup()
 
@@ -20,6 +22,17 @@ roslint_add_test()
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
+
+# include(CheckCXXCompilerFlag)
+# CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+# CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+# if(COMPILER_SUPPORTS_CXX11)
+#     set(CMAKE_CXX_FLAGS "-std=c++11")
+# elseif(COMPILER_SUPPORTS_CXX0X)
+#     set(CMAKE_CXX_FLAGS "-std=c++0x")
+# else()
+#     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+# endif()
 
 #######################################
 ## Declare ROS messages and services ##
@@ -43,6 +56,7 @@ add_service_files(
   SetBasicMode.srv
   SetWaypoints.srv
   Glob.srv
+  CaptureImage.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -50,6 +64,7 @@ generate_messages(
     DEPENDENCIES
     std_msgs
     geometry_msgs
+    sensor_msgs
 )
 
 ###################################
@@ -92,6 +107,9 @@ catkin_package(
 # target_link_libraries(rospilot_node
 #   ${catkin_LIBRARIES}
 # )
+
+add_executable(ptp_node nodes/ptp.cpp)
+target_link_libraries(ptp_node rospilot_deps ${libgphoto2_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##

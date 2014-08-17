@@ -45,7 +45,9 @@ class API(object):
 
     @cherrypy.expose
     def media(self):
-        paths = os.listdir(self.node.media_path)
+        paths = []
+        with self.node.lock:
+            paths = os.listdir(self.node.media_path)
         paths = ['/media/' + path for path in paths]
         objs = []
         for path in reversed(sorted(paths)):
@@ -81,6 +83,8 @@ class WebUiNode(object):
                       self.handle_glob)
         self.lock = threading.Lock()
         self.last_image = None
+        self.ptp_capture_image = rospy.ServiceProxy('camera/capture_image',
+                                                    rospilot.srv.CaptureImage)
         self.media_path = os.path.expanduser(media_path)
         if not os.path.exists(self.media_path):
             os.makedirs(self.media_path)
@@ -110,6 +114,11 @@ class WebUiNode(object):
         return rospilot.srv.GlobResponse(glob.glob(request.pattern))
 
     def take_picture(self, request):
+        if self.ptp_capture_image is not None:
+            image = self.ptp_capture_image().image
+        else:
+            image = self.last_image
+
         with self.lock:
             next_id = int(round(time.time() * 1000))
 
@@ -117,7 +126,8 @@ class WebUiNode(object):
             path = "{0}/{1}".format(self.media_path, filename)
 
             with open(path, 'w') as f:
-                f.write(self.last_image.data)
+                f.write(image.data)
+        return std_srvs.srv.EmptyResponse()
 
     def run(self):
         rospy.init_node('rospilot_webui')
