@@ -58,6 +58,7 @@
   <run_depend>rosbridge_suite</run_depend>
   <run_depend>python-cherrypy</run_depend>
   <run_depend>libvlc</run_depend>
+  <run_depend>roslaunch</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
