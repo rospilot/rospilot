@@ -4,7 +4,7 @@ project(rospilot)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation roslint)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation roslint roscpp)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED libgphoto2)
 
@@ -109,7 +109,8 @@ catkin_package(
 # )
 
 add_executable(ptp_node nodes/ptp.cpp)
-target_link_libraries(ptp_node rospilot_deps ${libgphoto2_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(ptp_node ${libgphoto2_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(ptp_node rospilot_gencpp)
 
 #############
 ## Install ##
