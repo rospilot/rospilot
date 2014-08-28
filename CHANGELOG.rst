@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2014-08-27)
+------------------
 * Fix debian package build
 * Contributors: Christopher Berner
 
