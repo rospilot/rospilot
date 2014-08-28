@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix debian package build
+* Contributors: Christopher Berner
+
 0.1.0 (2014-08-26)
 ------------------
 * Add PTP support
