@@ -71,9 +71,16 @@ class Index(object):
     def index(self):
         params = {'google_maps': '', 'gmaps': ''}
         try:
-            socket.getaddrinfo('google.com', 'http')
-            params['google_maps'] = '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>'
-            params['gmaps'] = '<script src="/static/gmaps.js"></script>'
+            # Make sure that we can resolve google.com, before including Google maps
+            addresses = socket.getaddrinfo('google.com', 'http')
+            if addresses:
+                address = addresses[0]
+                s = socket.socket(address[0])
+                s.settimeout(1.0)
+                s.connect(address[4])
+                s.close()
+                params['google_maps'] = '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>'
+                params['gmaps'] = '<script src="/static/gmaps.js"></script>'
         except:
             pass
         # TODO: this should probably be replaced with Jinja, or another
