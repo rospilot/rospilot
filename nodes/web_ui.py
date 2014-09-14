@@ -81,6 +81,9 @@ class WebUiNode(object):
         rospy.Service('glob',
                       rospilot.srv.Glob,
                       self.handle_glob)
+        rospy.Service('shutdown',
+                      std_srvs.srv.Empty,
+                      self.handle_shutdown)
         self.lock = threading.Lock()
         self.last_image = None
         self.ptp_capture_image = rospy.ServiceProxy('camera/capture_image',
@@ -112,6 +115,10 @@ class WebUiNode(object):
 
     def handle_glob(self, request):
         return rospilot.srv.GlobResponse(glob.glob(request.pattern))
+
+    def handle_shutdown(self, request):
+        os.system('shutdown now -P')
+        return std_srvs.srv.EmptyResponse()
 
     def take_picture(self, request):
         if self.ptp_capture_image is not None:

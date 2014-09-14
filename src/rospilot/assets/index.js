@@ -110,9 +110,11 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $scope.$route = $route;
 })
 .controller('settings', function ($scope, $rosparam, $rosservice) {
+    var shutdownService = $rosservice('/shutdown', 'std_srvs/Empty');
     var globService = $rosservice('/glob', 'rospilot/Glob');
     $scope.selected_video_device = '';
     $scope.video_devices = [];
+    $scope.shutdown = shutdownService;
     $rosparam.get('/camera/video_device',
         function(value) {
             $scope.selected_video_device = value;

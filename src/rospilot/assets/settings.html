@@ -1,6 +1,13 @@
 <div ng-controller='settings'>
   <h2>Camera</h2>
-  Device: <select ng-model='selected_video_device' 
-    ng-options='device for device in video_devices'>
-  </select>
+  <p>
+    Device: <select ng-model='selected_video_device' 
+      ng-options='device for device in video_devices'>
+    </select>
+  </p>
+  <div>
+    <button type="button" class="btn btn-danger" ng-click="shutdown()">
+      Shutdown On-board Computer
+    </button>
+  </div>
 </div>
