@@ -161,12 +161,20 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       'accel': {'x': 0, 'y': 0, 'z': 0},
       'mag': {'x': 0, 'y': 0, 'z': 0}
   };
+  $scope._last_redraw = new Date().getTime();
   IMU.subscribe(function(data) {
       $scope.data = data;
       if ($('#accel_z_chart').length > 0) {
         var series = $('#accel_z_chart').highcharts().series[0];
         var x = (new Date()).getTime();
-        series.addPoint([x, data.accel.z], true, true);
+        var redraw = x - $scope._last_redraw > 500;
+        var extremes = series.xAxis.getExtremes();
+        // Shift out the data if there's more than 15secs on-screen
+        var shift = extremes.dataMax - extremes.dataMin > 15000;
+        if (redraw) {
+            $scope._last_redraw = x;
+        }
+        series.addPoint([x, data.accel.z], redraw, shift);
       }
   });
 })
@@ -330,7 +338,8 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     },
     xAxis: {
         type: 'datetime',
-        tickPixelInterval: 150
+        tickPixelInterval: 150,
+        minRange: 15000
     },
     yAxis: {
         title: {
@@ -357,19 +366,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     },
     series: [{
         name: 'data',
-        data: (function() {
-            var data = [],
-                time = (new Date()).getTime(),
-                i;
-
-            for (i = -19; i <= 0; i++) {
-                data.push({
-                    x: time + i * 1000,
-                    y: 0
-                });
-            }
-            return data;
-        })()
+        data: [],
     }]
   });
 })
