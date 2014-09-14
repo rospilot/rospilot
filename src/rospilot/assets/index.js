@@ -243,26 +243,30 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     });
   }
 
-  // GMaps doesn't have touch support, so add our own long press detection
-  google.maps.event.addListener($scope.map.map, 'mousedown', function(e) {
-      $scope.longpress_promise = $timeout(function() {
-        $scope.map.buildContextMenu('map', e)
-      }, 1000);
-  });
-  google.maps.event.addListener($scope.map.map, 'mouseup', function(e) {
-      $timeout.cancel($scope.longpress_promise);
-  });
-  google.maps.event.addListener($scope.map.map, 'dragstart', function(e) {
-      $timeout.cancel($scope.longpress_promise);
-  });
+  if (typeof(google) != 'undefined' && document.getElementById('map-canvas')) {
+    // GMaps doesn't have touch support, so add our own long press detection
+    google.maps.event.addListener($scope.map.map, 'mousedown', function(e) {
+        $scope.longpress_promise = $timeout(function() {
+            $scope.map.buildContextMenu('map', e)
+        }, 1000);
+    });
+    google.maps.event.addListener($scope.map.map, 'mouseup', function(e) {
+        $timeout.cancel($scope.longpress_promise);
+    });
+    google.maps.event.addListener($scope.map.map, 'dragstart', function(e) {
+        $timeout.cancel($scope.longpress_promise);
+    });
+  }
   
   Waypoints.subscribe(function(data) {
       $scope.waypoint_data = data;
       if (data.waypoints.length > 0) {
           var lat = data.waypoints[0].latitude;
           var lng = data.waypoints[0].longitude;
-          var pos = new google.maps.LatLng(lat, lng);
-          $scope.waypoint.setPosition(pos);
+          if (typeof(google) != 'undefined' && document.getElementById('map-canvas')) {
+            var pos = new google.maps.LatLng(lat, lng);
+            $scope.waypoint.setPosition(pos);
+          }
       }
   });
 

@@ -25,6 +25,7 @@ import json
 import cherrypy
 import threading
 import os
+import socket
 import glob
 import std_srvs.srv
 import rospilot.srv
@@ -68,7 +69,17 @@ class API(object):
 class Index(object):
     @cherrypy.expose
     def index(self):
-        return open(os.path.join(STATIC_PATH, "index.html"))
+        params = {'google_maps': '', 'gmaps': ''}
+        try:
+            socket.getaddrinfo('google.com', 'http')
+            params['google_maps'] = '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>'
+            params['gmaps'] = '<script src="/static/gmaps.js"></script>'
+        except:
+            pass
+        # TODO: this should probably be replaced with Jinja, or another
+        # templating library
+        template = open(os.path.join(STATIC_PATH, "index.html")).read()
+        return template.format(**params)
 
 
 class WebUiNode(object):
