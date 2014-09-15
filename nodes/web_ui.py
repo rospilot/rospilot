@@ -69,6 +69,8 @@ class API(object):
 class Index(object):
     @cherrypy.expose
     def index(self):
+        google_script = \
+            '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>'
         params = {'google_maps': '', 'gmaps': ''}
         try:
             # Make sure that we can resolve google.com, before including Google maps
@@ -79,7 +81,7 @@ class Index(object):
                 s.settimeout(1.0)
                 s.connect(address[4])
                 s.close()
-                params['google_maps'] = '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>'
+                params['google_maps'] = google_script
                 params['gmaps'] = '<script src="/static/gmaps.js"></script>'
         except:
             pass
