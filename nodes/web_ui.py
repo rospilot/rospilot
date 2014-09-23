@@ -108,6 +108,11 @@ class WebUiNode(object):
         self.last_image = None
         self.ptp_capture_image = rospy.ServiceProxy('camera/capture_image',
                                                     rospilot.srv.CaptureImage)
+        try:
+            rospy.ServiceProxy('camera/capture_image', 3.0)
+        except:
+            # Timeout after 3 seconds
+            self.ptp_capture_image = None
         self.media_path = os.path.expanduser(media_path)
         if not os.path.exists(self.media_path):
             os.makedirs(self.media_path)
