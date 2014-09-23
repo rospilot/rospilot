@@ -30,10 +30,10 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     return ros;
 })
 .factory('$rosservice', function(ROS) {
-    return function(service, type) {
+    return function(service_name, type) {
         var service = new ROSLIB.Service({
             ros : ROS,
-            name : service,
+            name : service_name,
             messageType : type
         });
         return function(args, callback) {
