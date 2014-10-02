@@ -1,5 +1,12 @@
+# Downloaded mapnik data files
+share/mapnik-style/data
+
 # ROS
 msg_gen
+
+# bloom build files
+obj-x86_64-linux-gnu/
+debian/
 
 *.py[cod]
 

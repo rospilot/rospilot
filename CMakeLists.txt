@@ -163,6 +163,12 @@ install(FILES
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+install(DIRECTORY
+  share/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/share
+  PATTERN "mapnik-style/data" EXCLUDE
+)
+
 #############
 ## Testing ##
 #############

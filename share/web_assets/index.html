@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html ng-app=rospilot lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="/favicon.png">
+    <script src="/static/third-party/angular.min.js"></script>
+    <script src="/static/third-party/angular-resource.min.js"></script>
+    <script src="/static/third-party/angular-route.min.js"></script>
+    <script src="/static/third-party/jquery-2.0.3.min.js"></script>
+    <script src="/static/third-party/leaflet/leaflet.js"></script>
+    <script src="/static/third-party/leaflet.awesome-markers/leaflet.awesome-markers.js"></script>
+    <script src="/static/third-party/leaflet.contextmenu/leaflet.contextmenu.js"></script>
+    <script src="/static/highcharts.js"></script>
+    <script src="/static/bootstrap.min.js"></script>
+    <script src="/static/eventemitter2.min.js"></script>
+    <script src="/static/roslib.js"></script>
+    <script src="/static/index.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.css">
+    <link rel="stylesheet" href="/static/third-party/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/static/third-party/leaflet.awesome-markers/leaflet.awesome-markers.css" />
+    <link rel="stylesheet" href="/static/third-party/leaflet.contextmenu/leaflet.contextmenu.css" />
+    <link rel="stylesheet" type="text/css" href="/static/index.css">
+    <title>Rospilot</title>
+  </head>
+
+  <body ng-controller='rospilot'>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Rospilot</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li active-class="active"><a href="#/flight_control">Flight Control</a></li>
+            <li active-class="active"><a href="#/graphs">Graphs</a></li>
+            <li active-class="active"><a href="#/camera">Camera</a></li>
+            <li active-class="active"><a href="#/settings">Settings</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div><!-- end navbar -->
+    <div class="container">
+      <div ng-view></div>
+    </div>
+  </body>
+</html>

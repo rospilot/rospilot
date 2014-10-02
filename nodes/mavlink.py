@@ -79,7 +79,7 @@ class MavlinkNode:
     def handle_set_waypoints(self, message):
         if self.waypoint_read_in_progress or self.waypoint_write_in_progress:
             rospy.logwarn("Can't write waypoints because a read/write is already in progress")
-            return
+            return rospilot.srv.SetWaypointsResponse()
         self.waypoint_write_in_progress = True
         # XXX: APM seems to overwrite index 0, so insert the first waypoint
         # twice

@@ -1,4 +1,5 @@
 <launch>
+<param name="/rospilot/mapnik_server_port" value="8086" />
 <node name="mavlink"
       pkg="rospilot"
       type="mavlink.py"
@@ -11,6 +12,14 @@
       respawn="false"
       output="screen"
       args="--media_path=~/.rospilot/media" />
+<node name="mapnik_server"
+      pkg="rospilot"
+      type="mapnik_server.py"
+      respawn="false"
+      output="screen"
+      args="--media_path=~/.rospilot/media">
+    <param name="tilestache_config_file" value="~/.rospilot/mapnik/ts/ts.config" />
+</node>
 <node name="vlc"
       pkg="rospilot"
       type="ros_vlc.py"
@@ -24,7 +33,7 @@
       output="screen">
     <param name="image_width" value="960" />
     <param name="image_height" value="720" />
-    <param name="video_device" value="/dev/video1" />
+    <param name="video_device" value="/dev/video0" />
 </node>
 <node name="mjpeg"
       pkg="rospilot_deps"

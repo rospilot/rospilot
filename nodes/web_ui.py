@@ -25,17 +25,17 @@ import json
 import cherrypy
 import threading
 import os
-import socket
 import glob
 import std_srvs.srv
 import rospilot.srv
 import sensor_msgs.msg
 import urllib2
 import time
-import pkg_resources
 from optparse import OptionParser
+from catkin.find_in_workspaces import find_in_workspaces
 
-STATIC_PATH = pkg_resources.resource_filename('rospilot.assets', '')
+STATIC_PATH = find_in_workspaces(['share'], 'rospilot',
+                                 'share/web_assets/', first_match_only=True)[0]
 
 PORT_NUMBER = 8085
 
@@ -69,26 +69,7 @@ class API(object):
 class Index(object):
     @cherrypy.expose
     def index(self):
-        google_script = \
-            '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>'
-        params = {'google_maps': '', 'gmaps': ''}
-        try:
-            # Make sure that we can resolve google.com, before including Google maps
-            addresses = socket.getaddrinfo('google.com', 'http')
-            if addresses:
-                address = addresses[0]
-                s = socket.socket(address[0])
-                s.settimeout(1.0)
-                s.connect(address[4])
-                s.close()
-                params['google_maps'] = google_script
-                params['gmaps'] = '<script src="/static/gmaps.js"></script>'
-        except:
-            pass
-        # TODO: this should probably be replaced with Jinja, or another
-        # templating library
-        template = open(os.path.join(STATIC_PATH, "index.html")).read()
-        return template.format(**params)
+        return open(os.path.join(STATIC_PATH, "index.html")).read()
 
 
 class WebUiNode(object):
