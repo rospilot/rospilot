@@ -14,6 +14,7 @@ sudo -u postgres createdb gis
 echo "GRANT ALL ON DATABASE gis TO rospilot;" | sudo -u postgres psql -Upostgres gis
 echo "ALTER USER rospilot WITH PASSWORD 'rospilot_password'" | sudo -u postgres psql -Upostgres gis
 echo "CREATE EXTENSION postgis;" | sudo -u postgres psql -Upostgres gis
+echo "CREATE EXTENSION hstore;" | sudo -u postgres psql -Upostgres gis
 
 echo "Setting up mapnik"
 tempdir=$(mktemp -d)
