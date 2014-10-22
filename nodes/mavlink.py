@@ -32,6 +32,7 @@ from pymavlink import mavutil
 from geometry_msgs.msg import Vector3
 from optparse import OptionParser
 from time import time
+from glob import glob
 
 
 class MavlinkNode:
@@ -41,6 +42,13 @@ class MavlinkNode:
         if export_host:
             self.export_conn = mavutil.mavlink_connection(
                 "udp:" + export_host, input=False)
+        if device == "auto":
+            candidates = glob("/dev/ardupilot_*")
+            if len(candidates) != 1:
+                rospy.logfatal("Cannot find Ardupilot device")
+                raise Exception("Cannot find Ardupilot device")
+            device = candidates[0]
+            baudrate = int(device.split("_")[1])
         self.conn = mavutil.mavlink_connection(device, baud=baudrate)
         self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude)
         self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState)
@@ -274,7 +282,7 @@ if __name__ == '__main__':
         help="allow sending control signals to autopilot", default="false")
     parser.add_option(
         "--device", dest="device",
-        default=None, help="serial device")
+        default="auto", help="serial device")
     parser.add_option(
         "--udp-export", dest="export_host",
         default=None, help="UDP host/port to send copy of MAVLink data to")
