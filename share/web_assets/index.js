@@ -124,6 +124,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     );
     globService({pattern: '/dev/video*'}, function(result) {
         $scope.video_devices = result.paths.sort();
+        $scope.$apply();
     });
 
     $scope.$watch('selected_video_device', function(new_device) {
