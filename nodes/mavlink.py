@@ -187,7 +187,8 @@ class MavlinkNode:
                 pass
             elif msg_type == "HEARTBEAT":
                 self.pub_basic_status.publish(
-                    msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+                    msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED,
+                    mavutil.mode_string_v10(msg))
             elif msg_type == "GPS_RAW_INT":
                 self.pub_gpsraw.publish(
                     msg.time_usec, msg.fix_type,

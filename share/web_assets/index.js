@@ -182,7 +182,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   });
 })
 .controller('status', function ($scope, $timeout, Status) {
-  $scope.data = {armed: false};
+  $scope.data = {armed: false, flight_mode: ''};
   $scope.arm = function() {
       Status.set({
           armed: true
