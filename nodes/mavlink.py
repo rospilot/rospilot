@@ -50,14 +50,14 @@ class MavlinkNode:
             device = candidates[0]
             baudrate = int(device.split("_")[1])
         self.conn = mavutil.mavlink_connection(device, baud=baudrate)
-        self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude)
-        self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState)
-        self.pub_gpsraw = rospy.Publisher('gpsraw', rospilot.msg.GPSRaw)
-        self.pub_imuraw = rospy.Publisher('imuraw', rospilot.msg.IMURaw)
+        self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude, queue_size=1)
+        self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState, queue_size=1)
+        self.pub_gpsraw = rospy.Publisher('gpsraw', rospilot.msg.GPSRaw, queue_size=1)
+        self.pub_imuraw = rospy.Publisher('imuraw', rospilot.msg.IMURaw, queue_size=1)
         self.pub_basic_status = rospy.Publisher('basic_status',
-                                                rospilot.msg.BasicStatus)
+                                                rospilot.msg.BasicStatus, queue_size=1)
         self.pub_waypoints = rospy.Publisher('waypoints',
-                                             rospilot.msg.Waypoints)
+                                             rospilot.msg.Waypoints, queue_size=1)
         rospy.Subscriber("set_rc", rospilot.msg.RCState,
                          self.handle_set_rc)
         rospy.Service('set_waypoints',
