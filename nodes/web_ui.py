@@ -31,6 +31,7 @@ import rospilot.srv
 import sensor_msgs.msg
 import urllib2
 import time
+import cv2
 from optparse import OptionParser
 from catkin.find_in_workspaces import find_in_workspaces
 
@@ -49,14 +50,24 @@ class API(object):
         paths = []
         with self.node.lock:
             paths = os.listdir(self.node.media_path)
-        paths = ['/media/' + path for path in paths]
         objs = []
         for path in reversed(sorted(paths)):
             if path.endswith('jpg'):
-                objs.append({"type": "image", "url": path})
+                objs.append({"type": "image", "url": "/media/" + path})
             else:
-                objs.append({"type": "video", "url": path})
+                thumbnail = "/api/thumbnail?filename=" + path
+                objs.append({"type": "video", "url": "/media/" + path,
+                             "thumbnail": thumbnail})
         return json.dumps({'objs': objs})
+
+    @cherrypy.expose
+    def thumbnail(self, filename):
+        cap = cv2.VideoCapture(self.node.media_path + "/" + filename)
+        ret, frame = cap.read()
+        ret, jpg = cv2.imencode(".jpg", frame)
+        cap.release()
+        cherrypy.response.headers['Content-Type'] = 'image/jpeg'
+        return jpg.tostring()
 
     @cherrypy.expose
     def camera(self, action):
