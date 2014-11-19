@@ -58,6 +58,8 @@
   <run_depend>rospilot_deps</run_depend>
   <run_depend>rosbridge_suite</run_depend>
   <run_depend>python-cherrypy</run_depend>
+  <run_depend>python-psutil</run_depend>
+  <run_depend>python-colorama</run_depend>
   <run_depend>libvlc</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>python-mapnik</run_depend>

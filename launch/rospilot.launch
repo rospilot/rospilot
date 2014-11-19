@@ -6,6 +6,11 @@
       respawn="false"
       output="screen"
       args="--udp-export=127.0.0.1:8866" />
+<node name="odroid_show"
+      pkg="rospilot"
+      type="odroid_show.py"
+      respawn="false"
+      output="screen" />
 <node name="web_ui"
       pkg="rospilot"
       type="web_ui.py"
