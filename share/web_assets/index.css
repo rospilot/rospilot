@@ -16,9 +16,17 @@ body {
     height: 120px;
 }
 
-.camera-thumbnail i.fa {
+.camera-thumbnail i.fa-youtube-play {
     position: absolute;
     left: 17%;
     top: 28%;
     color: white;
+}
+
+.camera-thumbnail i.fa-trash {
+    position: absolute;
+    left: 38%;
+    top: 75%;
+    color: white;
+    cursor: pointer;
 }

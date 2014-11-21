@@ -76,7 +76,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     };
 })
 .factory('Media', function ($resource) {
-      return $resource('api/media');
+      return $resource('/api/media/:mediaId', {mediaId: '@id'});
 })
 .factory('Status', function ($rostopic, $rosservice) {
       return {
@@ -361,11 +361,11 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   });
 })
 .controller('camera', function($scope, $timeout, Media, Camera) {
-  $scope.media = {'objs': []};
+  $scope.media = [];
 
   (function tick() {
-      Media.get({}, function(data) {
-          if (data.objs.length != $scope.media.objs.length) {
+      Media.query(function(data) {
+          if (data.length != $scope.media.length) {
             $scope.media = data;
           }
           $timeout(tick, 1000);
@@ -385,6 +385,22 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $scope.recording = !$scope.recording;
   };
 })
+.directive('ngConfirmClick', [function() {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            element.bind('click', function() {
+                var message = attrs.ngConfirmMessage;
+                if (!message) {
+                    message = "<insert message here>"
+                }
+                if (message && confirm(message)) {
+                    scope.$apply(attrs.ngConfirmClick);
+                }
+            });
+        }
+    }
+}])
 .directive('activeClass', function($location) {
     return {
         restrict: 'A',

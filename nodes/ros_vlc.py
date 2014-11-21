@@ -7,14 +7,20 @@ import rospy
 from vlc_server import server
 import std_srvs.srv
 from optparse import OptionParser
-import time
 import os
+import os.path
+import shutil
+import tempfile
+import threading
+from datetime import datetime
 
 
 class VlcNode:
     def __init__(self, mrl, media_path):
-        self.recorder = server.VlcRecorder(mrl=mrl, mux="wmv")
+        self.recorder = server.VlcRecorder(mrl=mrl, mux="ogg")
         self.media_path = os.path.expanduser(media_path)
+        self.tempfile = None
+        self.lock = threading.RLock()
 
         if not os.path.exists(self.media_path):
             os.makedirs(self.media_path)
@@ -29,22 +35,40 @@ class VlcNode:
 
     @classmethod
     def media_time(self):
-        return int(round(time.time() * 1000))
+        return datetime.today().strftime("%Y-%m-%d_%H%M%S")
 
     def handle_start_record(self, empty_message):
-        date = VlcNode.media_time()
-        self.recorder.start_record("%s/vid.%s.mjpeg" % (self.media_path, date))
-        return std_srvs.srv.EmptyResponse()
+        with self.lock:
+            if self.tempfile is not None:
+                self.handle_stop_record(None)
+            (fd, self.tempfile) = tempfile.mkstemp()
+            os.close(fd)
+
+            self.recorder.start_record(self.tempfile)
+            return std_srvs.srv.EmptyResponse()
 
     def handle_stop_record(self, empty_message):
-        self.recorder.stop_record()
-        return std_srvs.srv.EmptyResponse()
+        with self.lock:
+            self.recorder.stop_record()
+            date = VlcNode.media_time()
+            path = "%s/%s.ogg" % (self.media_path, date)
+            i = 1
+            while os.path.exists(path):
+                path = "%s/%s_%d.ogg" % (self.media_path, date, i)
+                i += 1
+            shutil.move(self.tempfile, path)
+            self.tempfile = None
+            return std_srvs.srv.EmptyResponse()
 
     # NOTE: Not tested.
     def handle_take_snapshot(self, empty_message):
         date = VlcNode.media_time()
-        self.recorder.take_snapshot("%s/pic.%s.png" % (self.media_path, date),
-                                    640, 480)
+        path = "%s/%s.png" % (self.media_path, date)
+        i = 1
+        while os.path.exists(path):
+            path = "%s/%s_%d.png" % (self.media_path, date, i)
+            i += 1
+        self.recorder.take_snapshot(path, 640, 480)
 
     def run(self):
         rospy.loginfo("Vlc Node Initialized and waiting...")

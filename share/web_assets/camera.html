@@ -26,8 +26,10 @@
     </div>
 
     <div class="row" id="snapshots">
-      <div class="col-md-12" ng-repeat="obj in media.objs">
+      <div class="col-md-12" ng-repeat="obj in media">
         <div class="camera-thumbnail">
+          <i class="fa fa-trash fa-2x" ng-confirm-message="Are you sure?"
+            ng-confirm-click="obj.$delete()"></i>
           <a ng-if="obj.type == 'video'" ng-href="{{obj.url}}">
             <i class="fa fa-youtube-play fa-3x"></i>
             <img ng-src="{{obj.thumbnail}}"/>

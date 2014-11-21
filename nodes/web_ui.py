@@ -25,13 +25,14 @@ import json
 import cherrypy
 import threading
 import os
+import re
 import glob
 import std_srvs.srv
 import rospilot.srv
 import sensor_msgs.msg
 import urllib2
-import time
 import cv2
+from datetime import datetime
 from optparse import OptionParser
 from catkin.find_in_workspaces import find_in_workspaces
 
@@ -46,19 +47,27 @@ class API(object):
         self.node = node
 
     @cherrypy.expose
-    def media(self):
-        paths = []
-        with self.node.lock:
-            paths = os.listdir(self.node.media_path)
-        objs = []
-        for path in reversed(sorted(paths)):
-            if path.endswith('jpg'):
-                objs.append({"type": "image", "url": "/media/" + path})
-            else:
-                thumbnail = "/api/thumbnail?filename=" + path
-                objs.append({"type": "video", "url": "/media/" + path,
-                             "thumbnail": thumbnail})
-        return json.dumps({'objs': objs})
+    def media(self, id=None):
+        if cherrypy.request.method == "DELETE":
+            if not re.match(r"([a-z]+\.)?[a-zA-Z0-9_-]+\.\w{2,5}", id):
+                rospy.logwarn("Ignoring request to delete %s", id)
+                return
+            os.remove(self.node.media_path + "/" + id)
+        elif cherrypy.request.method == "GET":
+            paths = []
+            with self.node.lock:
+                paths = os.listdir(self.node.media_path)
+            objs = []
+            for path in reversed(sorted(paths)):
+                if path.endswith('jpg'):
+                    objs.append({"type": "image", "url": "/media/" + path,
+                                "id": path})
+                else:
+                    thumbnail = "/api/thumbnail?filename=" + path
+                    objs.append({"type": "video", "url": "/media/" + path,
+                                 "thumbnail": thumbnail,
+                                 "id": path})
+            return json.dumps(objs)
 
     @cherrypy.expose
     def thumbnail(self, filename):
@@ -144,10 +153,12 @@ class WebUiNode(object):
             image = self.last_image
 
         with self.lock:
-            next_id = int(round(time.time() * 1000))
-
-            filename = "{0:05}.jpg".format(next_id)
-            path = "{0}/{1}".format(self.media_path, filename)
+            date = datetime.today().strftime("%Y-%m-%d_%H%M%S")
+            path = "%s/%s.jpg" % (self.media_path, date)
+            i = 1
+            while os.path.exists(path):
+                path = "%s/%s_%d.jpg" % (self.media_path, date, i)
+                i += 1
 
             with open(path, 'w') as f:
                 f.write(image.data)
