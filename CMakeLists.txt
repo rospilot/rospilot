@@ -5,6 +5,7 @@ project(rospilot)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation roslint roscpp)
+find_package(catkin REQUIRED COMPONENTS rospilot_deps)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED libgphoto2)
 
@@ -89,7 +90,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include src/cpp ${rospilot_deps_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(rospilot
@@ -108,9 +109,9 @@ catkin_package(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(ptp_node nodes/ptp.cpp)
-target_link_libraries(ptp_node ${libgphoto2_LIBRARIES} ${catkin_LIBRARIES})
-add_dependencies(ptp_node rospilot_gencpp)
+add_executable(camera_node nodes/camera.cpp)
+target_link_libraries(camera_node rospilot_deps ${libgphoto2_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(camera_node rospilot_gencpp)
 
 #############
 ## Install ##

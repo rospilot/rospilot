@@ -28,9 +28,9 @@
 #include<sensor_msgs/fill_image.h>
 #include<sensor_msgs/CompressedImage.h>
 
-#include"./base_camera.h"
+#include<base_camera.h>
 
-class PtpCamera : BaseCamera
+class PtpCamera : public BaseCamera
 {
 private:
     GPContext *context;
@@ -38,7 +38,7 @@ private:
     Camera *camera;
 
 public:
-    bool getLiveImage(std::string format, sensor_msgs::CompressedImage *image) override
+    bool getLiveImage(sensor_msgs::CompressedImage *image) override
     {
         // Read from camera
         int errorCode = gp_camera_capture_preview(camera, cameraFile, context);
@@ -50,7 +50,7 @@ public:
         return makeImage(cameraFile, image);
     }
     
-    bool captureImage(std::string format, sensor_msgs::CompressedImage *image) override
+    bool captureImage(sensor_msgs::CompressedImage *image) override
     {
         // Read from camera
         CameraFilePath filePath;

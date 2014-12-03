@@ -48,14 +48,15 @@
   <build_depend>roslint</build_depend>
   <build_depend>libgphoto-dev</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>rospilot_deps</build_depend>
 
+  <run_depend>rospilot_deps</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
-  <run_depend>rospilot_deps</run_depend>
   <run_depend>rosbridge_suite</run_depend>
   <run_depend>python-cherrypy</run_depend>
   <run_depend>python-psutil</run_depend>

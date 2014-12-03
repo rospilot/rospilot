@@ -17,10 +17,10 @@
  * limitations under the License.
  *
  *********************************************************************/
+#ifndef ROSPILOT_BASE_CAMERA_H
+#define ROSPILOT_BASE_CAMERA_H
 #include<stdio.h>
 #include<iostream>
-#include<gphoto2/gphoto2.h>
-#include<gphoto2/gphoto2-context.h>
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
@@ -34,18 +34,18 @@ public:
     /**
      * Gets an image from the live preview.
      *
-     * Valid values for format are "jpeg" and "h264"
-     *
      * Return true on success
      */
-    virtual bool getLiveImage(std::string format, sensor_msgs::CompressedImage *image) = 0;
+    virtual bool getLiveImage(sensor_msgs::CompressedImage *image) = 0;
     
     /**
      * Gets captures an image. Possibly also storing it on external media.
      *
-     * Valid values for format are "jpeg" and "h264"
-     *
      * Return true on success
      */
-    virtual bool captureImage(std::string format, sensor_msgs::CompressedImage *image) = 0;
+    virtual bool captureImage(sensor_msgs::CompressedImage *image) = 0;
+
+    virtual ~BaseCamera() {};
 };
+
+#endif
