@@ -8,6 +8,10 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs messa
 find_package(catkin REQUIRED COMPONENTS rospilot_deps)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED libgphoto2)
+pkg_check_modules(libavcodec REQUIRED libavcodec)
+pkg_check_modules(libavformat REQUIRED libavformat)
+pkg_check_modules(libavutil REQUIRED libavutil)
+pkg_check_modules(libswscale REQUIRED libswscale)
 
 catkin_python_setup()
 
@@ -90,7 +94,14 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include src/cpp ${rospilot_deps_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include src/cpp
+    ${rospilot_deps_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
+    ${libavcodec_INCLUDE_DIRS}
+    ${libavformat_INCLUDE_DIRS}
+    ${libavutil_INCLUDE_DIRS}
+    ${libswscale_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(rospilot
@@ -110,7 +121,12 @@ include_directories(include src/cpp ${rospilot_deps_INCLUDE_DIRS} ${catkin_INCLU
 # )
 
 add_executable(camera_node nodes/camera.cpp)
-target_link_libraries(camera_node rospilot_deps ${libgphoto2_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(camera_node 
+    rospilot_deps
+    ${libgphoto2_LIBRARIES}
+    ${libavutil_LIBRARIES}
+    ${libavformat_LIBRARIES}
+    ${catkin_LIBRARIES})
 add_dependencies(camera_node rospilot_gencpp)
 
 #############

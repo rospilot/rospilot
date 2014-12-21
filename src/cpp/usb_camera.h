@@ -30,6 +30,7 @@
 #include<usb_cam/usb_cam.h>
 
 #include<base_camera.h>
+#include<transcoder.h>
 
 class UsbCamera : public BaseCamera
 {

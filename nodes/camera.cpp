@@ -18,6 +18,9 @@
  *
  *********************************************************************/
 #include<stdio.h>
+#include<time.h>
+#include<unistd.h>
+#include<pwd.h>
 #include<iostream>
 #include<gphoto2/gphoto2.h>
 #include<gphoto2/gphoto2-context.h>
@@ -30,6 +33,7 @@
 
 #include<ptp.h>
 #include<usb_camera.h>
+#include<video_recorder.h>
 
 class CameraNode
 {
@@ -38,11 +42,17 @@ private:
     // NOTE: We don't need to guard this with a mutex, because callbacks
     // are called in spinOnce() in the main thread
     BaseCamera *camera;
+    JpegDecoder *jpegDecoder;
+    H264Encoder *h264Encoder;
+    SoftwareVideoRecorder *videoRecorder;
     ros::Publisher imagePub;
     ros::ServiceServer captureServiceServer;
+    ros::ServiceServer startRecordServiceServer;
+    ros::ServiceServer stopRecordServiceServer;
 
     std::string videoDevice;
     std::string pixelFormat; // "jpeg" or "h264"
+    std::string mediaPath;
     int width;
     int height;
     int framerate;
@@ -52,10 +62,35 @@ private:
     {
         sensor_msgs::CompressedImage image;
         if(camera != nullptr && camera->getLiveImage(&image)) {
+            bool keyFrame = false;
             imagePub.publish(image);
+            if (pixelFormat == "h264" && image.format == "jpeg") {
+                jpegDecoder->decodeInPlace(&image);
+                h264Encoder->encodeInPlace(&image, &keyFrame);
+            }
+            if (videoRecorder != nullptr) {
+                videoRecorder->writeFrame(&image, keyFrame);
+            }
             return true;
         }
         return false;
+    }
+
+    // TODO: find a library that does this
+    static std::string expandTildes(const std::string path)
+    {
+        if (path[0] != '~') {
+            return path;
+        }
+        std::string user = "";
+        int i = 1;
+        for (; i < path.size() && path[i] != '/'; i++) {
+            user += path[i];
+        }
+        if (user.size() == 0) {
+            user = getpwuid(geteuid())->pw_name;
+        }
+        return std::string("/home/") + user + path.substr(i);
     }
 
     BaseCamera *createCamera()
@@ -68,6 +103,8 @@ private:
         node.param("image_height", height, 480);
         node.param("framerate", framerate, 30);
         node.param("pixel_format", pixelFormat, std::string("jpeg"));
+        node.param("media_path", mediaPath, std::string("~/.rospilot/media"));
+        mediaPath = expandTildes(mediaPath);
 
         if (cameraType == "ptp") {
             return new PtpCamera();
@@ -90,7 +127,18 @@ public:
                 "capture_image", 
                 &CameraNode::captureImageCallback,
                 this);
+        startRecordServiceServer = node.advertiseService(
+                "/start_record", 
+                &CameraNode::startRecordHandler,
+                this);
+        stopRecordServiceServer = node.advertiseService(
+                "/stop_record", 
+                &CameraNode::stopRecordHandler,
+                this);
         camera = createCamera();
+        jpegDecoder = new JpegDecoder(width, height, PIX_FMT_YUV420P);
+        h264Encoder = new SoftwareH264Encoder(width, height, PIX_FMT_YUV420P);
+        videoRecorder = new SoftwareVideoRecorder(width, height, PIX_FMT_YUV420P);
     }
 
     ~CameraNode()
@@ -98,6 +146,9 @@ public:
         if (camera != nullptr) {
             delete camera;
         }
+        delete jpegDecoder;
+        delete h264Encoder;
+        delete videoRecorder;
     }
 
     bool spin()
@@ -124,6 +175,23 @@ public:
             usleep(1000);
         }
         return true;
+    }
+    
+    bool startRecordHandler(std_srvs::Empty::Request& request, 
+            std_srvs::Empty::Response &response)
+    {
+        time_t t = time(nullptr);
+        struct tm *tmp = localtime(&t);
+        char str[100];
+        strftime(str, sizeof(str), "%Y-%m-%d_%H%M%S.mp4", tmp);
+        std::string path = mediaPath + "/" + str;
+        return videoRecorder->start(path.c_str());
+    }
+    
+    bool stopRecordHandler(std_srvs::Empty::Request& request, 
+            std_srvs::Empty::Response &response)
+    {
+        return videoRecorder->stop();
     }
 
     bool captureImageCallback(rospilot::CaptureImage::Request& request, 

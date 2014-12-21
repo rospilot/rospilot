@@ -25,17 +25,12 @@
       args="--media_path=~/.rospilot/media">
     <param name="tilestache_config_file" value="~/.rospilot/mapnik/ts/ts.config" />
 </node>
-<node name="vlc"
-      pkg="rospilot"
-      type="ros_vlc.py"
-      respawn="false"
-      output="screen"
-      args="--media_path=~/.rospilot/media" />
 <node name="camera"
       pkg="rospilot"
       type="camera_node"
       respawn="false"
       output="screen">
+    <param name="pixel_format" value="h264" />
     <param name="camera_type" value="usb" />
     <param name="image_width" value="960" />
     <param name="image_height" value="720" />
