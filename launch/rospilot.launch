@@ -30,10 +30,10 @@
       type="camera_node"
       respawn="false"
       output="screen">
-    <param name="pixel_format" value="h264" />
+    <param name="codec" value="mjpeg" />
     <param name="camera_type" value="usb" />
     <param name="image_width" value="960" />
-    <param name="image_height" value="720" />
+    <param name="image_height" value="544" />
     <param name="video_device" value="/dev/video0" />
 </node>
 <node name="mjpeg"

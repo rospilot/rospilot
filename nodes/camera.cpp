@@ -51,7 +51,8 @@ private:
     ros::ServiceServer stopRecordServiceServer;
 
     std::string videoDevice;
-    std::string pixelFormat; // "jpeg" or "h264"
+    std::string codec; // "mjpeg" or "h264"
+    CodecID codecId;
     std::string mediaPath;
     int width;
     int height;
@@ -63,8 +64,11 @@ private:
         sensor_msgs::CompressedImage image;
         if(camera != nullptr && camera->getLiveImage(&image)) {
             bool keyFrame = false;
+            if (codec == "mjpeg") {
+                keyFrame = true;
+            }
             imagePub.publish(image);
-            if (pixelFormat == "h264" && image.format == "jpeg") {
+            if (codec == "h264" && image.format == "mjpeg") {
                 jpegDecoder->decodeInPlace(&image);
                 h264Encoder->encodeInPlace(&image, &keyFrame);
             }
@@ -102,7 +106,16 @@ private:
         node.param("image_width", width, 640);
         node.param("image_height", height, 480);
         node.param("framerate", framerate, 30);
-        node.param("pixel_format", pixelFormat, std::string("jpeg"));
+        node.param("codec", codec, std::string("mjpeg"));
+        if (codec == "h264") {
+            codecId = CODEC_ID_H264;
+        }
+        else if (codec == "mjpeg") {
+            codecId = CODEC_ID_MJPEG;
+        }
+        else {
+            ROS_FATAL("Unknown codec: %s", codec.c_str());
+        }
         node.param("media_path", mediaPath, std::string("~/.rospilot/media"));
         mediaPath = expandTildes(mediaPath);
 
@@ -138,7 +151,16 @@ public:
         camera = createCamera();
         jpegDecoder = new JpegDecoder(width, height, PIX_FMT_YUV420P);
         h264Encoder = new SoftwareH264Encoder(width, height, PIX_FMT_YUV420P);
-        videoRecorder = new SoftwareVideoRecorder(width, height, PIX_FMT_YUV420P);
+        PixelFormat recordingPixelFormat;
+        if (codec == "h264") {
+            recordingPixelFormat = PIX_FMT_YUV420P;
+        }
+        else if (codec == "mjpeg") {
+            // TODO: Do we need to detect this dynamically?
+            // Different cameras might be 4:2:0, 4:2:2, or 4:4:4
+            recordingPixelFormat = PIX_FMT_YUVJ422P;
+        }
+        videoRecorder = new SoftwareVideoRecorder(width, height, recordingPixelFormat, codecId);
     }
 
     ~CameraNode()

@@ -22,7 +22,7 @@
 
 #include<stdio.h>
 #include<iostream>
-#include<time.h>
+#include<chrono>
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
@@ -41,6 +41,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+using namespace std::chrono;
+
 class SoftwareVideoRecorder
 {
 private:
@@ -50,7 +52,7 @@ private:
     bool recording = false;
     AVFormatContext *formatContext;
     AVStream *videoStream;
-    double firstFrameTime;
+    time_point<high_resolution_clock> firstFrameTime;
     int lastPTS = 0;
     bool foundKeyframe = false;
     std::string tempFilename;
@@ -58,18 +60,17 @@ private:
     int width;
     int height;
     PixelFormat pixelFormat;
+    CodecID codecId;
+
 
 public:
-    SoftwareVideoRecorder(int width, int height, PixelFormat pixelFormat)
+    SoftwareVideoRecorder(int width, int height, PixelFormat pixelFormat, CodecID codecId)
     {
         av_register_all();
         this->width = width;
         this->height = height;
         this->pixelFormat = pixelFormat;
-        if (CLOCKS_PER_SEC < 1000) {
-            ROS_ERROR("Clock is not precise enough to record video");
-            exit(1);
-        }
+        this->codecId = codecId;
     }
     
     void writeFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
@@ -77,7 +78,8 @@ public:
         if (!recording) {
             return;
         }
-        double currentTime = clock() / ((double) CLOCKS_PER_SEC);
+
+        time_point<high_resolution_clock> currentTime = high_resolution_clock::now();
         if (!foundKeyframe && keyFrame) {
             foundKeyframe = true;
             firstFrameTime = currentTime;
@@ -88,7 +90,8 @@ public:
             return;
         }
 
-        int pts = (int) ((currentTime - firstFrameTime) * FPS);
+        duration<double> duration = (currentTime - firstFrameTime);
+        int pts = (int) (duration.count() * FPS);
         ROS_INFO("pts: %d", pts);
         if (pts == lastPTS) {
             // If we're receiving frames faster than 60 fps, just drop them.
@@ -117,13 +120,13 @@ public:
         }
     }
 
-    AVStream *createVideoStream(AVFormatContext *oc, enum CodecID codec_id)
+    AVStream *createVideoStream(AVFormatContext *oc)
     {
         AVCodecContext *c;
         AVStream *stream;
         AVCodec *codec;
 
-        codec = avcodec_find_encoder(CODEC_ID_H264);
+        codec = avcodec_find_encoder(codecId);
         if (!codec) {
             ROS_ERROR("codec not found");
         }
@@ -136,7 +139,7 @@ public:
         c = stream->codec;
         avcodec_get_context_defaults3(c, codec);
 
-        c->codec_id = codec_id;
+        c->codec_id = codecId;
         c->bit_rate = 400000;
         c->width = this->width;
         c->height = this->height;
@@ -156,7 +159,7 @@ public:
         tempFilename = std::string(tempname);
         free(tempname);
         formatContext = avformat_alloc_context();
-        formatContext->oformat = av_guess_format("mp4", NULL, NULL);
+        formatContext->oformat = av_guess_format(nullptr, name, nullptr);
 
         formatContext->priv_data =
             av_mallocz(formatContext->oformat->priv_data_size);
@@ -169,8 +172,12 @@ public:
         strncpy(formatContext->filename, 
                 tempFilename.c_str(),
                 sizeof(formatContext->filename));
-        videoStream = createVideoStream(formatContext, 
-                formatContext->oformat->video_codec);
+        // Check that this is a valid combination
+        if(avformat_query_codec(formatContext->oformat, codecId, FF_COMPLIANCE_NORMAL) != 1) {
+            ROS_FATAL("Codec %d not compatible with output format %s", codecId, 
+                    formatContext->oformat->long_name);
+        }
+        videoStream = createVideoStream(formatContext);
         if (avcodec_open2(videoStream->codec, nullptr, nullptr) < 0) {
             ROS_ERROR("could not open codec");
         }
@@ -188,7 +195,7 @@ public:
         recording = true;
         ROS_INFO("RECORDING output as %s with vcodec %d, short name = %s", 
                 formatContext->oformat->long_name,
-                formatContext->oformat->video_codec,
+                codecId,
                 formatContext->oformat->name);
         return true;
     }
