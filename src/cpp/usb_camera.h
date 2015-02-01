@@ -27,7 +27,7 @@
 #include<std_srvs/Empty.h>
 #include<sensor_msgs/fill_image.h>
 #include<sensor_msgs/CompressedImage.h>
-#include<usb_cam/usb_cam.h>
+#include<rospilot_deps/usb_cam.h>
 
 #include<base_camera.h>
 #include<transcoder.h>

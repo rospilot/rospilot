@@ -122,12 +122,15 @@ include_directories(include src/cpp
 
 add_executable(camera_node nodes/camera.cpp)
 target_link_libraries(camera_node 
-    rospilot_deps
+    ${rospilot_deps_LIBRARIES}
     ${libgphoto2_LIBRARIES}
+    ${libavcodec_LIBRARIES}
     ${libavutil_LIBRARIES}
     ${libavformat_LIBRARIES}
+    ${libswscale_LIBRARIES}
     ${catkin_LIBRARIES})
 add_dependencies(camera_node rospilot_gencpp)
+add_dependencies(camera_node rospilot_deps)
 
 #############
 ## Install ##
