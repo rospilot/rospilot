@@ -23,7 +23,6 @@ roslib.load_manifest('rospilot')
 import rospy
 import json
 import cherrypy
-import threading
 import os
 import re
 import glob
@@ -41,8 +40,8 @@ PORT_NUMBER = 8085
 
 
 class API(object):
-    def __init__(self, node):
-        self.node = node
+    def __init__(self, media_path):
+        self.media_path = media_path
 
     @cherrypy.expose
     def media(self, id=None):
@@ -50,11 +49,9 @@ class API(object):
             if not re.match(r"([a-z]+\.)?[a-zA-Z0-9_-]+\.\w{2,5}", id):
                 rospy.logwarn("Ignoring request to delete %s", id)
                 return
-            os.remove(self.node.media_path + "/" + id)
+            os.remove(self.media_path + "/" + id)
         elif cherrypy.request.method == "GET":
-            paths = []
-            with self.node.lock:
-                paths = os.listdir(self.node.media_path)
+            paths = os.listdir(self.media_path)
             objs = []
             for path in reversed(sorted(paths)):
                 if path.endswith('jpg'):
@@ -69,7 +66,7 @@ class API(object):
 
     @cherrypy.expose
     def thumbnail(self, filename):
-        cap = cv2.VideoCapture(self.node.media_path + "/" + filename)
+        cap = cv2.VideoCapture(self.media_path + "/" + filename)
         ret, frame = cap.read()
         ret, jpg = cv2.imencode(".jpg", frame)
         cap.release()
@@ -98,14 +95,6 @@ class WebUiNode(object):
         rospy.Service('shutdown',
                       std_srvs.srv.Empty,
                       self.handle_shutdown)
-        self.lock = threading.Lock()
-        self.ptp_capture_image = rospy.ServiceProxy('camera/capture_image',
-                                                    rospilot.srv.CaptureImage)
-        try:
-            rospy.ServiceProxy('camera/capture_image', 3.0)
-        except:
-            # Timeout after 3 seconds
-            self.ptp_capture_image = None
         self.media_path = os.path.expanduser(media_path)
         if not os.path.exists(self.media_path):
             os.makedirs(self.media_path)
@@ -123,7 +112,7 @@ class WebUiNode(object):
                        }
         }
         index = Index()
-        index.api = API(self)
+        index.api = API(self.media_path)
         cherrypy.tree.mount(index, config=conf)
         cherrypy.log.screen = False
 
