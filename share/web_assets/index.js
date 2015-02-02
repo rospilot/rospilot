@@ -70,9 +70,9 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 })
 .factory('Camera', function ($rosservice) {
     return {
-        take_picture: $rosservice('/take_picture', 'std_srvs/Empty'),
-        start_recording: $rosservice('/start_record', 'std_srvs/Empty'),
-        stop_recording: $rosservice('/stop_record', 'std_srvs/Empty')
+        take_picture: $rosservice('/camera/capture_image', 'std_srvs/Empty'),
+        start_recording: $rosservice('/camera/start_record', 'std_srvs/Empty'),
+        stop_recording: $rosservice('/camera/stop_record', 'std_srvs/Empty')
     };
 })
 .factory('Media', function ($resource) {

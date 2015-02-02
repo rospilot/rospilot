@@ -22,8 +22,10 @@
 #include<unistd.h>
 #include<pwd.h>
 #include<iostream>
+#include<fstream>
 #include<gphoto2/gphoto2.h>
 #include<gphoto2/gphoto2-context.h>
+#include<boost/filesystem.hpp>
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
@@ -141,11 +143,11 @@ public:
                 &CameraNode::captureImageCallback,
                 this);
         startRecordServiceServer = node.advertiseService(
-                "/start_record", 
+                "start_record", 
                 &CameraNode::startRecordHandler,
                 this);
         stopRecordServiceServer = node.advertiseService(
-                "/stop_record", 
+                "stop_record", 
                 &CameraNode::stopRecordHandler,
                 this);
         camera = createCamera();
@@ -216,11 +218,29 @@ public:
         return videoRecorder->stop();
     }
 
-    bool captureImageCallback(rospilot::CaptureImage::Request& request, 
-            rospilot::CaptureImage::Response &response)
+    bool captureImageCallback(std_srvs::Empty::Request& request, 
+            std_srvs::Empty::Response &response)
     {
         if (camera != nullptr) {
-            return camera->captureImage(&response.image);
+            time_t t = time(nullptr);
+            struct tm *tmp = localtime(&t);
+            char str[100];
+            strftime(str, sizeof(str), "%Y-%m-%d_%H%M%S", tmp);
+            std::string basePath = mediaPath + "/" + str;
+            std::string path = basePath + ".jpg";
+            for (int i = 1; boost::filesystem::exists(path); i++) {
+                std::stringstream ss;
+                ss << basePath << "_" << i << ".jpg";
+                path = ss.str();
+            }
+            sensor_msgs::CompressedImage image;
+            if (!camera->captureImage(&image)) {
+                return false;
+            }
+            std::fstream fout(path, std::fstream::out);
+            fout.write((char*) image.data.data(), image.data.size());
+            fout.close();
+            return true;
         }
         return false;
     }

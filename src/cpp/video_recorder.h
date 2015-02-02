@@ -92,7 +92,6 @@ public:
 
         duration<double> duration = (currentTime - firstFrameTime);
         int pts = (int) (duration.count() * FPS);
-        ROS_INFO("pts: %d", pts);
         if (pts == lastPTS) {
             // If we're receiving frames faster than 60 fps, just drop them.
             return;

@@ -29,10 +29,8 @@ import re
 import glob
 import std_srvs.srv
 import rospilot.srv
-import sensor_msgs.msg
 import urllib2
 import cv2
-from datetime import datetime
 from optparse import OptionParser
 from catkin.find_in_workspaces import find_in_workspaces
 
@@ -94,11 +92,6 @@ class Index(object):
 
 class WebUiNode(object):
     def __init__(self, media_path):
-        rospy.Subscriber('camera/image_raw/compressed',
-                         sensor_msgs.msg.CompressedImage, self.handle_image)
-        rospy.Service('take_picture',
-                      std_srvs.srv.Empty,
-                      self.take_picture)
         rospy.Service('glob',
                       rospilot.srv.Glob,
                       self.handle_glob)
@@ -106,7 +99,6 @@ class WebUiNode(object):
                       std_srvs.srv.Empty,
                       self.handle_shutdown)
         self.lock = threading.Lock()
-        self.last_image = None
         self.ptp_capture_image = rospy.ServiceProxy('camera/capture_image',
                                                     rospilot.srv.CaptureImage)
         try:
@@ -135,33 +127,11 @@ class WebUiNode(object):
         cherrypy.tree.mount(index, config=conf)
         cherrypy.log.screen = False
 
-    def handle_image(self, data):
-        with self.lock:
-            self.last_image = data
-
     def handle_glob(self, request):
         return rospilot.srv.GlobResponse(glob.glob(request.pattern))
 
     def handle_shutdown(self, request):
         os.system('shutdown now -P')
-        return std_srvs.srv.EmptyResponse()
-
-    def take_picture(self, request):
-        if self.ptp_capture_image is not None:
-            image = self.ptp_capture_image().image
-        else:
-            image = self.last_image
-
-        with self.lock:
-            date = datetime.today().strftime("%Y-%m-%d_%H%M%S")
-            path = "%s/%s.jpg" % (self.media_path, date)
-            i = 1
-            while os.path.exists(path):
-                path = "%s/%s_%d.jpg" % (self.media_path, date, i)
-                i += 1
-
-            with open(path, 'w') as f:
-                f.write(image.data)
         return std_srvs.srv.EmptyResponse()
 
     def run(self):
