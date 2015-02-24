@@ -23,6 +23,8 @@ from curses import ascii
 import rospy
 from colorama.ansi import Fore
 import psutil
+from time import sleep
+from os import path
 
 
 class OdroidShow(object):
@@ -78,4 +80,6 @@ class OdroidShowNode(object):
         return False
 
 if __name__ == '__main__':
+    while not path.exists("/dev/odroid_show"):
+        sleep(1.0)
     OdroidShowNode("/dev/odroid_show").run()
