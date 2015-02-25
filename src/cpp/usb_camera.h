@@ -21,7 +21,13 @@
 #define ROSPILOT_USB_CAMERA_H
 
 #include<stdio.h>
+#include<fcntl.h>
+#include<unistd.h>
 #include<iostream>
+#include<sys/ioctl.h>
+extern "C" {
+#include <linux/videodev2.h>
+}
 
 #include<ros/ros.h>
 #include<std_srvs/Empty.h>
@@ -34,7 +40,21 @@
 
 class UsbCamera : public BaseCamera
 {
+private:
+    int width;
+    int height;
+
 public:
+    int getWidth()
+    {
+        return width;
+    }
+
+    int getHeight()
+    {
+        return height;
+    }
+
     bool getLiveImage(sensor_msgs::CompressedImage *image) override
     {
         image->format = "jpeg";
@@ -48,10 +68,32 @@ public:
         getLiveImage(image);
     }
 
-public:
     UsbCamera(std::string device, int width, int height, int framerate)
     {
         usb_cam_camera_image_t *image;
+
+        // Adjust height and width to something this camera supports
+        int fd;
+        v4l2_format format;
+        format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        if ((fd = open(device.c_str(), O_RDONLY)) == -1){
+            ROS_FATAL("Can't open %s", device.c_str());
+        }
+
+        if (ioctl(fd, VIDIOC_G_FMT, &format) == -1) {
+            ROS_FATAL("Can't read format from %s", device.c_str());
+        }
+        else {
+            format.fmt.pix.width = width;
+            format.fmt.pix.height = height;
+            ioctl(fd, VIDIOC_TRY_FMT, &format);
+            width = format.fmt.pix.width;
+            height = format.fmt.pix.width;
+        }
+        close(fd);
+
+        this->width = width;
+        this->height = height;
 
         ROS_INFO("device: %s", device.c_str());
         image = usb_cam_camera_start(device.c_str(),

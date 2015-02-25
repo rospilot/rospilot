@@ -32,8 +32,8 @@
       output="screen">
     <param name="codec" value="mjpeg" />
     <param name="camera_type" value="usb" />
-    <param name="image_width" value="960" />
-    <param name="image_height" value="544" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
     <param name="video_device" value="/dev/video0" />
 </node>
 <node name="mjpeg"

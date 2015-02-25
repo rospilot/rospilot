@@ -105,8 +105,8 @@ private:
         node.param("camera_type", cameraType, std::string("usb"));
 
         node.param("video_device", videoDevice, std::string("/dev/video0"));
-        node.param("image_width", width, 640);
-        node.param("image_height", height, 480);
+        node.param("image_width", width, 1920);
+        node.param("image_height", height, 1080);
         node.param("framerate", framerate, 30);
         node.param("codec", codec, std::string("mjpeg"));
         if (codec == "h264") {
@@ -125,7 +125,14 @@ private:
             return new PtpCamera();
         }
         else if (cameraType == "usb") {
-            return new UsbCamera(videoDevice, width, height, framerate);
+            ROS_INFO("Requesting camera res %dx%d", width, height);
+            UsbCamera *camera = new UsbCamera(videoDevice, width, height, framerate);
+            // Read the width and height, since the camera may have altered it to
+            // something it supports
+            width = camera->getWidth();
+            height = camera->getHeight();
+            ROS_INFO("Camera selected res %dx%d", width, height);
+            return camera;
         }
         else {
             ROS_FATAL("Unsupported camera type: %s", cameraType.c_str());
