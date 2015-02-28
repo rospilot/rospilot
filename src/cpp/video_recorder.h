@@ -23,6 +23,7 @@
 #include<stdio.h>
 #include<iostream>
 #include<chrono>
+#include<errno.h>
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
@@ -61,7 +62,6 @@ private:
     int height;
     PixelFormat pixelFormat;
     CodecID codecId;
-
 
 public:
     SoftwareVideoRecorder(int width, int height, PixelFormat pixelFormat, CodecID codecId)
@@ -192,7 +192,7 @@ public:
         avformat_write_header(formatContext, nullptr);
         foundKeyframe = false;
         recording = true;
-        ROS_INFO("RECORDING output as %s with vcodec %d, short name = %s", 
+        ROS_INFO("Start recording output as %s with vcodec %d, short name = %s", 
                 formatContext->oformat->long_name,
                 codecId,
                 formatContext->oformat->name);
@@ -210,7 +210,13 @@ public:
         }
         avio_close(formatContext->pb);
         av_free(formatContext);
-        rename(tempFilename.c_str(), filename.c_str());
+        ROS_INFO("Finializing video file: %s", filename.c_str());
+        if(rename(tempFilename.c_str(), filename.c_str()) != 0) {
+            ROS_INFO("Error moving temp file: %s", strerror(errno));
+        }
+        else {
+            ROS_INFO("Finished recording video");
+        }
         return true;
     }
 

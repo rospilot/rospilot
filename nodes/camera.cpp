@@ -27,6 +27,7 @@
 #include<gphoto2/gphoto2-context.h>
 #include<boost/filesystem.hpp>
 #include<wordexp.h>
+#include<dirent.h>
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
@@ -37,6 +38,10 @@
 #include<ptp.h>
 #include<usb_camera.h>
 #include<video_recorder.h>
+
+extern "C" {
+#include <linux/videodev2.h>
+}
 
 class CameraNode
 {
@@ -60,6 +65,7 @@ private:
     int width;
     int height;
     int framerate;
+    std::string mfcDevice;
 
 private:
     bool sendPreview()
@@ -71,11 +77,13 @@ private:
                 keyFrame = true;
             }
             imagePub.publish(image);
+            bool transcodedSuccessfully = false;
             if (codec == "h264" && image.format == "jpeg") {
                 jpegDecoder->decodeInPlace(&image);
-                h264Encoder->encodeInPlace(&image, &keyFrame);
+                transcodedSuccessfully = h264Encoder->encodeInPlace(&image, 
+                        &keyFrame);
             }
-            if (videoRecorder != nullptr) {
+            if (videoRecorder != nullptr && transcodedSuccessfully) {
                 videoRecorder->writeFrame(&image, keyFrame);
             }
             return true;
@@ -152,18 +160,83 @@ public:
                 &CameraNode::stopRecordHandler,
                 this);
         camera = createCamera();
-        jpegDecoder = new JpegDecoder(width, height, PIX_FMT_YUV420P);
-        h264Encoder = new SoftwareH264Encoder(width, height, PIX_FMT_YUV420P);
-        PixelFormat recordingPixelFormat;
+        PixelFormat pixelFormat;
         if (codec == "h264") {
-            recordingPixelFormat = PIX_FMT_YUV420P;
+            pixelFormat = PIX_FMT_YUV420P;
         }
         else if (codec == "mjpeg") {
             // TODO: Do we need to detect this dynamically?
             // Different cameras might be 4:2:0, 4:2:2, or 4:4:4
-            recordingPixelFormat = PIX_FMT_YUVJ422P;
+            pixelFormat = PIX_FMT_YUVJ422P;
         }
-        videoRecorder = new SoftwareVideoRecorder(width, height, recordingPixelFormat, codecId);
+
+        // Look for the MFC
+        DIR *dir = opendir("/dev");
+        dirent *dirEntry = nullptr;
+        std::string videoDevice;
+        node.param("video_device", videoDevice, std::string("/dev/video0"));
+        while ((dirEntry = readdir(dir)) != nullptr) {
+            int fd;
+            v4l2_capability videoCap;
+            std::string path = std::string("/dev/") + dirEntry->d_name;
+            if (path.substr(0, std::string("/dev/video").size()) != "/dev/video" ||
+                    path == videoDevice) {
+                continue;
+            }
+            ROS_INFO("Querying %s", path.c_str());
+            if((fd = open(path.c_str(), O_RDONLY)) == -1){
+                ROS_WARN("Can't open %s", path.c_str());
+                continue;
+            }
+
+            if(ioctl(fd, VIDIOC_QUERYCAP, &videoCap) == -1) {
+                ROS_WARN("Can't read from %s", path.c_str());
+            }
+            else {
+                if (std::string((char *) videoCap.driver) == "s5p-mfc") {
+                    v4l2_ext_controls ctrls;
+                    v4l2_ext_control ctrl;
+
+                    ctrl.id = V4L2_CID_MPEG_VIDEO_H264_I_PERIOD;
+                    // These aren't used for integer controls
+                    ctrl.size = 0;
+                    memzero(ctrl.reserved2);
+
+                    ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
+                    ctrls.count = 1;
+                    ctrls.controls = &ctrl;
+                    
+                    if(ioctl(fd, VIDIOC_G_EXT_CTRLS, &ctrls) == 0) {
+                        mfcDevice = path;
+                        break;
+                    }
+                }
+            }
+        }
+        closedir(dir);
+
+        jpegDecoder = new JpegDecoder(width, height, pixelFormat);
+        h264Encoder = createEncoder();
+        videoRecorder = new SoftwareVideoRecorder(width, height, pixelFormat, codecId);
+    }
+
+    H264Encoder *createEncoder()
+    {
+        PixelFormat pixelFormat;
+        if (codec == "h264") {
+            pixelFormat = PIX_FMT_YUV420P;
+        }
+        else if (codec == "mjpeg") {
+            // TODO: Do we need to detect this dynamically?
+            // Different cameras might be 4:2:0, 4:2:2, or 4:4:4
+            pixelFormat = PIX_FMT_YUVJ422P;
+        }
+        if (mfcDevice.size() > 0) {
+            return new ExynosMultiFormatCodecH264Encoder(width, height);
+        }
+        else {
+            return new SoftwareH264Encoder(width, height, pixelFormat);
+        }
     }
 
     ~CameraNode()
@@ -210,6 +283,11 @@ public:
         char str[100];
         strftime(str, sizeof(str), "%Y-%m-%d_%H%M%S.mp4", tmp);
         std::string path = mediaPath + "/" + str;
+        // Reset the encoder
+        if (h264Encoder != nullptr) {
+            delete h264Encoder;
+        }
+        h264Encoder = createEncoder();
         return videoRecorder->start(path.c_str());
     }
     
