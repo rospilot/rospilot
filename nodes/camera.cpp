@@ -71,7 +71,7 @@ private:
                 keyFrame = true;
             }
             imagePub.publish(image);
-            if (codec == "h264" && image.format == "mjpeg") {
+            if (codec == "h264" && image.format == "jpeg") {
                 jpegDecoder->decodeInPlace(&image);
                 h264Encoder->encodeInPlace(&image, &keyFrame);
             }
