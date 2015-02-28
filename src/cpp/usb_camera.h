@@ -88,7 +88,7 @@ public:
             format.fmt.pix.height = height;
             ioctl(fd, VIDIOC_TRY_FMT, &format);
             width = format.fmt.pix.width;
-            height = format.fmt.pix.width;
+            height = format.fmt.pix.height;
         }
         close(fd);
 
