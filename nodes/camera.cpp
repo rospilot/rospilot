@@ -26,6 +26,7 @@
 #include<gphoto2/gphoto2.h>
 #include<gphoto2/gphoto2-context.h>
 #include<boost/filesystem.hpp>
+#include<wordexp.h>
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
@@ -82,23 +83,6 @@ private:
         return false;
     }
 
-    // TODO: find a library that does this
-    static std::string expandTildes(const std::string path)
-    {
-        if (path[0] != '~') {
-            return path;
-        }
-        std::string user = "";
-        int i = 1;
-        for (; i < path.size() && path[i] != '/'; i++) {
-            user += path[i];
-        }
-        if (user.size() == 0) {
-            user = getpwuid(geteuid())->pw_name;
-        }
-        return std::string("/home/") + user + path.substr(i);
-    }
-
     BaseCamera *createCamera()
     {
         std::string cameraType;
@@ -119,7 +103,17 @@ private:
             ROS_FATAL("Unknown codec: %s", codec.c_str());
         }
         node.param("media_path", mediaPath, std::string("~/.rospilot/media"));
-        mediaPath = expandTildes(mediaPath);
+        wordexp_t p;
+        wordexp(mediaPath.c_str(), &p, 0);
+        if (p.we_wordc != 1) {
+            ROS_ERROR("Got too many words when expanding media path: %s",
+                    mediaPath.c_str());
+        }
+        else {
+            mediaPath = p.we_wordv[0];
+        }
+        wordfree(&p);
+
 
         if (cameraType == "ptp") {
             return new PtpCamera();
