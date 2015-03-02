@@ -120,7 +120,14 @@ include_directories(include src/cpp
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(camera_node nodes/camera.cpp)
+add_executable(camera_node
+    nodes/camera.cpp
+    src/cpp/usb_camera.cpp
+    src/cpp/ptp.cpp
+    src/cpp/jpeg_decoder.cpp
+    src/cpp/software_h264_encoder.cpp
+    src/cpp/mfc_encoder.cpp
+    src/cpp/video_recorder.cpp)
 target_link_libraries(camera_node 
     ${rospilot_deps_LIBRARIES}
     ${libgphoto2_LIBRARIES}

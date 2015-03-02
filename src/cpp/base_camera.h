@@ -19,13 +19,7 @@
  *********************************************************************/
 #ifndef ROSPILOT_BASE_CAMERA_H
 #define ROSPILOT_BASE_CAMERA_H
-#include<stdio.h>
-#include<iostream>
 
-#include<ros/ros.h>
-#include<rospilot/CaptureImage.h>
-#include<std_srvs/Empty.h>
-#include<sensor_msgs/fill_image.h>
 #include<sensor_msgs/CompressedImage.h>
 
 class BaseCamera

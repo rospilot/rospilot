@@ -19,25 +19,22 @@
  *********************************************************************/
 #include<stdio.h>
 #include<time.h>
-#include<unistd.h>
-#include<pwd.h>
-#include<iostream>
 #include<fstream>
-#include<gphoto2/gphoto2.h>
-#include<gphoto2/gphoto2-context.h>
 #include<boost/filesystem.hpp>
 #include<wordexp.h>
 #include<dirent.h>
+#include<sys/ioctl.h>
+#include<fcntl.h>
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
 #include<std_srvs/Empty.h>
-#include<sensor_msgs/fill_image.h>
 #include<sensor_msgs/CompressedImage.h>
 
 #include<ptp.h>
 #include<usb_camera.h>
 #include<video_recorder.h>
+#include<transcoders.h>
 
 extern "C" {
 #include <linux/videodev2.h>

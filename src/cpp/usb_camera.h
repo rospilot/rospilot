@@ -20,23 +20,8 @@
 #ifndef ROSPILOT_USB_CAMERA_H
 #define ROSPILOT_USB_CAMERA_H
 
-#include<stdio.h>
-#include<fcntl.h>
-#include<unistd.h>
-#include<iostream>
-#include<sys/ioctl.h>
-extern "C" {
-#include <linux/videodev2.h>
-}
-
-#include<ros/ros.h>
-#include<std_srvs/Empty.h>
-#include<sensor_msgs/fill_image.h>
 #include<sensor_msgs/CompressedImage.h>
-#include<rospilot_deps/usb_cam.h>
-
 #include<base_camera.h>
-#include<transcoder.h>
 
 class UsbCamera : public BaseCamera
 {
@@ -45,81 +30,17 @@ private:
     int height;
 
 public:
-    int getWidth()
-    {
-        return width;
-    }
+    int getWidth();
 
-    int getHeight()
-    {
-        return height;
-    }
+    int getHeight();
 
-    bool getLiveImage(sensor_msgs::CompressedImage *image) override
-    {
-        image->format = "jpeg";
-        usb_cam_camera_grab_mjpeg(&(image->data));
-        image->header.stamp = ros::Time::now();
-        return true;
-    }
+    bool getLiveImage(sensor_msgs::CompressedImage *image) override;
     
-    bool captureImage(sensor_msgs::CompressedImage *image) override
-    {
-        getLiveImage(image);
-    }
+    bool captureImage(sensor_msgs::CompressedImage *image) override;
 
-    UsbCamera(std::string device, int width, int height, int framerate)
-    {
-        usb_cam_camera_image_t *image;
+    UsbCamera(std::string device, int width, int height, int framerate);
 
-        // Adjust height and width to something this camera supports
-        int fd;
-        v4l2_format format;
-        format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        if ((fd = open(device.c_str(), O_RDONLY)) == -1){
-            ROS_FATAL("Can't open %s", device.c_str());
-        }
-
-        if (ioctl(fd, VIDIOC_G_FMT, &format) == -1) {
-            ROS_FATAL("Can't read format from %s", device.c_str());
-        }
-        else {
-            format.fmt.pix.width = width;
-            format.fmt.pix.height = height;
-            ioctl(fd, VIDIOC_TRY_FMT, &format);
-            width = format.fmt.pix.width;
-            height = format.fmt.pix.height;
-        }
-        close(fd);
-
-        this->width = width;
-        this->height = height;
-
-        ROS_INFO("device: %s", device.c_str());
-        image = usb_cam_camera_start(device.c_str(),
-                                       IO_METHOD_MMAP,
-                                       PIXEL_FORMAT_MJPEG,
-                                       width,
-                                       height,
-                                       framerate);
-        if (image == nullptr) {
-            usleep(1000000);
-            image = usb_cam_camera_start(device.c_str(),
-                                           IO_METHOD_MMAP,
-                                           PIXEL_FORMAT_MJPEG,
-                                           width,
-                                           height,
-                                           framerate);
-        }
-        if (image != nullptr) {
-            free(image);
-        }
-    }
-
-    ~UsbCamera()
-    {
-        usb_cam_camera_shutdown();
-    }
+    ~UsbCamera();
 };
 
 #endif
