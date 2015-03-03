@@ -46,7 +46,12 @@ bool SoftwareH264Encoder::encodeInPlace(sensor_msgs::CompressedImage *image,
 
     // Data is going to be compressed, so this is a safe upper bound on the size
     uint8_t *outputBuffer = new uint8_t[image->data.size()];
-    int outputSize = avcodec_encode_video(context, outputBuffer, image->data.size(), sourceFrame);
+    AVPacket packet;
+    av_init_packet(&packet);
+    packet.size = image->data.size();
+    packet.data = outputBuffer;
+    int gotPacket;
+    int outputSize = avcodec_encode_video2(context, &packet, sourceFrame, &gotPacket);
     
     if (context->coded_frame->key_frame) {
         *keyFrame = true;
