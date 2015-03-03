@@ -44,29 +44,32 @@ bool SoftwareH264Encoder::encodeInPlace(sensor_msgs::CompressedImage *image,
     sourceFrame->pts = (1.0 / 30) * 90 * frameCounter;
     frameCounter++;
 
-    // Data is going to be compressed, so this is a safe upper bound on the size
-    uint8_t *outputBuffer = new uint8_t[image->data.size()];
     AVPacket packet;
     av_init_packet(&packet);
+    packet.data = new uint8_t[image->data.size()];
     packet.size = image->data.size();
-    packet.data = outputBuffer;
     int gotPacket;
-    int outputSize = avcodec_encode_video2(context, &packet, sourceFrame, &gotPacket);
-    
-    if (context->coded_frame->key_frame) {
-        *keyFrame = true;
+    if (avcodec_encode_video2(context, &packet, sourceFrame, &gotPacket) != 0) {
+        ROS_ERROR("Error during h264 encoding");
+        delete[] packet.data;
+        return false;
     }
+    if (gotPacket != 1) {
+        delete[] packet.data;
+        return false;
+    }
+
+    *keyFrame = (packet.flags & AV_PKT_FLAG_KEY);
 
     // XXX: Do we need to output the delayed frames here? by passing null as the 
     // frame while the output buffer is getting populated
 
     image->data.clear();
     image->format = "h264";
-    for (int i = 0; i < outputSize; i++) {
-        image->data.push_back(outputBuffer[i]);
+    for (int i = 0; i < packet.size; i++) {
+        image->data.push_back(packet.data[i]);
     }
-    delete[] outputBuffer;
-    *keyFrame = context->coded_frame->key_frame;
+    delete[] packet.data;
 
     return true;
 }
