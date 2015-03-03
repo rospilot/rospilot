@@ -70,11 +70,12 @@ private:
         sensor_msgs::CompressedImage image;
         if(camera != nullptr && camera->getLiveImage(&image)) {
             bool keyFrame = false;
+            bool transcodedSuccessfully = false;
             if (codec == "mjpeg") {
                 keyFrame = true;
+                transcodedSuccessfully = true;
             }
             imagePub.publish(image);
-            bool transcodedSuccessfully = false;
             if (codec == "h264" && image.format == "jpeg") {
                 jpegDecoder->decodeInPlace(&image);
                 transcodedSuccessfully = h264Encoder->encodeInPlace(&image, 
