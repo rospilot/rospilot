@@ -219,20 +219,11 @@ public:
 
     H264Encoder *createEncoder()
     {
-        PixelFormat pixelFormat;
-        if (codec == "h264") {
-            pixelFormat = PIX_FMT_YUV420P;
-        }
-        else if (codec == "mjpeg") {
-            // TODO: Do we need to detect this dynamically?
-            // Different cameras might be 4:2:0, 4:2:2, or 4:4:4
-            pixelFormat = PIX_FMT_YUVJ422P;
-        }
         if (mfcDevice.size() > 0) {
             return new ExynosMultiFormatCodecH264Encoder(width, height);
         }
         else {
-            return new SoftwareH264Encoder(width, height, pixelFormat);
+            return new SoftwareH264Encoder(width, height);
         }
     }
 

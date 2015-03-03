@@ -73,7 +73,7 @@ public:
     bool encodeInPlace(sensor_msgs::CompressedImage *image,
             bool *keyFrame) override;
     
-    SoftwareH264Encoder(int width, int height, PixelFormat pixelFormat);
+    SoftwareH264Encoder(int width, int height);
 
 private:
     AVFrame *allocFrame();

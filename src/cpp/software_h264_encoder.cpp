@@ -87,12 +87,12 @@ AVFrame *SoftwareH264Encoder::allocFrame()
     return frame;
 }
 
-SoftwareH264Encoder::SoftwareH264Encoder(int width, int height, PixelFormat pixelFormat)
+SoftwareH264Encoder::SoftwareH264Encoder(int width, int height)
 {
     avcodec_register_all();
     this->width = width;
     this->height = height;
-    this->pixelFormat = pixelFormat;
+    this->pixelFormat = PIX_FMT_YUV420P;
     
     encoder = avcodec_find_encoder(CODEC_ID_H264);
     if (!encoder) {

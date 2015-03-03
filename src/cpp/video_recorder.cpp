@@ -127,9 +127,9 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
 bool SoftwareVideoRecorder::start(const char *name)
 {
     filename = std::string(name);
-    char *tempname = tempnam(nullptr, nullptr);
+    char tempname[] = "/tmp/XXXXXX";
+    mkstemp(tempname);
     tempFilename = std::string(tempname);
-    free(tempname);
     formatContext = avformat_alloc_context();
     formatContext->oformat = av_guess_format(nullptr, name, nullptr);
 
@@ -158,14 +158,15 @@ bool SoftwareVideoRecorder::start(const char *name)
     if (avio_open(&formatContext->pb, 
                 tempFilename.c_str(),
                 AVIO_FLAG_WRITE) < 0) {
-        fprintf(stderr, "Could not open '%s'", tempFilename.c_str());
-        return 1;
+        ROS_ERROR("Could not open '%s'", tempFilename.c_str());
+        return false;
     }
 
     avformat_write_header(formatContext, nullptr);
     foundKeyframe = false;
     recording = true;
-    ROS_INFO("Start recording output as %s with vcodec %d, short name = %s", 
+    ROS_INFO("Start recording output to %s as %s with vcodec %d, short name = %s", 
+            tempFilename.c_str(),
             formatContext->oformat->long_name,
             codecId,
             formatContext->oformat->name);
@@ -185,7 +186,7 @@ bool SoftwareVideoRecorder::stop()
     av_free(formatContext);
     ROS_INFO("Finializing video file: %s", filename.c_str());
     if(rename(tempFilename.c_str(), filename.c_str()) != 0) {
-        ROS_INFO("Error moving temp file: %s", strerror(errno));
+        ROS_ERROR("Error moving temp file: %s", strerror(errno));
     }
     else {
         ROS_INFO("Finished recording video");
