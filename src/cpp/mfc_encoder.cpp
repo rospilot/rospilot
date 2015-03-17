@@ -96,9 +96,7 @@ static int copyToMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)
         return -1;
     }
     // Copy Y plane
-    for (int i = 0; i < lens[0]; i++) {
-        bufs[0][i] = (*image)[i];
-    }
+    memcpy(bufs[0], image->data(), lens[0]);
     // Copy U and V pixels and interleave them
     int numPixels = lens[0];
     for (int i = 0; i < numPixels / 4; i++) {
@@ -119,9 +117,8 @@ static int copyFromMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)
     }
 
     image->clear();
-    for (int i = 0; i < lens[0]; i++) {
-        image->push_back(bufs[0][i]);
-    }
+    image->reserve(lens[0]);
+    image->insert(image->begin(), bufs[0], bufs[0] + lens[0]);
     
     return 0;
 }

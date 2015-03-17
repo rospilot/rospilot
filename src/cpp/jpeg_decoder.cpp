@@ -56,7 +56,11 @@ bool JpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
     sws_freeContext(video_sws);  
     
     int outputSize = avpicture_get_size(outputPixelFormat, width, height);
-    uint8_t *outputBuffer = new uint8_t[outputSize];
+    if (outputSize > outputBufferSize) {
+        delete[] outputBuffer;
+        outputBuffer = new uint8_t[outputSize];
+        outputBufferSize = outputSize;
+    }
 
     int size = avpicture_layout((AVPicture *) outputFrame, outputPixelFormat, width, height,
             outputBuffer, outputSize);
@@ -75,10 +79,8 @@ bool JpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
     else {
         ROS_ERROR("Unknown pixel format");
     }
-    for (int i = 0; i < outputSize; i++) {
-        image->data.push_back(outputBuffer[i]);
-    }
-    delete[] outputBuffer;
+    image->data.reserve(outputSize);
+    image->data.insert(image->data.begin(), outputBuffer, outputBuffer + outputSize);
 
     return true;
 }
@@ -119,4 +121,9 @@ JpegDecoder::JpegDecoder(int width, int height, PixelFormat outputPixelFormat)
         ROS_ERROR("Could not open MJPEG decoder");
         return;
     }
+}
+
+JpegDecoder::~JpegDecoder()
+{
+    delete[] outputBuffer;
 }

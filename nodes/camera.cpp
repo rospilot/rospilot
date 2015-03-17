@@ -20,6 +20,7 @@
 #include<stdio.h>
 #include<time.h>
 #include<fstream>
+#include<chrono>
 #include<boost/filesystem.hpp>
 #include<wordexp.h>
 #include<dirent.h>
@@ -39,6 +40,8 @@
 extern "C" {
 #include <linux/videodev2.h>
 }
+
+using namespace std::chrono;
 
 class CameraNode
 {
@@ -67,6 +70,9 @@ private:
 private:
     bool sendPreview()
     {
+        static time_point<high_resolution_clock> sixtyFramesAgo = high_resolution_clock::now();
+        static int frameRateCounter = 0;
+
         sensor_msgs::CompressedImage image;
         if(camera != nullptr && camera->getLiveImage(&image)) {
             bool keyFrame = false;
@@ -83,6 +89,15 @@ private:
             }
             if (videoRecorder != nullptr && transcodedSuccessfully) {
                 videoRecorder->writeFrame(&image, keyFrame);
+            }
+
+            frameRateCounter++;
+            if (frameRateCounter >= 60) {
+                time_point<high_resolution_clock> currentTime = high_resolution_clock::now();
+                duration<double> duration = (currentTime - sixtyFramesAgo);
+                //ROS_INFO("Camera frame rate %f", frameRateCounter / duration.count());
+                frameRateCounter = 0;
+                sixtyFramesAgo = currentTime;
             }
             return true;
         }
