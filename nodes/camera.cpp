@@ -49,10 +49,10 @@ private:
     ros::NodeHandle node;
     // NOTE: We don't need to guard this with a mutex, because callbacks
     // are called in spinOnce() in the main thread
-    BaseCamera *camera;
-    JpegDecoder *jpegDecoder;
-    H264Encoder *h264Encoder;
-    SoftwareVideoRecorder *videoRecorder;
+    BaseCamera *camera = nullptr;
+    JpegDecoder *jpegDecoder = nullptr;
+    H264Encoder *h264Encoder = nullptr;
+    SoftwareVideoRecorder *videoRecorder = nullptr;
     ros::Publisher imagePub;
     ros::ServiceServer captureServiceServer;
     ros::ServiceServer startRecordServiceServer;
@@ -65,7 +65,6 @@ private:
     int width;
     int height;
     int framerate;
-    std::string mfcDevice;
 
 private:
     bool sendPreview()
@@ -102,6 +101,40 @@ private:
             return true;
         }
         return false;
+    }
+
+    void initCameraAndEncoders()
+    {
+        if (camera != nullptr) {
+            delete camera;
+        }
+        camera = createCamera();
+        PixelFormat pixelFormat;
+        if (codec == "h264") {
+            pixelFormat = PIX_FMT_YUV420P;
+        }
+        else if (codec == "mjpeg") {
+            // TODO: Do we need to detect this dynamically?
+            // Different cameras might be 4:2:0, 4:2:2, or 4:4:4
+            pixelFormat = PIX_FMT_YUVJ422P;
+        }
+
+        std::string videoDevice;
+        node.param("video_device", videoDevice, std::string("/dev/video0"));
+
+        if (jpegDecoder != nullptr) {
+            delete jpegDecoder;
+        }
+        jpegDecoder = new JpegDecoder(width, height, pixelFormat);
+        if (h264Encoder != nullptr) {
+            delete h264Encoder;
+        }
+        h264Encoder = createEncoder();
+        if (videoRecorder != nullptr) {
+            delete videoRecorder;
+        }
+        ROS_INFO("Recording in %s", codec.c_str());
+        videoRecorder = new SoftwareVideoRecorder(width, height, pixelFormat, codecId);
     }
 
     BaseCamera *createCamera()
@@ -172,22 +205,14 @@ public:
                 "stop_record", 
                 &CameraNode::stopRecordHandler,
                 this);
-        camera = createCamera();
-        PixelFormat pixelFormat;
-        if (codec == "h264") {
-            pixelFormat = PIX_FMT_YUV420P;
-        }
-        else if (codec == "mjpeg") {
-            // TODO: Do we need to detect this dynamically?
-            // Different cameras might be 4:2:0, 4:2:2, or 4:4:4
-            pixelFormat = PIX_FMT_YUVJ422P;
-        }
+        initCameraAndEncoders();
+    }
 
+    bool mfcDeviceIsPresent()
+    {
         // Look for the MFC
         DIR *dir = opendir("/dev");
         dirent *dirEntry = nullptr;
-        std::string videoDevice;
-        node.param("video_device", videoDevice, std::string("/dev/video0"));
         while ((dirEntry = readdir(dir)) != nullptr) {
             int fd;
             v4l2_capability videoCap;
@@ -220,22 +245,19 @@ public:
                     ctrls.controls = &ctrl;
                     
                     if(ioctl(fd, VIDIOC_G_EXT_CTRLS, &ctrls) == 0) {
-                        mfcDevice = path;
-                        break;
+                        return true;
                     }
                 }
             }
         }
         closedir(dir);
-
-        jpegDecoder = new JpegDecoder(width, height, pixelFormat);
-        h264Encoder = createEncoder();
-        videoRecorder = new SoftwareVideoRecorder(width, height, pixelFormat, codecId);
+        return false;
     }
 
     H264Encoder *createEncoder()
     {
-        if (mfcDevice.size() > 0) {
+        if (mfcDeviceIsPresent()) {
+            ROS_INFO("Using hardware encoder");
             return new ExynosMultiFormatCodecH264Encoder(width, height);
         }
         else {
@@ -263,11 +285,10 @@ public:
             ros::spinOnce();
             std::string newVideoDevice;
             node.getParam("video_device", newVideoDevice);
-            if (newVideoDevice != videoDevice) {
-                if (camera != nullptr) {
-                    delete camera;
-                }
-                camera = createCamera();
+            std::string newCodec;
+            node.param("codec", newCodec, std::string("mjpeg"));
+            if (newVideoDevice != videoDevice || newCodec != codec) {
+                initCameraAndEncoders();
             }
             if(!sendPreview()) {
                 // Sleep and hope the camera recovers

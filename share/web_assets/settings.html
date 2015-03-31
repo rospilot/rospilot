@@ -5,6 +5,11 @@
       ng-options='device for device in video_devices'>
     </select>
   </p>
+  <p>
+    Codec: <select ng-model='selected_codec' 
+      ng-options='codec for codec in codecs'>
+    </select>
+  </p>
   <div>
     <button type="button" class="btn btn-danger" ng-click="shutdown()">
       Shutdown On-board Computer

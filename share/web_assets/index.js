@@ -112,12 +112,14 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .controller('settings', function ($scope, $rosparam, $rosservice) {
     var shutdownService = $rosservice('/shutdown', 'std_srvs/Empty');
     var globService = $rosservice('/glob', 'rospilot/Glob');
+    $scope.selected_codec = '';
+    $scope.codecs = ['h264', 'mjpeg'];
     $scope.selected_video_device = '';
     $scope.video_devices = [];
     $scope.shutdown = shutdownService;
-    $rosparam.get('/camera/video_device',
+    $rosparam.get('/camera/codec',
         function(value) {
-            $scope.selected_video_device = value;
+            $scope.selected_codec = value;
             // XXX: This shouldn't be necessary
             $scope.$apply();
         }
@@ -130,6 +132,11 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $scope.$watch('selected_video_device', function(new_device) {
         if (new_device) {
             $rosparam.set('/camera/video_device', new_device);
+        }
+    });
+    $scope.$watch('selected_codec', function(new_codec) {
+        if (new_codec) {
+            $rosparam.set('/camera/codec', new_codec);
         }
     });
 })
