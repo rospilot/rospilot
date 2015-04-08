@@ -12,6 +12,7 @@ pkg_check_modules(libavcodec REQUIRED libavcodec)
 pkg_check_modules(libavformat REQUIRED libavformat)
 pkg_check_modules(libavutil REQUIRED libavutil)
 pkg_check_modules(libswscale REQUIRED libswscale)
+pkg_check_modules(libnl-1 REQUIRED libnl-1)
 
 catkin_python_setup()
 
@@ -97,6 +98,7 @@ catkin_package(
 include_directories(include src/cpp
     ${rospilot_deps_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
+    ${libnl-1_INCLUDE_DIRS}
     ${libavcodec_INCLUDE_DIRS}
     ${libavformat_INCLUDE_DIRS}
     ${libavutil_INCLUDE_DIRS}
@@ -119,6 +121,12 @@ include_directories(include src/cpp
 # target_link_libraries(rospilot_node
 #   ${catkin_LIBRARIES}
 # )
+
+add_executable(choose_wifi_device
+    src/cpp/choose_wifi_device.cpp)
+target_link_libraries(choose_wifi_device 
+    ${libnl-1_LIBRARIES}
+    ${catkin_LIBRARIES})
 
 add_executable(camera_node
     nodes/camera.cpp
@@ -167,6 +175,11 @@ install(TARGETS camera_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(TARGETS choose_wifi_device 
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

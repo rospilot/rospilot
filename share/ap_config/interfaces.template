@@ -1,0 +1,5 @@
+# Rospilot hostapd config
+auto WLAN_PLACEHOLDER
+iface WLAN_PLACEHOLDER inet static
+address 10.0.0.1
+netmask 255.255.255.0

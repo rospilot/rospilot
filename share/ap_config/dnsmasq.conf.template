@@ -1,0 +1,4 @@
+interface=WLAN_PLACEHOLDER
+dhcp-range=10.0.0.2,10.0.0.10,255.255.255.0,12h
+no-hosts
+addn-hosts=/etc/hosts.dnsmasq

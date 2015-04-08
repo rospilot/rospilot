@@ -1,0 +1,13 @@
+interface=WLAN_PLACEHOLDER
+driver=nl80211
+ssid=SSID_PLACEHOLDER
+hw_mode=MODE_PLACEHOLDER
+channel=CHANNEL_PLACEHOLDER
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+wpa=3
+wpa_passphrase=PASSPHRASE_PLACEHOLDER
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
