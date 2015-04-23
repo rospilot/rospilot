@@ -1,4 +1,5 @@
 <launch>
+<group ns="rospilot">
 <param name="/rospilot/mapnik_server_port" value="8086" />
 <node name="mavlink"
       pkg="rospilot"
@@ -36,6 +37,7 @@
     <param name="image_height" value="480" />
     <param name="video_device" value="/dev/video0" />
 </node>
+</group>
 <node name="mjpeg"
       pkg="rospilot_deps"
       type="raw_mjpeg_server"

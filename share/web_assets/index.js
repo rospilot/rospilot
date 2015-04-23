@@ -70,9 +70,9 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 })
 .factory('Camera', function ($rosservice) {
     return {
-        take_picture: $rosservice('/camera/capture_image', 'std_srvs/Empty'),
-        start_recording: $rosservice('/camera/start_record', 'std_srvs/Empty'),
-        stop_recording: $rosservice('/camera/stop_record', 'std_srvs/Empty')
+        take_picture: $rosservice('/rospilot/camera/capture_image', 'std_srvs/Empty'),
+        start_recording: $rosservice('/rospilot/camera/start_record', 'std_srvs/Empty'),
+        stop_recording: $rosservice('/rospilot/camera/stop_record', 'std_srvs/Empty')
     };
 })
 .factory('Media', function ($resource) {
@@ -81,43 +81,43 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .factory('Status', function ($rostopic, $rosservice) {
       return {
           subscribe: function(callback) {
-              $rostopic('/basic_status', 'rospilot/BasicStatus').subscribe(callback);
+              $rostopic('/rospilot/basic_status', 'rospilot/BasicStatus').subscribe(callback);
           },
-          set: $rosservice('/set_mode', 'rospilot/SetBasicMode')
+          set: $rosservice('/rospilot/set_mode', 'rospilot/SetBasicMode')
       };
 })
 .factory('Position', function ($rostopic) {
-      return $rostopic('/gpsraw', 'rospilot/GPSRaw');
+      return $rostopic('/rospilot/gpsraw', 'rospilot/GPSRaw');
 })
 .factory('Attitude', function ($rostopic) {
-      return $rostopic('/attitude', 'rospilot/Attitude');
+      return $rostopic('/rospilot/attitude', 'rospilot/Attitude');
 })
 .factory('RCState', function ($rostopic) {
-      return $rostopic('/rcstate', 'rospilot/RCState');
+      return $rostopic('/rospilot/rcstate', 'rospilot/RCState');
 })
 .factory('IMU', function ($rostopic) {
-      return $rostopic('/imuraw', 'rospilot/IMURaw');
+      return $rostopic('/rospilot/imuraw', 'rospilot/IMURaw');
 })
 .factory('Waypoints', function ($rostopic, $rosservice) {
       return {
           subscribe: function(callback) {
-              $rostopic('/waypoints', 'rospilot/Waypoints').subscribe(callback);
+              $rostopic('/rospilot/waypoints', 'rospilot/Waypoints').subscribe(callback);
           },
-          set: $rosservice('/set_waypoints', 'rospilot/SetWaypoints')
+          set: $rosservice('/rospilot/set_waypoints', 'rospilot/SetWaypoints')
       };
 })
 .controller('rospilot', function ($scope, $route) {
     $scope.$route = $route;
 })
 .controller('settings', function ($scope, $rosparam, $rosservice) {
-    var shutdownService = $rosservice('/shutdown', 'std_srvs/Empty');
-    var globService = $rosservice('/glob', 'rospilot/Glob');
+    var shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
+    var globService = $rosservice('/rospilot/glob', 'rospilot/Glob');
     $scope.selected_codec = '';
     $scope.codecs = ['h264', 'mjpeg'];
     $scope.selected_video_device = '';
     $scope.video_devices = [];
     $scope.shutdown = shutdownService;
-    $rosparam.get('/camera/codec',
+    $rosparam.get('/rospilot/camera/codec',
         function(value) {
             $scope.selected_codec = value;
             $scope.$apply();
@@ -136,12 +136,12 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 
     $scope.$watch('selected_video_device', function(new_device) {
         if (new_device) {
-            $rosparam.set('/camera/video_device', new_device);
+            $rosparam.set('/rospilot/camera/video_device', new_device);
         }
     });
     $scope.$watch('selected_codec', function(new_codec) {
         if (new_codec) {
-            $rosparam.set('/camera/codec', new_codec);
+            $rosparam.set('/rospilot/camera/codec', new_codec);
         }
     });
 })

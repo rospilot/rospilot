@@ -1,7 +1,7 @@
 <div class="row" style="padding-top:10px;">
   <div class="col-md-7 col-md-offset-1" style="margin-bottom:20px;">
     <a href="" ng-click="take_picture(); $event.stopPropogation();">
-      <img width="100%" height="100%" ng-src="http://{{server_name}}:8080/stream?topic=/camera/image_raw/compressed">
+      <img width="100%" height="100%" ng-src="http://{{server_name}}:8080/stream?topic=/rospilot/camera/image_raw/compressed">
     </a>
     <div style="padding-top:5px;">
       <button type="button" class="btn btn-primary" ng-click='toggle_recording()'>

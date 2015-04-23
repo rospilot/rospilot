@@ -75,7 +75,7 @@ class API(object):
 
     @cherrypy.expose
     def camera(self, action):
-        url = 'http://localhost:8080/snapshot?topic=/camera/image_raw/compressed'
+        url = 'http://localhost:8080/snapshot?topic=/rospilot/camera/image_raw/compressed'
         resp = urllib2.urlopen(url)
         cherrypy.response.headers['Content-Type'] = resp.info()['Content-Type']
         return resp.read()
