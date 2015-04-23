@@ -2,6 +2,65 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+Main features:
+
+* Added map server to replace Google Maps
+* Added support for recording in h264 with hardware acceleration
+* Added support for Odroid Show
+
+Details:
+
+* Fix restart command in init.d script
+* Move services and params out of global namespace
+* Fix loading of video device selector
+* Add hostapd setup to first_time_setup script
+* Add setting in UI page to change codec
+* Fix packaging of camera_node
+* Optimize memory access when using MFC encoder
+* Fix mjpeg recording
+* Remove usage of tempnam, and cleanup some other code
+* Fix usage of avcodec_encode_video2
+* Replace usage of deprecated function
+* Split camera node source code into cpp files
+* Add (experimental) support for Exynos MFC
+* Fix h264 encoding
+* Improve media path expansion
+* Fix bug in auto resolution detection
+* Add auto-adjustment of height and width
+* Wait for device to connect before writing to Odroid Show
+* More code cleanup
+* Code cleanup
+* Fix debian package build
+* Add support for recording with mjpeg codec
+* Remove old vlc recorder node
+* Add recording in h264 support to camera node
+* Add support for usb cameras to camera node
+* Refactor ptp node
+* Media improvements
+  Fix container format of recorded videos
+  Add button to delete media
+* Add support for Odroid Show
+* Add thumbnails for videos
+* Set queue_size in mavlink node
+* Add flight mode to BasicStatus message and web ui
+* Fix race condition in settings page
+* Add carto style to osm2pgsql command
+* Add auto detection of APM and baudrate
+* Implement local mapnik server
+  Also remove our dependency on Google Maps, so that we can run the map
+  even when there's no internet connection
+* Rename variable to avoid shadowing
+* Fix image capture from webcam
+* Fix lint errors
+* Improve internet connection detection logic
+* Don't try to load google maps if there's no internet connection
+* Reduce chart update rate to 2Hz to improve performance
+* Add source maps for Angular and jQuery
+* Add button to shutdown on-board computer
+* Contributors: Christopher Berner
+
 0.1.1 (2014-08-27)
 ------------------
 * Fix debian package build
