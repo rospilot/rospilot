@@ -120,7 +120,12 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $rosparam.get('/camera/codec',
         function(value) {
             $scope.selected_codec = value;
-            // XXX: This shouldn't be necessary
+            $scope.$apply();
+        }
+    );
+    $rosparam.get('/rospilot/camera/video_device',
+        function(value) {
+            $scope.selected_video_device = value;
             $scope.$apply();
         }
     );
