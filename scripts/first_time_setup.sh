@@ -19,6 +19,10 @@ echo "CREATE EXTENSION hstore;" | sudo -u postgres psql -Upostgres gis
 echo "Setting up mapnik"
 tempdir=$(mktemp -d)
 cd $tempdir
+if [ $(catkin_find --share rospilot share/mapnik-style/ | wc -l) -ne 1 ]; then
+    echo "$(tput setaf 1)Multiple installations of rospilot found. Cannot continue.$(tput sgr 0)"
+    exit 1
+fi
 rosrun rospilot get_mapnik_shapefiles.sh
 mv -f $tempdir/data $(catkin_find --share rospilot share/mapnik-style/)
 wget -O kathmandu.osm "http://api.openstreetmap.org/api/0.6/map?bbox=27.713,85.308,27.717,85.312"
