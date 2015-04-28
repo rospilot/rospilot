@@ -92,7 +92,7 @@ JpegDecoder::JpegDecoder(int width, int height, PixelFormat outputPixelFormat)
     this->height = height;
     this->outputPixelFormat = outputPixelFormat;
     
-    decoder = avcodec_find_decoder(CODEC_ID_MJPEG);
+    decoder = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
     if (!decoder)
     {
         ROS_ERROR("Could not find MJPEG decoder");

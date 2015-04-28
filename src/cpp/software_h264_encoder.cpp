@@ -94,7 +94,7 @@ SoftwareH264Encoder::SoftwareH264Encoder(int width, int height)
     this->height = height;
     this->pixelFormat = PIX_FMT_YUV420P;
     
-    encoder = avcodec_find_encoder(CODEC_ID_H264);
+    encoder = avcodec_find_encoder(AV_CODEC_ID_H264);
     if (!encoder) {
         ROS_ERROR("Could not find H264 encoder");
     }

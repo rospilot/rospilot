@@ -148,10 +148,10 @@ private:
         node.param("framerate", framerate, 30);
         node.param("codec", codec, std::string("mjpeg"));
         if (codec == "h264") {
-            codecId = CODEC_ID_H264;
+            codecId = AV_CODEC_ID_H264;
         }
         else if (codec == "mjpeg") {
-            codecId = CODEC_ID_MJPEG;
+            codecId = AV_CODEC_ID_MJPEG;
         }
         else {
             ROS_FATAL("Unknown codec: %s", codec.c_str());
