@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.1 (2015-04-29)
+------------------
 * Switch to libnl 3.0
 * Update to new libavconv constants
 * Improve error handling in setup script
