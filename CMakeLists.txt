@@ -12,7 +12,8 @@ pkg_check_modules(libavcodec REQUIRED libavcodec)
 pkg_check_modules(libavformat REQUIRED libavformat)
 pkg_check_modules(libavutil REQUIRED libavutil)
 pkg_check_modules(libswscale REQUIRED libswscale)
-pkg_check_modules(libnl-1 REQUIRED libnl-1)
+pkg_check_modules(libnl-3.0 REQUIRED libnl-3.0)
+pkg_check_modules(libnl-genl-3.0 REQUIRED libnl-genl-3.0)
 
 catkin_python_setup()
 
@@ -98,7 +99,8 @@ catkin_package(
 include_directories(include src/cpp
     ${rospilot_deps_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
-    ${libnl-1_INCLUDE_DIRS}
+    ${libnl-3.0_INCLUDE_DIRS}
+    ${libnl-genl-3.0_INCLUDE_DIRS}
     ${libavcodec_INCLUDE_DIRS}
     ${libavformat_INCLUDE_DIRS}
     ${libavutil_INCLUDE_DIRS}
@@ -125,7 +127,8 @@ include_directories(include src/cpp
 add_executable(choose_wifi_device
     src/cpp/choose_wifi_device.cpp)
 target_link_libraries(choose_wifi_device 
-    ${libnl-1_LIBRARIES}
+    ${libnl-3.0_LIBRARIES}
+    ${libnl-genl-3.0_LIBRARIES}
     ${catkin_LIBRARIES})
 
 add_executable(camera_node

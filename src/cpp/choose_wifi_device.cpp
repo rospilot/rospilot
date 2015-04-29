@@ -38,25 +38,6 @@
 #include<linux/if_ether.h>
 #include<linux/nl80211.h>
 
-#if !defined(CONFIG_LIBNL20) && !defined(CONFIG_LIBNL30)
-    #define nl_sock nl_handle
-
-    nl_handle *nl_socket_alloc()
-    {
-        return nl_handle_alloc();
-    }
-
-    void nl_socket_free(nl_sock *socket)
-    {
-        nl_handle_destroy(socket);
-    }
-
-    int nl_socket_set_buffer_size(nl_sock *socket, int receiveBuffer, int transmitBuffer)
-    {
-        return nl_set_buffer_size(socket, receiveBuffer, transmitBuffer);
-    }
-#endif
-
 typedef int (*Callback)(nl_msg *message, void *arg);
 typedef unsigned int Wiphy;
 
