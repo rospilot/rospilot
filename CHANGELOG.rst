@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.2 (2015-04-30)
+------------------
 * Change CodecID to AVCodecID
 * Contributors: Christopher Berner
 
