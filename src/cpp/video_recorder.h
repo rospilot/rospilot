@@ -48,10 +48,10 @@ private:
     int width;
     int height;
     PixelFormat pixelFormat;
-    CodecID codecId;
+    AVCodecID codecId;
 
 public:
-    SoftwareVideoRecorder(int width, int height, PixelFormat pixelFormat, CodecID codecId);
+    SoftwareVideoRecorder(int width, int height, PixelFormat pixelFormat, AVCodecID codecId);
     
     void writeFrame(sensor_msgs::CompressedImage *image, bool keyFrame);
 

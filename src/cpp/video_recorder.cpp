@@ -37,7 +37,7 @@ extern "C" {
 using namespace std::chrono;
 
 SoftwareVideoRecorder::SoftwareVideoRecorder(int width, int height,
-        PixelFormat pixelFormat, CodecID codecId)
+        PixelFormat pixelFormat, AVCodecID codecId)
 {
     av_register_all();
     this->width = width;

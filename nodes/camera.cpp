@@ -60,7 +60,7 @@ private:
 
     std::string videoDevice;
     std::string codec; // "mjpeg" or "h264"
-    CodecID codecId;
+    AVCodecID codecId;
     std::string mediaPath;
     int width;
     int height;
