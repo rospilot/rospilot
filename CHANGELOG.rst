@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Change CodecID to AVCodecID
+* Contributors: Christopher Berner
+
 0.2.1 (2015-04-29)
 ------------------
 * Switch to libnl 3.0
