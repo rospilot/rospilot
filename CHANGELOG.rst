@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.3 (2015-05-02)
+------------------
 * Fix deprecation warnings
 * Contributors: Christopher Berner
 
