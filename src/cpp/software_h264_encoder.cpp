@@ -25,7 +25,14 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/common.h>
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+#include <libavutil/frame.h>
+#endif
 }
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
+#define av_frame_alloc  avcodec_alloc_frame
+#endif
 
 bool SoftwareH264Encoder::encodeInPlace(sensor_msgs::CompressedImage *image,
         bool *keyFrame)
@@ -80,7 +87,7 @@ AVFrame *SoftwareH264Encoder::allocFrame()
     uint8_t *buf;
     int size;
 
-    frame = avcodec_alloc_frame();
+    frame = av_frame_alloc();
     size = avpicture_get_size(pixelFormat, width, height);
     buf = (uint8_t*) av_malloc(size);
     avpicture_fill((AVPicture *)frame, buf, pixelFormat, width, height);

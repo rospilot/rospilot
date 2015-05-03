@@ -24,7 +24,14 @@
 
 extern "C" {
 #include <libswscale/swscale.h>
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+#include <libavutil/frame.h>
+#endif
 }
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
+#define av_frame_alloc  avcodec_alloc_frame
+#endif
 
 using std::vector;
 using sensor_msgs::CompressedImage;
@@ -105,8 +112,8 @@ JpegDecoder::JpegDecoder(int width, int height, PixelFormat outputPixelFormat)
         ROS_ERROR("Could not create MJPEG decoder context");
         return;
     }
-    sourceFrame = avcodec_alloc_frame();
-    outputFrame = avcodec_alloc_frame();
+    sourceFrame = av_frame_alloc();
+    outputFrame = av_frame_alloc();
 
     avpicture_alloc((AVPicture *)outputFrame, outputPixelFormat, width, height);
 
