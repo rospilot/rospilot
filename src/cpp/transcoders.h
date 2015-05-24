@@ -32,7 +32,7 @@ class H264Encoder
 public:
     virtual bool encodeInPlace(sensor_msgs::CompressedImage *image, 
             bool *keyFrame) = 0;
-    
+
     virtual ~H264Encoder() {};
 };
 
@@ -52,8 +52,8 @@ private:
 public:
     bool encodeInPlace(sensor_msgs::CompressedImage *image,
             bool *keyFrame) override;
-
-    ExynosMultiFormatCodecH264Encoder(int width, int height);
+    
+    ExynosMultiFormatCodecH264Encoder(std::string path, int width, int height);
 
     ~ExynosMultiFormatCodecH264Encoder() override;
 };

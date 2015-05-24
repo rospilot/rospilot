@@ -123,9 +123,9 @@ static int copyFromMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)
     return 0;
 }
 
-ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(int width, int height)
+ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string path, int width, int height)
 {
-    this->mfc = mfc_create("/dev/video9");
+    this->mfc = mfc_create(path.c_str());
     if (mfc_set_fmt(this->mfc, DIR_IN, width, height)) {
         ROS_FATAL("Failed to set format on MFC");
     }
