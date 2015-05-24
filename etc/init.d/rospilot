@@ -8,7 +8,7 @@
 # Description:       <DESCRIPTION>
 ### END INIT INFO
 
-SCRIPT='source /opt/ros/indigo/setup.bash; roslaunch rospilot rospilot.launch'
+SCRIPT='source /opt/ros/jade/setup.bash; roslaunch rospilot rospilot.launch'
 RUNAS=root
 
 PIDFILE=/var/run/rospilot.pid
