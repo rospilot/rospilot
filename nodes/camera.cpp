@@ -83,7 +83,7 @@ private:
                 transcodedSuccessfully = true;
             }
             imagePub.publish(image);
-            if (h264Encoder != nullptr && codec == "h264" && image.format == "jpeg") {
+            if (codec == "h264" && image.format == "jpeg") {
                 jpegDecoder->decodeInPlace(&image);
                 transcodedSuccessfully = h264Encoder->encodeInPlace(&image, 
                         &keyFrame);
@@ -130,8 +130,8 @@ private:
         jpegDecoder = new JpegDecoder(width, height, pixelFormat);
         if (h264Encoder != nullptr) {
             delete h264Encoder;
-            h264Encoder = nullptr;
         }
+        h264Encoder = createEncoder();
         if (videoRecorder != nullptr) {
             delete videoRecorder;
         }
@@ -314,11 +314,6 @@ public:
         char str[100];
         strftime(str, sizeof(str), "%Y-%m-%d_%H%M%S.mp4", tmp);
         std::string path = mediaPath + "/" + str;
-        // Reset the encoder
-        if (h264Encoder != nullptr) {
-            delete h264Encoder;
-        }
-        h264Encoder = createEncoder();
         return videoRecorder->start(path.c_str());
     }
     

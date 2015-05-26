@@ -42,12 +42,16 @@ public:
 class ExynosMultiFormatCodecH264Encoder : public H264Encoder
 {
 private:
+    std::vector<uint8_t> pps;
+    std::vector<uint8_t> sps;
     io_dev *mfc;
     // Bridge to MFC input
     io_dev *inputBridge;
     // Bridge to get output from MFC
     io_dev *outputBridge;
     io_dev *deviceChain[3];
+
+    void tryExtractSPSandPPS(std::vector<uint8_t> &data);
 
 public:
     bool encodeInPlace(sensor_msgs::CompressedImage *image,
