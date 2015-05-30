@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.4 (2015-05-29)
+------------------
 * Fix hardware encoder
 * Fix detection of MFC
 * Update service script for jade
