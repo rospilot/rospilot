@@ -189,12 +189,26 @@ ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string
     
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_GOP_SIZE, 12);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_I_PERIOD, 12);
-    //mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_B_FRAMES, 2);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE, 400000);
+// Variable bitrate doesn't seem to be working on the MFC :/
+//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_FRAME_RC_ENABLE, 1);
+//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_MB_RC_ENABLE, 1);
+//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_VBV_SIZE, 32000);
+//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_CPB_SIZE, 32000);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_ENTROPY_MODE, V4L2_MPEG_VIDEO_H264_ENTROPY_MODE_CABAC);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_MODE, V4L2_MPEG_VIDEO_BITRATE_MODE_VBR);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE, 1000 * 1000);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_PEAK, 1500 * 1000);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, 10);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_MAX_QP, 50);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_I_FRAME_QP, 23);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_P_FRAME_QP, 23);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_B_FRAME_QP, 23);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_HEADER_MODE, 
             V4L2_MPEG_VIDEO_HEADER_MODE_JOINED_WITH_1ST_FRAME);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_PROFILE,
-            V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE);
+            V4L2_MPEG_VIDEO_H264_PROFILE_HIGH);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_LEVEL,
+            V4L2_MPEG_VIDEO_H264_LEVEL_4_1 );
 
     this->inputBridge = new io_dev();
     this->inputBridge->fd = -1;

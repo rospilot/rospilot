@@ -112,7 +112,7 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
     avcodec_get_context_defaults3(c, codec);
 
     c->codec_id = codecId;
-    c->bit_rate = 400000;
+    c->bit_rate = 1000 * 1000;
     c->width = this->width;
     c->height = this->height;
     c->time_base.den = FPS;
