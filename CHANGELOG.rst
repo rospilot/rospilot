@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.5 (2015-05-31)
+------------------
 * Tune MFC encoder parameters
 * Contributors: Christopher Berner
 
