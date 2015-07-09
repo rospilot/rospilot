@@ -14,6 +14,7 @@ pkg_check_modules(libavutil REQUIRED libavutil)
 pkg_check_modules(libswscale REQUIRED libswscale)
 pkg_check_modules(libnl-3.0 REQUIRED libnl-3.0)
 pkg_check_modules(libnl-genl-3.0 REQUIRED libnl-genl-3.0)
+pkg_check_modules(libmicrohttpd REQUIRED libmicrohttpd)
 
 catkin_python_setup()
 
@@ -101,6 +102,7 @@ include_directories(include src/cpp
     ${catkin_INCLUDE_DIRS}
     ${libnl-3.0_INCLUDE_DIRS}
     ${libnl-genl-3.0_INCLUDE_DIRS}
+    ${libmicrohttpd_INCLUDE_DIRS}
     ${libavcodec_INCLUDE_DIRS}
     ${libavformat_INCLUDE_DIRS}
     ${libavutil_INCLUDE_DIRS}
@@ -136,6 +138,8 @@ add_executable(camera_node
     src/cpp/usb_camera.cpp
     src/cpp/ptp.cpp
     src/cpp/jpeg_decoder.cpp
+    src/cpp/h264_server.cpp
+    src/cpp/resizer.cpp
     src/cpp/software_h264_encoder.cpp
     src/cpp/mfc_encoder.cpp
     src/cpp/video_recorder.cpp)
@@ -143,6 +147,7 @@ target_link_libraries(camera_node
     ${rospilot_deps_LIBRARIES}
     ${libgphoto2_LIBRARIES}
     ${libavcodec_LIBRARIES}
+    ${libmicrohttpd_LIBRARIES}
     ${libavutil_LIBRARIES}
     ${libavformat_LIBRARIES}
     ${libswscale_LIBRARIES}

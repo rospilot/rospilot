@@ -159,11 +159,11 @@ static int copyToMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)
 static int copyFromMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)
 {
     vector<unsigned char> *image = ((OutputBridgePriv *) dev->priv)->image;
-    ((OutputBridgePriv *) dev->priv)->readSuccessful = true;
     if (nbufs != 1) {
         ROS_ERROR("Expected 1 H264 encoded buffer. Got %d", nbufs);
         return -1;
     }
+    ((OutputBridgePriv *) dev->priv)->readSuccessful = true;
 
     image->clear();
     image->reserve(lens[0]);
@@ -172,10 +172,10 @@ static int copyFromMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)
     return 0;
 }
 
-ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string path, int width, int height)
+ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string path, H264Settings settings)
 {
     this->mfc = mfc_create(path.c_str());
-    if (mfc_set_fmt(this->mfc, DIR_IN, width, height)) {
+    if (mfc_set_fmt(this->mfc, DIR_IN, settings.width, settings.height)) {
         ROS_FATAL("Failed to set format on MFC");
     }
 
@@ -187,28 +187,45 @@ ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string
         ROS_FATAL("Failed to set rate on MFC");
     }
     
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_GOP_SIZE, 12);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_I_PERIOD, 12);
-// Variable bitrate doesn't seem to be working on the MFC :/
-//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_FRAME_RC_ENABLE, 1);
-//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_MB_RC_ENABLE, 1);
-//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_VBV_SIZE, 32000);
-//    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_CPB_SIZE, 32000);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_ENTROPY_MODE, V4L2_MPEG_VIDEO_H264_ENTROPY_MODE_CABAC);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_MODE, V4L2_MPEG_VIDEO_BITRATE_MODE_VBR);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE, 1000 * 1000);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_PEAK, 1500 * 1000);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, 10);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_GOP_SIZE, settings.gop_size);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_I_PERIOD, settings.gop_size);
+    // mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_CPB_SIZE, 32);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_MODE, V4L2_MPEG_VIDEO_BITRATE_MODE_CBR);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE, settings.bit_rate);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_PEAK, settings.bit_rate);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, 23);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_MAX_QP, 50);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_B_FRAMES, 0);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_MB_RC_ENABLE, false);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_MFC51_VIDEO_FRAME_SKIP_MODE, 1);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_MFC51_VIDEO_RC_FIXED_TARGET_BIT, true);
+    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_HEADER_MODE, 
+            V4L2_MPEG_VIDEO_HEADER_MODE_JOINED_WITH_1ST_FRAME);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_I_FRAME_QP, 23);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_P_FRAME_QP, 23);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_B_FRAME_QP, 23);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_HEADER_MODE, 
-            V4L2_MPEG_VIDEO_HEADER_MODE_JOINED_WITH_1ST_FRAME);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_PROFILE,
-            V4L2_MPEG_VIDEO_H264_PROFILE_HIGH);
+    if (settings.profile == CONSTRAINED_BASELINE) {
+        mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_PROFILE,
+                V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_BASELINE);
+        mfc_set_mpeg_control(this->mfc,
+                V4L2_CID_MPEG_VIDEO_H264_ENTROPY_MODE,
+                V4L2_MPEG_VIDEO_H264_ENTROPY_MODE_CAVLC);
+    }
+    else if (settings.profile == HIGH) {
+        mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_PROFILE,
+                V4L2_MPEG_VIDEO_H264_PROFILE_HIGH);
+        mfc_set_mpeg_control(this->mfc,
+                V4L2_CID_MPEG_VIDEO_H264_ENTROPY_MODE,
+                V4L2_MPEG_VIDEO_H264_ENTROPY_MODE_CABAC);
+    }
+    else {
+        ROS_ERROR("Unknown H264 profile");
+    }
+    if (settings.level != 41) {
+        ROS_ERROR("Unsupported level: %d", settings.level);
+    }
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_LEVEL,
-            V4L2_MPEG_VIDEO_H264_LEVEL_4_1 );
+            V4L2_MPEG_VIDEO_H264_LEVEL_4_1);
 
     this->inputBridge = new io_dev();
     this->inputBridge->fd = -1;

@@ -17,55 +17,42 @@
  * limitations under the License.
  *
  *********************************************************************/
-#ifndef ROSPILOT_VIDEO_RECORDER_H
-#define ROSPILOT_VIDEO_RECORDER_H
-
-#include "h264_settings.h"
-
-#include<chrono>
+#ifndef ROSPILOT_RESIZER_H
+#define ROSPILOT_RESIZER_H
 
 #include<sensor_msgs/CompressedImage.h>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+#include <libavutil/frame.h>
+#endif
 }
 
-using namespace std::chrono;
-
-class SoftwareVideoRecorder
+class Resizer 
 {
 private:
-    static const int FPS = 60;
-    // NOTE: We don't need to guard this with a mutex, because callbacks
-    // are called in spinOnce() in the main thread
-    bool recording = false;
-    AVFormatContext *formatContext;
-    AVStream *videoStream;
-    time_point<high_resolution_clock> firstFrameTime;
-    int lastPTS = 0;
-    bool foundKeyframe = false;
-    std::string tempFilename;
-    std::string filename;
-    int width;
-    int height;
+    SwsContext *context;
+    AVFrame *sourceFrame;
+    AVFrame *outputFrame;
+    uint8_t *outputBuffer;
+    int outputBufferSize;
     PixelFormat pixelFormat;
-    AVCodecID codecId;
-    H264Settings settings;
+    int originalWidth, originalHeight, targetWidth, targetHeight;
 
 public:
-    SoftwareVideoRecorder(PixelFormat pixelFormat, AVCodecID codecId, H264Settings settings);
-    
-    void writeFrame(sensor_msgs::CompressedImage *image, bool keyFrame);
+    bool resizeInPlace(sensor_msgs::CompressedImage *image);
 
-    bool start(const char *name);
-    
-    bool stop();
+    Resizer(
+        int originalWidth,
+        int originalHeight,
+        int targetWidth,
+        int targetHeight,
+        PixelFormat pixelFormat);
 
-    ~SoftwareVideoRecorder();
-
-private:
-    AVStream *createVideoStream(AVFormatContext *oc);
+    ~Resizer();
 };
 
 #endif
+

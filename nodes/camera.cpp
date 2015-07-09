@@ -37,6 +37,8 @@
 #include<usb_camera.h>
 #include<video_recorder.h>
 #include<transcoders.h>
+#include<resizer.h>
+#include<h264_server.h>
 
 extern "C" {
 #include <linux/videodev2.h>
@@ -52,8 +54,11 @@ private:
     // are called in spinOnce() in the main thread
     BaseCamera *camera = nullptr;
     JpegDecoder *jpegDecoder = nullptr;
-    H264Encoder *h264Encoder = nullptr;
+    H264Encoder *liveH264Encoder = nullptr;
+    H264Encoder *recordingH264Encoder = nullptr;
     SoftwareVideoRecorder *videoRecorder = nullptr;
+    Resizer *resizer = nullptr;
+    H264Server h264Server;
     ros::Publisher imagePub;
     ros::ServiceServer captureServiceServer;
     ros::ServiceServer startRecordServiceServer;
@@ -64,9 +69,11 @@ private:
     std::string mfcPath;
     AVCodecID codecId;
     std::string mediaPath;
-    int width;
-    int height;
+    int cameraWidth;
+    int cameraHeight;
     int framerate;
+    H264Settings liveH264Settings;
+    H264Settings recordingH264Settings;
 
 private:
     bool sendPreview()
@@ -83,10 +90,22 @@ private:
                 transcodedSuccessfully = true;
             }
             imagePub.publish(image);
+            sensor_msgs::CompressedImage liveH264Image;
             if (codec == "h264" && image.format == "jpeg") {
                 jpegDecoder->decodeInPlace(&image);
-                transcodedSuccessfully = h264Encoder->encodeInPlace(&image, 
-                        &keyFrame);
+                liveH264Image.format = image.format;
+                liveH264Image.data = image.data;
+                if (videoRecorder != nullptr) {
+                    transcodedSuccessfully = recordingH264Encoder->encodeInPlace(&image,
+                            &keyFrame);
+                }
+            }
+            if (codec == "h264") {
+                resizer->resizeInPlace(&liveH264Image);
+                bool liveKeyFrame = false;
+                if (liveH264Encoder->encodeInPlace(&liveH264Image, &liveKeyFrame)) {
+                    h264Server.addFrame(&liveH264Image, liveKeyFrame);
+                }
             }
             if (videoRecorder != nullptr && transcodedSuccessfully) {
                 videoRecorder->writeFrame(&image, keyFrame);
@@ -124,19 +143,46 @@ private:
         std::string videoDevice;
         node.param("video_device", videoDevice, std::string("/dev/video0"));
 
+        recordingH264Settings.height = cameraHeight;
+        recordingH264Settings.width = cameraWidth;
+        recordingH264Settings.level = 41;
+        recordingH264Settings.gop_size = 30;
+        recordingH264Settings.zero_latency = false;
+        recordingH264Settings.profile = HIGH;
+        recordingH264Settings.height = cameraHeight;
+        recordingH264Settings.width = cameraWidth;
+        recordingH264Settings.bit_rate = 4 * cameraWidth * cameraHeight;
+
+        double aspectRatio = cameraHeight / (double) cameraWidth;
+        liveH264Settings.height = (int) (aspectRatio * 640);
+        liveH264Settings.width = 640;
+        liveH264Settings.level = 41;
+        liveH264Settings.gop_size = 12;
+        liveH264Settings.bit_rate = 1000 * 1000;
+        liveH264Settings.zero_latency = true;
+        liveH264Settings.profile = CONSTRAINED_BASELINE;
+
         if (jpegDecoder != nullptr) {
             delete jpegDecoder;
         }
-        jpegDecoder = new JpegDecoder(width, height, pixelFormat);
-        if (h264Encoder != nullptr) {
-            delete h264Encoder;
+        jpegDecoder = new JpegDecoder(cameraWidth, cameraHeight, pixelFormat);
+        if (resizer != nullptr) {
+            delete resizer;
         }
-        h264Encoder = createEncoder();
+        resizer = new Resizer(cameraWidth, cameraHeight, liveH264Settings.width, liveH264Settings.height, pixelFormat);
+        if (liveH264Encoder != nullptr) {
+            delete liveH264Encoder;
+        }
+        liveH264Encoder = createEncoder(liveH264Settings);
+        if (recordingH264Encoder != nullptr) {
+            delete recordingH264Encoder;
+        }
+        recordingH264Encoder = createEncoder(recordingH264Settings);
         if (videoRecorder != nullptr) {
             delete videoRecorder;
         }
         ROS_INFO("Recording in %s", codec.c_str());
-        videoRecorder = new SoftwareVideoRecorder(width, height, pixelFormat, codecId);
+        videoRecorder = new SoftwareVideoRecorder(pixelFormat, codecId, recordingH264Settings);
     }
 
     BaseCamera *createCamera()
@@ -145,8 +191,8 @@ private:
         node.param("camera_type", cameraType, std::string("usb"));
 
         node.param("video_device", videoDevice, std::string("/dev/video0"));
-        node.param("image_width", width, 1920);
-        node.param("image_height", height, 1080);
+        node.param("image_width", cameraWidth, 1920);
+        node.param("image_height", cameraHeight, 1080);
         node.param("framerate", framerate, 30);
         node.param("codec", codec, std::string("mjpeg"));
         if (codec == "h264") {
@@ -175,13 +221,13 @@ private:
             return new PtpCamera();
         }
         else if (cameraType == "usb") {
-            ROS_INFO("Requesting camera res %dx%d", width, height);
-            UsbCamera *camera = new UsbCamera(videoDevice, width, height, framerate);
+            ROS_INFO("Requesting camera res %dx%d", cameraWidth, cameraHeight);
+            UsbCamera *camera = new UsbCamera(videoDevice, cameraWidth, cameraHeight, framerate);
             // Read the width and height, since the camera may have altered it to
             // something it supports
-            width = camera->getWidth();
-            height = camera->getHeight();
-            ROS_INFO("Camera selected res %dx%d", width, height);
+            cameraWidth = camera->getWidth();
+            cameraHeight = camera->getHeight();
+            ROS_INFO("Camera selected res %dx%d", cameraWidth, cameraHeight);
             return camera;
         }
         else {
@@ -259,15 +305,15 @@ public:
         return "";
     }
 
-    H264Encoder *createEncoder()
+    H264Encoder *createEncoder(H264Settings settings)
     {
-        if (mfcPath.size() > 0) {
+        if (mfcPath.size() > 0 && !settings.zero_latency) {
             ROS_INFO("Using hardware encoder");
-            return new ExynosMultiFormatCodecH264Encoder(mfcPath, width, height);
+            return new ExynosMultiFormatCodecH264Encoder(mfcPath, settings);
         }
         else {
             ROS_INFO("Using software encoder");
-            return new SoftwareH264Encoder(width, height);
+            return new SoftwareH264Encoder(settings);
         }
     }
 
@@ -277,14 +323,16 @@ public:
             delete camera;
         }
         delete jpegDecoder;
-        delete h264Encoder;
+        delete resizer;
+        delete liveH264Encoder;
+        delete recordingH264Encoder;
         delete videoRecorder;
     }
 
     bool spin()
     {
         ROS_INFO("camera node is running.");
-                
+        h264Server.start();
         while (node.ok())
         {
             // Process any pending service callbacks
@@ -303,6 +351,7 @@ public:
             // Run at 1kHz
             usleep(1000);
         }
+        h264Server.stop();
         return true;
     }
     

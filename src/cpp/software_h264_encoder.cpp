@@ -24,6 +24,7 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
+#include <libavutil/opt.h>
 #include <libavutil/common.h>
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
 #include <libavutil/frame.h>
@@ -94,11 +95,11 @@ AVFrame *SoftwareH264Encoder::allocFrame()
     return frame;
 }
 
-SoftwareH264Encoder::SoftwareH264Encoder(int width, int height)
+SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
 {
     avcodec_register_all();
-    this->width = width;
-    this->height = height;
+    this->width = settings.width;
+    this->height = settings.height;
     this->pixelFormat = PIX_FMT_YUV420P;
     
     encoder = avcodec_find_encoder(AV_CODEC_ID_H264);
@@ -111,16 +112,33 @@ SoftwareH264Encoder::SoftwareH264Encoder(int width, int height)
     sourceFrame = allocFrame();
 
     context->codec_id = encoder->id;
-    context->width = width;
-    context->height = height;
+    context->width = settings.width;
+    context->height = settings.height;
 
     context->pix_fmt = pixelFormat;
     context->codec_type = AVMEDIA_TYPE_VIDEO;
 
-    context->bit_rate = 400000;
+    context->bit_rate = settings.bit_rate;
     context->time_base = (AVRational){1, 25};
-    context->gop_size = 12;
-    context->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    context->gop_size = settings.gop_size;
+    context->level = settings.level;
+
+    // Not sure this does anything, so set the "profile" on priv_data also
+    if (settings.profile == CONSTRAINED_BASELINE) {
+        context->profile = FF_PROFILE_H264_CONSTRAINED_BASELINE;
+        av_opt_set(context->priv_data, "profile", "baseline", AV_OPT_SEARCH_CHILDREN);
+    }
+    else if (settings.profile == HIGH) {
+        context->profile = FF_PROFILE_H264_HIGH;
+        av_opt_set(context->priv_data, "profile", "high", AV_OPT_SEARCH_CHILDREN);
+    }
+    else {
+        ROS_ERROR("Unknown H264 profile");
+    }
+    if (settings.zero_latency) {
+        av_opt_set(context->priv_data, "tune", "zerolatency", AV_OPT_SEARCH_CHILDREN);
+        av_opt_set(context->priv_data, "preset", "ultrafast", AV_OPT_SEARCH_CHILDREN);
+    }
 
     if (avcodec_open2(context, encoder, nullptr) < 0) {
         ROS_ERROR("Could not open h264 encoder");

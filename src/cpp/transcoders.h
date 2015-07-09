@@ -21,6 +21,7 @@
 #define ROSPILOT_TRANSCODER_H
 
 #include<sensor_msgs/CompressedImage.h>
+#include "h264_settings.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -54,10 +55,9 @@ private:
     void tryExtractSPSandPPS(std::vector<uint8_t> &data);
 
 public:
-    bool encodeInPlace(sensor_msgs::CompressedImage *image,
-            bool *keyFrame) override;
+    bool encodeInPlace(sensor_msgs::CompressedImage *image, bool *keyFrame) override;
     
-    ExynosMultiFormatCodecH264Encoder(std::string path, int width, int height);
+    ExynosMultiFormatCodecH264Encoder(std::string path, H264Settings settings);
 
     ~ExynosMultiFormatCodecH264Encoder() override;
 };
@@ -74,10 +74,9 @@ private:
     AVCodecContext *context;
 
 public:
-    bool encodeInPlace(sensor_msgs::CompressedImage *image,
-            bool *keyFrame) override;
+    bool encodeInPlace(sensor_msgs::CompressedImage *image, bool *keyFrame) override;
     
-    SoftwareH264Encoder(int width, int height);
+    SoftwareH264Encoder(H264Settings settings);
 
 private:
     AVFrame *allocFrame();

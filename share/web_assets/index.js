@@ -372,7 +372,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     }]
   });
 })
-.controller('camera', function($scope, $timeout, Media, Camera) {
+.controller('camera', function($scope, $timeout, $http, $rosparam, Media, Camera) {
   $scope.media = [];
 
   (function tick() {
@@ -383,6 +383,32 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
           $timeout(tick, 1000);
       });
   })();
+
+  $scope.codec = 'mjpeg';
+  $rosparam.get('/rospilot/camera/codec',
+    function(value) {
+        $scope.codec = value;
+        $scope.$apply();
+  });
+
+  $scope.$watch('codec', function(new_codec) {
+    if (new_codec === 'h264') {
+      var player = new Player({size: {height: 480, width: 640}});
+      document.querySelector('#video').appendChild(player.canvas);
+
+      function nextFrame() {
+        $http.get('http://' + $scope.server_name + ':8666/h264', {responseType: 'arraybuffer'})
+          .success(function(data) {
+            player.decode(new Uint8Array(data));
+            $timeout(nextFrame, 1);
+          })
+          .error(function() {
+            $timeout(nextFrame, 1000);
+          });
+      };
+      nextFrame();
+    }
+  });
 
   $scope.server_name = window.location.hostname;
   $scope.take_picture = Camera.take_picture;
