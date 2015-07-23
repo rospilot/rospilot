@@ -38,7 +38,7 @@ int static handleRequest(void *custom,
         void **session)
 {
     H264Server *server = (H264Server*) custom;
-    MHD_Response *response = server->readFrames();
+    MHD_Response *response = server->readFrames(url);
     int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
     MHD_destroy_response (response);
     return ret;
@@ -47,29 +47,45 @@ int static handleRequest(void *custom,
 void H264Server::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
 {
     std::lock_guard<std::mutex> guard(lock);
-    if (keyFrame) {
-        frameData.clear();
-        frames = 0;
+    time_point<high_resolution_clock> currentTime = high_resolution_clock::now();
+    // Purge clients that haven't accessed the stream in 10secs
+    for (auto iter = clients.begin(); iter != clients.end(); iter++) {
+        duration<double> duration = currentTime - iter->second.lastAccessTime;
+        if (duration.count() > 10) {
+            clients.erase(iter);
+        }
     }
-    if (frames > 1) {
-        return;
+    // Add data to all the clients, so they can fetch at their own pace
+    for (auto &entry : clients) {
+        if (keyFrame) {
+            entry.second.frameData.clear();
+            entry.second.frames = 0;
+        }
+        if (entry.second.frames > 1) {
+            continue;
+        }
+        entry.second.frameData.insert(
+                entry.second.frameData.end(), 
+                image->data.begin(),
+                image->data.end());
+        entry.second.frames++;
     }
-    frameData.insert(frameData.end(), image->data.begin(), image->data.end());
-    frames++;
 }
 
-MHD_Response* H264Server::readFrames()
+MHD_Response* H264Server::readFrames(std::string client)
 {
     std::lock_guard<std::mutex> guard(lock);
+    ClientSession &session = clients[client];
     MHD_Response *response =
-        MHD_create_response_from_buffer(frameData.size(),
-                (void *) frameData.data(),
+        MHD_create_response_from_buffer(session.frameData.size(),
+                (void *) session.frameData.data(),
                 MHD_RESPMEM_MUST_COPY);
     MHD_add_response_header(response, "Content-Type", "video/h264");
     // TODO: Change this to only be localhost and the local hostname
     MHD_add_response_header(response, "Access-Control-Allow-Origin", "*");
-    frameData.clear();
-    frames = 0;
+    session.frameData.clear();
+    session.frames = 0;
+    session.lastAccessTime = high_resolution_clock::now();
     return response;
 }
 

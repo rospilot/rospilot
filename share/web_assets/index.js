@@ -400,13 +400,15 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   $scope.destroyed = false;
   $scope.$on("$destroy", function() {$scope.destroyed = true});
 
+  // Generate a random client id for fetching the stream
+  var clientId = Math.floor(Math.random() * 1000 * 1000 * 1000);
   $scope.$watch('codec', function(new_codec) {
     if (new_codec === 'h264') {
       var player = new Player({size: {height: 480, width: 640}});
       document.querySelector('#video').appendChild(player.canvas);
 
       function nextFrame() {
-        $http.get('http://' + $scope.server_name + ':8666/h264', {responseType: 'arraybuffer'})
+        $http.get('http://' + $scope.server_name + ':8666/h264/' + clientId, {responseType: 'arraybuffer'})
           .success(function(data) {
             player.decode(new Uint8Array(data));
             if ($scope.destroyed) {

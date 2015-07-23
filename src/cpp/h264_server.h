@@ -22,23 +22,33 @@
 
 #include<mutex>
 #include<vector>
+#include<chrono>
+#include<map>
 
 #include<microhttpd.h>
 #include<sensor_msgs/CompressedImage.h>
+
+using namespace std::chrono;
+
+struct ClientSession
+{
+    std::vector<uint8_t> frameData;
+    int frames;
+    time_point<high_resolution_clock> lastAccessTime;
+};
 
 class H264Server
 {
 private:
     std::mutex lock;
-    std::vector<uint8_t> frameData;
-    int frames = 0;
+    std::map<std::string, ClientSession> clients;
     MHD_Daemon *daemon = nullptr;
     bool running = false;
 
 public:
     void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame);
 
-    MHD_Response* readFrames();
+    MHD_Response* readFrames(std::string client);
 
     void start();
 
