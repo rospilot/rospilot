@@ -46,7 +46,7 @@ int static handleRequest(void *custom,
 
 void H264Server::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
 {
-    std::lock_guard<std::mutex> guard(lock);
+    std::unique_lock<std::mutex> guard(lock);
     time_point<high_resolution_clock> currentTime = high_resolution_clock::now();
     // Purge clients that haven't accessed the stream in 10secs
     for (auto iter = clients.begin(); iter != clients.end(); iter++) {
@@ -57,25 +57,26 @@ void H264Server::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
     }
     // Add data to all the clients, so they can fetch at their own pace
     for (auto &entry : clients) {
-        if (keyFrame) {
+        if (keyFrame || !entry.second.keyFrame) {
             entry.second.frameData.clear();
-            entry.second.frames = 0;
         }
-        if (entry.second.frames > 1) {
+        if (entry.second.frameData.size() > 0) {
             continue;
         }
-        entry.second.frameData.insert(
-                entry.second.frameData.end(), 
-                image->data.begin(),
-                image->data.end());
-        entry.second.frames++;
+        entry.second.frameData = image->data;
+        entry.second.keyFrame = keyFrame;
     }
+    frameAvailable.notify_all();
 }
 
 MHD_Response* H264Server::readFrames(std::string client)
 {
-    std::lock_guard<std::mutex> guard(lock);
+    std::unique_lock<std::mutex> guard(lock);
     ClientSession &session = clients[client];
+    if (session.frameData.size() == 0) {
+        // Wait up to 100ms to see if a frame arrives
+        frameAvailable.wait_for(guard, duration<double>(0.1));
+    }
     MHD_Response *response =
         MHD_create_response_from_buffer(session.frameData.size(),
                 (void *) session.frameData.data(),
@@ -84,32 +85,35 @@ MHD_Response* H264Server::readFrames(std::string client)
     // TODO: Change this to only be localhost and the local hostname
     MHD_add_response_header(response, "Access-Control-Allow-Origin", "*");
     session.frameData.clear();
-    session.frames = 0;
+    session.keyFrame = false;
     session.lastAccessTime = high_resolution_clock::now();
     return response;
 }
 
 void H264Server::start()
 {
-    if (running) {
+    if (daemon != nullptr) {
         return;
     }
-    daemon = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, PORT, nullptr, nullptr,
-                             &handleRequest, this, MHD_OPTION_END);
+    daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION,
+            PORT,
+            nullptr,
+            nullptr,
+            &handleRequest,
+            this,
+            MHD_OPTION_END);
 }
 
 void H264Server::stop()
 {
-    if (!running) {
+    if (daemon == nullptr) {
         return;
     }
-    running = false;
     MHD_stop_daemon(daemon);
+    daemon = nullptr;
 }
 
 H264Server::~H264Server()
 {
-    if (running) {
-        stop();
-    }
+    stop();
 }

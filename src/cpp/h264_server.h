@@ -21,6 +21,7 @@
 #define ROSPILOT_H264_SERVER_H
 
 #include<mutex>
+#include<condition_variable>
 #include<vector>
 #include<chrono>
 #include<map>
@@ -32,18 +33,23 @@ using namespace std::chrono;
 
 struct ClientSession
 {
+    ClientSession()
+    {
+        keyFrame = false;
+        lastAccessTime = high_resolution_clock::now();
+    }
     std::vector<uint8_t> frameData;
-    int frames;
+    bool keyFrame;
     time_point<high_resolution_clock> lastAccessTime;
 };
 
 class H264Server
 {
 private:
+    std::condition_variable frameAvailable;
     std::mutex lock;
     std::map<std::string, ClientSession> clients;
     MHD_Daemon *daemon = nullptr;
-    bool running = false;
 
 public:
     void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame);
