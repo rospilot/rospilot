@@ -40,6 +40,12 @@ bool PtpCamera::getLiveImage(sensor_msgs::CompressedImage *image)
     return makeImage(cameraFile, image);
 }
 
+rospilot::Resolutions PtpCamera::getSupportedResolutions()
+{
+    // TODO: support different resolutions
+    return rospilot::Resolutions();
+}
+
 bool PtpCamera::captureImage(sensor_msgs::CompressedImage *image)
 {
     // Read from camera

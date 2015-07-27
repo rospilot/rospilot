@@ -53,6 +53,8 @@ add_message_files(
   BasicStatus.msg
   RCState.msg
   GPSRaw.msg
+  Resolution.msg
+  Resolutions.msg
   Waypoint.msg
   Waypoints.msg
   IMURaw.msg

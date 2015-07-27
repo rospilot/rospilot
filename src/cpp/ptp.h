@@ -38,6 +38,8 @@ public:
     bool getLiveImage(sensor_msgs::CompressedImage *image) override;
     
     bool captureImage(sensor_msgs::CompressedImage *image) override;
+    
+    rospilot::Resolutions getSupportedResolutions() override;
 
 private:
     void checkErrorCode(int errorCode, std::string message);

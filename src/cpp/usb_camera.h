@@ -28,11 +28,14 @@ class UsbCamera : public BaseCamera
 private:
     int width;
     int height;
+    rospilot::Resolutions resolutions;
 
 public:
     int getWidth();
 
     int getHeight();
+    
+    rospilot::Resolutions getSupportedResolutions() override;
 
     bool getLiveImage(sensor_msgs::CompressedImage *image) override;
     

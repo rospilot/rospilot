@@ -68,8 +68,9 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
         });
     };
 })
-.factory('Camera', function ($rosservice) {
+.factory('Camera', function ($rosservice, $rostopic) {
     return {
+        resolutions: $rostopic('/rospilot/camera/resolutions', 'rospilot/Resolutions'),
         take_picture: $rosservice('/rospilot/camera/capture_image', 'std_srvs/Empty'),
         start_recording: $rosservice('/rospilot/camera/start_record', 'std_srvs/Empty'),
         stop_recording: $rosservice('/rospilot/camera/stop_record', 'std_srvs/Empty')
@@ -109,7 +110,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .controller('rospilot', function ($scope, $route) {
     $scope.$route = $route;
 })
-.controller('settings', function ($scope, $rosparam, $rosservice) {
+.controller('settings', function ($scope, $rosparam, $rosservice, Camera) {
     var shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
     var globService = $rosservice('/rospilot/glob', 'rospilot/Glob');
     $scope.selected_codec = '';
@@ -129,6 +130,32 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
             $scope.$apply();
         }
     );
+    $scope.resolutions = [];
+    $scope.selected_resolution = '';
+    Camera.resolutions.subscribe(function(resolutions) {
+        var options = $.map(resolutions.resolutions, function(value) {
+            return value.width + 'x' + value.height;
+        });
+        $scope.resolutions = options;
+        $scope.$apply();
+    });
+    $rosparam.get('/rospilot/camera/image_width',
+        function(width) {
+            $rosparam.get('/rospilot/camera/image_height',
+                function(height) {
+                    $scope.selected_resolution = width + 'x' + height;
+                    $scope.$apply();
+                }
+            );
+        }
+    );
+    $scope.$watch('selected_resolution', function(new_resolution) {
+        if (new_resolution) {
+            var parts = new_resolution.split('x');
+            $rosparam.set('/rospilot/camera/image_width', parseInt(parts[0]));
+            $rosparam.set('/rospilot/camera/image_height', parseInt(parts[1]));
+        }
+    });
     globService({pattern: '/dev/video*'}, function(result) {
         $scope.video_devices = result.paths.sort();
         $scope.$apply();

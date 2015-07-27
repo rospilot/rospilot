@@ -30,6 +30,7 @@
 
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
+#include<rospilot/Resolutions.h>
 #include<std_srvs/Empty.h>
 #include<sensor_msgs/CompressedImage.h>
 
@@ -59,6 +60,7 @@ private:
     SoftwareVideoRecorder *videoRecorder = nullptr;
     Resizer *resizer = nullptr;
     H264Server h264Server;
+    ros::Publisher resolutionsTopic;
     ros::Publisher imagePub;
     ros::ServiceServer captureServiceServer;
     ros::ServiceServer startRecordServiceServer;
@@ -130,6 +132,7 @@ private:
             delete camera;
         }
         camera = createCamera();
+        resolutionsTopic.publish(camera->getSupportedResolutions());
         PixelFormat pixelFormat;
         if (codec == "h264") {
             pixelFormat = PIX_FMT_YUV420P;
@@ -227,6 +230,8 @@ private:
             // something it supports
             cameraWidth = camera->getWidth();
             cameraHeight = camera->getHeight();
+            node.setParam("image_width", cameraWidth);
+            node.setParam("image_height", cameraHeight);
             ROS_INFO("Camera selected res %dx%d", cameraWidth, cameraHeight);
             return camera;
         }
@@ -239,6 +244,8 @@ private:
 public:
     CameraNode() : node("~") 
     {
+        resolutionsTopic = node.advertise<rospilot::Resolutions>(
+                "resolutions", 1, true);
         imagePub = node.advertise<sensor_msgs::CompressedImage>(
                 "image_raw/compressed", 1);
         captureServiceServer = node.advertiseService(
@@ -337,11 +344,18 @@ public:
         {
             // Process any pending service callbacks
             ros::spinOnce();
+            int newWidth;
+            node.getParam("image_width", newWidth);
+            int newHeight;
+            node.getParam("image_height", newHeight);
             std::string newVideoDevice;
             node.getParam("video_device", newVideoDevice);
             std::string newCodec;
             node.param("codec", newCodec, std::string("mjpeg"));
-            if (newVideoDevice != videoDevice || newCodec != codec) {
+            if (newVideoDevice != videoDevice || 
+                    newCodec != codec ||
+                    newWidth != cameraWidth ||
+                    newHeight != cameraHeight) {
                 initCameraAndEncoders();
             }
             if(!sendPreview()) {

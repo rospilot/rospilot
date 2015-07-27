@@ -28,6 +28,7 @@ extern "C" {
 
 #include<ros/ros.h>
 #include<rospilot_deps/usb_cam.h>
+#include<rospilot/Resolution.h>
 
 int UsbCamera::getWidth()
 {
@@ -37,6 +38,11 @@ int UsbCamera::getWidth()
 int UsbCamera::getHeight()
 {
     return height;
+}
+
+rospilot::Resolutions UsbCamera::getSupportedResolutions()
+{
+    return resolutions;
 }
 
 bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
@@ -50,6 +56,28 @@ bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
 bool UsbCamera::captureImage(sensor_msgs::CompressedImage *image)
 {
     getLiveImage(image);
+}
+
+// TODO: put all the code in the right namespace
+bool tryResolution(int fd, rospilot::Resolution resolution)
+{
+    v4l2_format format;
+    format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    format.fmt.pix.width = resolution.width;
+    format.fmt.pix.height = resolution.height;
+    if (ioctl(fd, VIDIOC_TRY_FMT, &format) == -1) {
+        ROS_FATAL("Can't try resolution");
+    }
+    return resolution.width == format.fmt.pix.width &&
+        resolution.height == format.fmt.pix.height;
+}
+
+rospilot::Resolution res(int width, int height)
+{
+    rospilot::Resolution resolution;
+    resolution.width = width;
+    resolution.height = height;
+    return resolution;
 }
 
 UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
@@ -73,6 +101,27 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
         ioctl(fd, VIDIOC_TRY_FMT, &format);
         width = format.fmt.pix.width;
         height = format.fmt.pix.height;
+    }
+    // detect all supported resolutions
+    std::vector<rospilot::Resolution> CANDIDATE_RESOLUTIONS = {
+        // 16:9 resolutions
+        res(854, 480), res(960, 544), res(1024, 576), res(1280, 720), res(1366, 768), res(1920, 1080), res(3840, 2160), res(7680, 4320),
+        // 5:3 resolutions
+        res(800, 480), res(1280, 768), 
+        // 16:10 resolutions
+        res(320, 200), res(1280, 800), res(1440, 900), res(1680, 1050), res(1920, 1200), res(2560, 1600),
+        // 3:2 resolutions
+        res(1152, 768), res(1280, 854), res(1440, 960), 
+        // 4:3 resolutions
+        res(320, 240), res(480, 360), res(640, 480), res(768, 576), res(800, 600),
+        res(1024, 768), res(1280, 960), res(1400, 1050), res(1600, 1200), res(2048, 1536),
+        // 5:4 resolutions
+        res(352, 288), res(1280, 1024), res(2560, 2048)
+    };
+    for (rospilot::Resolution resolution : CANDIDATE_RESOLUTIONS) {
+        if (tryResolution(fd, resolution)) {
+            resolutions.resolutions.push_back(resolution);
+        }
     }
     close(fd);
 

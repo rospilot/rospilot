@@ -6,6 +6,11 @@
     </select>
   </p>
   <p>
+    Recording resolution: <select ng-model='selected_resolution' 
+      ng-options='resolution for resolution in resolutions'>
+    </select>
+  </p>
+  <p>
     Codec: <select ng-model='selected_codec' 
       ng-options='codec for codec in codecs'>
     </select>
