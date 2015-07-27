@@ -92,6 +92,7 @@ MHD_Response* H264Server::readFrames(std::string client)
 
 void H264Server::start()
 {
+    std::lock_guard<std::mutex> guard(lock);
     if (daemon != nullptr) {
         return;
     }
@@ -106,6 +107,7 @@ void H264Server::start()
 
 void H264Server::stop()
 {
+    std::lock_guard<std::mutex> guard(lock);
     if (daemon == nullptr) {
         return;
     }

@@ -17,56 +17,33 @@
  * limitations under the License.
  *
  *********************************************************************/
-#ifndef ROSPILOT_H264_SERVER_H
-#define ROSPILOT_H264_SERVER_H
+#ifndef ROSPILOT_BACKGROUND_IMAGE_SINK_H
+#define ROSPILOT_BACKGROUND_IMAGE_SINK_H
 
-#include<mutex>
-#include<condition_variable>
-#include<vector>
-#include<chrono>
-#include<map>
+#include<future>
 
-#include<microhttpd.h>
+#include<transcoders.h>
+#include<resizer.h>
+#include<image_sink.h>
 #include<sensor_msgs/CompressedImage.h>
 
-#include<image_sink.h>
-
-using namespace std::chrono;
-
-struct ClientSession
-{
-    ClientSession()
-    {
-        keyFrame = false;
-        lastAccessTime = high_resolution_clock::now();
-    }
-    std::vector<uint8_t> frameData;
-    bool keyFrame;
-    time_point<high_resolution_clock> lastAccessTime;
-};
-
-class H264Server : public ImageSink
+class BackgroundImageSink 
 {
 private:
-    std::condition_variable frameAvailable;
-    std::mutex lock;
-    std::map<std::string, ClientSession> clients;
-    MHD_Daemon *daemon = nullptr;
+    ImageSink * sink;
+    H264Encoder * encoder;
+    Resizer * resizer;
+    std::future<void> sinkFuture;
 
 public:
-    // thread-safe
-    void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame) override;
+    // encoder may be null to indicate that no encoding is needed
+    // NOTE: imageSink will not be released
+    BackgroundImageSink(ImageSink *imageSink, H264Encoder *h264Encoder, Resizer *resizer);
 
     // thread-safe
-    MHD_Response* readFrames(std::string client);
+    void addFrame(sensor_msgs::CompressedImage const *image);
 
-    // thread-safe
-    void start();
-
-    // thread-safe
-    void stop();
-
-    ~H264Server();
+    ~BackgroundImageSink();
 };
 
 #endif

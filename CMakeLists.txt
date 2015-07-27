@@ -139,6 +139,7 @@ add_executable(camera_node
     nodes/camera.cpp
     src/cpp/usb_camera.cpp
     src/cpp/ptp.cpp
+    src/cpp/background_image_sink.cpp
     src/cpp/jpeg_decoder.cpp
     src/cpp/h264_server.cpp
     src/cpp/resizer.cpp

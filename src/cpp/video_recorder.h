@@ -22,9 +22,12 @@
 
 #include "h264_settings.h"
 
+#include<mutex>
 #include<chrono>
 
 #include<sensor_msgs/CompressedImage.h>
+
+#include<image_sink.h>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -33,7 +36,7 @@ extern "C" {
 
 using namespace std::chrono;
 
-class SoftwareVideoRecorder
+class SoftwareVideoRecorder : public ImageSink
 {
 private:
     static const int FPS = 60;
@@ -52,14 +55,18 @@ private:
     PixelFormat pixelFormat;
     AVCodecID codecId;
     H264Settings settings;
+    std::mutex lock;
 
 public:
     SoftwareVideoRecorder(PixelFormat pixelFormat, AVCodecID codecId, H264Settings settings);
     
-    void writeFrame(sensor_msgs::CompressedImage *image, bool keyFrame);
+    // thread-safe
+    void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame) override;
 
+    // thread-safe
     bool start(const char *name);
     
+    // thread-safe
     bool stop();
 
     ~SoftwareVideoRecorder();

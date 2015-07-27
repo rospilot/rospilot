@@ -34,6 +34,7 @@
 #include<std_srvs/Empty.h>
 #include<sensor_msgs/CompressedImage.h>
 
+#include<background_image_sink.h>
 #include<ptp.h>
 #include<usb_camera.h>
 #include<video_recorder.h>
@@ -55,11 +56,11 @@ private:
     // are called in spinOnce() in the main thread
     BaseCamera *camera = nullptr;
     JpegDecoder *jpegDecoder = nullptr;
-    H264Encoder *liveH264Encoder = nullptr;
-    H264Encoder *recordingH264Encoder = nullptr;
     SoftwareVideoRecorder *videoRecorder = nullptr;
-    Resizer *resizer = nullptr;
+    BackgroundImageSink *liveStream = nullptr;
+    BackgroundImageSink *recorder = nullptr;
     H264Server h264Server;
+
     ros::Publisher resolutionsTopic;
     ros::Publisher imagePub;
     ros::ServiceServer captureServiceServer;
@@ -74,8 +75,6 @@ private:
     int cameraWidth;
     int cameraHeight;
     int framerate;
-    H264Settings liveH264Settings;
-    H264Settings recordingH264Settings;
 
 private:
     bool sendPreview()
@@ -92,26 +91,14 @@ private:
                 transcodedSuccessfully = true;
             }
             imagePub.publish(image);
-            sensor_msgs::CompressedImage liveH264Image;
             if (codec == "h264" && image.format == "jpeg") {
                 jpegDecoder->decodeInPlace(&image);
-                liveH264Image.format = image.format;
-                liveH264Image.data = image.data;
-                if (videoRecorder != nullptr) {
-                    transcodedSuccessfully = recordingH264Encoder->encodeInPlace(&image,
-                            &keyFrame);
-                }
             }
             if (codec == "h264") {
-                resizer->resizeInPlace(&liveH264Image);
-                bool liveKeyFrame = false;
-                if (liveH264Encoder->encodeInPlace(&liveH264Image, &liveKeyFrame)) {
-                    h264Server.addFrame(&liveH264Image, liveKeyFrame);
-                }
+                // TODO: port the mjpeg streamer to this framework
+                liveStream->addFrame(&image);
             }
-            if (videoRecorder != nullptr && transcodedSuccessfully) {
-                videoRecorder->writeFrame(&image, keyFrame);
-            }
+            recorder->addFrame(&image);
 
             frameRateCounter++;
             if (frameRateCounter >= 60) {
@@ -146,6 +133,7 @@ private:
         std::string videoDevice;
         node.param("video_device", videoDevice, std::string("/dev/video0"));
 
+        H264Settings recordingH264Settings;
         recordingH264Settings.height = cameraHeight;
         recordingH264Settings.width = cameraWidth;
         recordingH264Settings.level = 41;
@@ -157,6 +145,7 @@ private:
         recordingH264Settings.bit_rate = 4 * cameraWidth * cameraHeight;
 
         double aspectRatio = cameraHeight / (double) cameraWidth;
+        H264Settings liveH264Settings;
         liveH264Settings.height = (int) (aspectRatio * 640);
         liveH264Settings.width = 640;
         liveH264Settings.level = 41;
@@ -169,23 +158,34 @@ private:
             delete jpegDecoder;
         }
         jpegDecoder = new JpegDecoder(cameraWidth, cameraHeight, pixelFormat);
-        if (resizer != nullptr) {
-            delete resizer;
+
+        if (liveStream != nullptr) {
+            delete liveStream;
         }
-        resizer = new Resizer(cameraWidth, cameraHeight, liveH264Settings.width, liveH264Settings.height, pixelFormat);
-        if (liveH264Encoder != nullptr) {
-            delete liveH264Encoder;
-        }
-        liveH264Encoder = createEncoder(liveH264Settings);
-        if (recordingH264Encoder != nullptr) {
-            delete recordingH264Encoder;
-        }
-        recordingH264Encoder = createEncoder(recordingH264Settings);
+        Resizer *resizer = new Resizer(
+                cameraWidth,
+                cameraHeight,
+                liveH264Settings.width,
+                liveH264Settings.height,
+                pixelFormat);
+        liveStream = new BackgroundImageSink(
+                &h264Server,
+                createEncoder(liveH264Settings),
+                resizer);
+
         if (videoRecorder != nullptr) {
             delete videoRecorder;
         }
         ROS_INFO("Recording in %s", codec.c_str());
         videoRecorder = new SoftwareVideoRecorder(pixelFormat, codecId, recordingH264Settings);
+        if (recorder != nullptr) {
+            delete recorder;
+        }
+        recorder = new BackgroundImageSink(
+                videoRecorder,
+                createEncoder(recordingH264Settings),
+                nullptr
+        );
     }
 
     BaseCamera *createCamera()
@@ -330,10 +330,9 @@ public:
             delete camera;
         }
         delete jpegDecoder;
-        delete resizer;
-        delete liveH264Encoder;
-        delete recordingH264Encoder;
         delete videoRecorder;
+        delete recorder;
+        delete liveStream;
     }
 
     bool spin()

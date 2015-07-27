@@ -46,8 +46,10 @@ SoftwareVideoRecorder::SoftwareVideoRecorder(PixelFormat pixelFormat, AVCodecID 
     this->settings = settings;
 }
 
-void SoftwareVideoRecorder::writeFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
+void SoftwareVideoRecorder::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
 {
+    // acquire lock so that we can read this->recording
+    std::lock_guard<std::mutex> guard(lock);
     if (!recording) {
         return;
     }
@@ -143,6 +145,7 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
 
 bool SoftwareVideoRecorder::start(const char *name)
 {
+    std::lock_guard<std::mutex> guard(lock);
     filename = std::string(name);
     char tempname[] = "/tmp/XXXXXX";
     mkstemp(tempname);
@@ -192,6 +195,7 @@ bool SoftwareVideoRecorder::start(const char *name)
 
 bool SoftwareVideoRecorder::stop()
 {
+    std::lock_guard<std::mutex> guard(lock);
     recording = false;
     av_write_trailer(formatContext);
     avcodec_close(videoStream->codec);

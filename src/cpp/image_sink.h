@@ -17,56 +17,16 @@
  * limitations under the License.
  *
  *********************************************************************/
-#ifndef ROSPILOT_H264_SERVER_H
-#define ROSPILOT_H264_SERVER_H
+#ifndef ROSPILOT_IMAGE_SINK_H
+#define ROSPILOT_IMAGE_SINK_H
 
-#include<mutex>
-#include<condition_variable>
-#include<vector>
-#include<chrono>
-#include<map>
-
-#include<microhttpd.h>
 #include<sensor_msgs/CompressedImage.h>
 
-#include<image_sink.h>
-
-using namespace std::chrono;
-
-struct ClientSession
+class ImageSink 
 {
-    ClientSession()
-    {
-        keyFrame = false;
-        lastAccessTime = high_resolution_clock::now();
-    }
-    std::vector<uint8_t> frameData;
-    bool keyFrame;
-    time_point<high_resolution_clock> lastAccessTime;
-};
-
-class H264Server : public ImageSink
-{
-private:
-    std::condition_variable frameAvailable;
-    std::mutex lock;
-    std::map<std::string, ClientSession> clients;
-    MHD_Daemon *daemon = nullptr;
-
 public:
     // thread-safe
-    void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame) override;
-
-    // thread-safe
-    MHD_Response* readFrames(std::string client);
-
-    // thread-safe
-    void start();
-
-    // thread-safe
-    void stop();
-
-    ~H264Server();
+    virtual void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame) = 0;
 };
 
 #endif
