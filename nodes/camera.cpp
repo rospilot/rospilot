@@ -175,12 +175,15 @@ private:
         if (liveStream != nullptr) {
             delete liveStream;
         }
-        Resizer *resizer = new Resizer(
+        Resizer *resizer = nullptr;
+        if (codec == "h264") {
+            resizer = new Resizer(
                 cameraWidth,
                 cameraHeight,
                 liveH264Settings.width,
                 liveH264Settings.height,
                 pixelFormat);
+        }
         liveStream = new BackgroundImageSink(
                 &h264Server,
                 createEncoder(liveH264Settings),
@@ -333,6 +336,9 @@ public:
 
     H264Encoder *createEncoder(H264Settings settings)
     {
+        if (codec == "mjpeg") {
+            return nullptr;
+        }
         if (mfcPath.size() > 0 && !settings.zero_latency) {
             ROS_INFO("Using hardware encoder");
             return new ExynosMultiFormatCodecH264Encoder(mfcPath, settings);
