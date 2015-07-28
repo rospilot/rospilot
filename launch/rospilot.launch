@@ -22,8 +22,7 @@
       pkg="rospilot"
       type="mapnik_server.py"
       respawn="false"
-      output="screen"
-      args="--media_path=~/.rospilot/media">
+      output="screen">
     <param name="tilestache_config_file" value="~/.rospilot/mapnik/ts/ts.config" />
 </node>
 <node name="camera"
