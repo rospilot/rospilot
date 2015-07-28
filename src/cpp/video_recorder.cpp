@@ -150,7 +150,9 @@ bool SoftwareVideoRecorder::start(const char *name)
     std::lock_guard<std::mutex> guard(lock);
     filename = std::string(name);
     char tempname[] = "/tmp/XXXXXX";
-    mkstemp(tempname);
+    if (mkstemp(tempname) == -1) {
+        ROS_FATAL("Cannot create temp directory to save video");
+    }
     tempFilename = std::string(tempname);
     formatContext = avformat_alloc_context();
     formatContext->oformat = av_guess_format(nullptr, name, nullptr);
