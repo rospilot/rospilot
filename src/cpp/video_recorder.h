@@ -34,6 +34,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+namespace rospilot {
+
 using namespace std::chrono;
 
 class SoftwareVideoRecorder : public ImageSink
@@ -74,5 +76,7 @@ public:
 private:
     AVStream *createVideoStream(AVFormatContext *oc);
 };
+
+}
 
 #endif

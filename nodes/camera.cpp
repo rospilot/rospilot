@@ -46,6 +46,8 @@ extern "C" {
 #include <linux/videodev2.h>
 }
 
+namespace rospilot {
+
 using namespace std::chrono;
 
 class CameraNode
@@ -413,10 +415,13 @@ public:
     }
 };
 
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "camera");
-    CameraNode a;
+    rospilot::CameraNode a;
     a.spin();
     return 0;
 }
+

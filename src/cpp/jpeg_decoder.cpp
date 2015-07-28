@@ -33,6 +33,8 @@ extern "C" {
 #define av_frame_alloc  avcodec_alloc_frame
 #endif
 
+namespace rospilot {
+
 using std::vector;
 using sensor_msgs::CompressedImage;
 
@@ -133,4 +135,6 @@ JpegDecoder::JpegDecoder(int width, int height, PixelFormat outputPixelFormat)
 JpegDecoder::~JpegDecoder()
 {
     delete[] outputBuffer;
+}
+
 }

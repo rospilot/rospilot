@@ -20,6 +20,8 @@
 #ifndef ROSPILOT_H264_SETTINGS_H
 #define ROSPILOT_H264_SETTINGS_H
 
+namespace rospilot {
+
 enum H264Profile
 {
     CONSTRAINED_BASELINE,
@@ -36,5 +38,7 @@ struct H264Settings
     bool zero_latency;
     H264Profile profile;
 };
+
+}
 
 #endif

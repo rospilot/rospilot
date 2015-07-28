@@ -27,6 +27,8 @@
 #include<image_sink.h>
 #include<sensor_msgs/CompressedImage.h>
 
+namespace rospilot {
+
 class BackgroundImageSink 
 {
 private:
@@ -45,5 +47,7 @@ public:
 
     ~BackgroundImageSink();
 };
+
+}
 
 #endif

@@ -35,6 +35,8 @@ extern "C" {
 #define av_frame_alloc  avcodec_alloc_frame
 #endif
 
+namespace rospilot {
+
 bool SoftwareH264Encoder::encodeInPlace(sensor_msgs::CompressedImage *image,
         bool *keyFrame)
 {
@@ -143,4 +145,6 @@ SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
     if (avcodec_open2(context, encoder, nullptr) < 0) {
         ROS_ERROR("Could not open h264 encoder");
     }
+}
+
 }

@@ -22,6 +22,8 @@
 
 #include<sensor_msgs/CompressedImage.h>
 
+namespace rospilot {
+
 using namespace std::chrono;
 
 BackgroundImageSink::BackgroundImageSink(
@@ -72,3 +74,4 @@ BackgroundImageSink::~BackgroundImageSink()
     }
 }
 
+}

@@ -35,6 +35,8 @@ extern "C" {
 #define av_frame_free   av_free
 #endif
 
+namespace rospilot {
+
 using std::vector;
 using sensor_msgs::CompressedImage;
 
@@ -123,4 +125,6 @@ Resizer::~Resizer()
     av_frame_free(outputFrame);
     sws_freeContext(context);  
     delete[] outputBuffer;
+}
+
 }

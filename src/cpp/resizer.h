@@ -30,6 +30,8 @@ extern "C" {
 #endif
 }
 
+namespace rospilot {
+
 class Resizer 
 {
 private:
@@ -53,6 +55,8 @@ public:
 
     ~Resizer();
 };
+
+}
 
 #endif
 

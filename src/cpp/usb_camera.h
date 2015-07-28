@@ -22,6 +22,7 @@
 
 #include<sensor_msgs/CompressedImage.h>
 #include<base_camera.h>
+namespace rospilot {
 
 class UsbCamera : public BaseCamera
 {
@@ -46,4 +47,5 @@ public:
     ~UsbCamera();
 };
 
+}
 #endif

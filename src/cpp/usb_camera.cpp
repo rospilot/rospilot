@@ -29,6 +29,7 @@ extern "C" {
 #include<ros/ros.h>
 #include<rospilot_deps/usb_cam.h>
 #include<rospilot/Resolution.h>
+namespace rospilot {
 
 int UsbCamera::getWidth()
 {
@@ -58,8 +59,7 @@ bool UsbCamera::captureImage(sensor_msgs::CompressedImage *image)
     getLiveImage(image);
 }
 
-// TODO: put all the code in the right namespace
-bool tryResolution(int fd, rospilot::Resolution resolution)
+bool tryResolution(int fd, Resolution resolution)
 {
     v4l2_format format;
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -152,4 +152,6 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
 UsbCamera::~UsbCamera()
 {
     usb_cam_camera_shutdown();
+}
+
 }

@@ -23,6 +23,8 @@
 #include<microhttpd.h>
 #include<sensor_msgs/CompressedImage.h>
 
+namespace rospilot {
+
 using std::vector;
 using sensor_msgs::CompressedImage;
 
@@ -118,4 +120,6 @@ void H264Server::stop()
 H264Server::~H264Server()
 {
     stop();
+}
+
 }

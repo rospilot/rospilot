@@ -34,6 +34,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+namespace rospilot {
+
 using namespace std::chrono;
 
 SoftwareVideoRecorder::SoftwareVideoRecorder(PixelFormat pixelFormat, AVCodecID codecId, H264Settings settings)
@@ -219,3 +221,4 @@ SoftwareVideoRecorder::~SoftwareVideoRecorder()
 {
 }
 
+}

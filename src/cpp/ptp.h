@@ -26,6 +26,7 @@
 #include<sensor_msgs/CompressedImage.h>
 
 #include<base_camera.h>
+namespace rospilot {
 
 class PtpCamera : public BaseCamera
 {
@@ -52,4 +53,5 @@ public:
     ~PtpCamera();
 };
 
+}
 #endif

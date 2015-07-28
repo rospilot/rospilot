@@ -27,6 +27,7 @@
 
 #include<ros/ros.h>
 #include<sensor_msgs/CompressedImage.h>
+namespace rospilot {
 
 bool PtpCamera::getLiveImage(sensor_msgs::CompressedImage *image)
 {
@@ -152,4 +153,6 @@ PtpCamera::~PtpCamera()
     gp_camera_unref(camera);
     gp_context_unref(context);
     gp_file_free(cameraFile);
+}
+
 }

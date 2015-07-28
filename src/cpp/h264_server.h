@@ -31,6 +31,8 @@
 
 #include<image_sink.h>
 
+namespace rospilot {
+
 using namespace std::chrono;
 
 struct ClientSession
@@ -68,5 +70,7 @@ public:
 
     ~H264Server();
 };
+
+}
 
 #endif

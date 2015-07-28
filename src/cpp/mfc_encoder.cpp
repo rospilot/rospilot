@@ -32,6 +32,8 @@ extern "C" {
 #include <rospilot_deps/mfc/v4l_dev.h>
 }
 
+namespace rospilot {
+
 using std::vector;
 using sensor_msgs::CompressedImage;
 
@@ -266,4 +268,6 @@ ExynosMultiFormatCodecH264Encoder::~ExynosMultiFormatCodecH264Encoder()
     func_destroy(inputBridge);
     func_destroy(outputBridge);
     mfc->ops->destroy(mfc);
+}
+
 }

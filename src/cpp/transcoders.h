@@ -28,6 +28,8 @@ extern "C" {
 #include <rospilot_deps/mfc/io_dev.h>
 }
 
+namespace rospilot {
+
 class H264Encoder
 {
 public:
@@ -102,5 +104,7 @@ public:
 
     ~JpegDecoder();
 };
+
+}
 
 #endif
