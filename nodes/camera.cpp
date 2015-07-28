@@ -81,9 +81,6 @@ private:
 private:
     bool sendPreview()
     {
-        static time_point<high_resolution_clock> sixtyFramesAgo = high_resolution_clock::now();
-        static int frameRateCounter = 0;
-
         sensor_msgs::CompressedImage image;
         if(camera != nullptr && camera->getLiveImage(&image)) {
             bool keyFrame = false;
@@ -102,14 +99,6 @@ private:
             }
             recorder->addFrame(&image);
 
-            frameRateCounter++;
-            if (frameRateCounter >= 60) {
-                time_point<high_resolution_clock> currentTime = high_resolution_clock::now();
-                duration<double> duration = (currentTime - sixtyFramesAgo);
-                //ROS_INFO("Camera frame rate %f", frameRateCounter / duration.count());
-                frameRateCounter = 0;
-                sixtyFramesAgo = currentTime;
-            }
             return true;
         }
         return false;
