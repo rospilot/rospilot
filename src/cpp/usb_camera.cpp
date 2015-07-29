@@ -27,7 +27,7 @@ extern "C" {
 }
 
 #include<ros/ros.h>
-#include<rospilot_deps/usb_cam.h>
+#include<third_party/usb_cam.h>
 #include<rospilot/Resolution.h>
 namespace rospilot {
 

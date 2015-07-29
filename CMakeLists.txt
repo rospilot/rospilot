@@ -5,7 +5,6 @@ project(rospilot)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation roslint roscpp)
-find_package(catkin REQUIRED COMPONENTS rospilot_deps)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED libgphoto2)
 pkg_check_modules(libavcodec REQUIRED libavcodec)
@@ -100,7 +99,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include src/cpp
-    ${rospilot_deps_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
     ${libnl-3.0_INCLUDE_DIRS}
     ${libnl-genl-3.0_INCLUDE_DIRS}
@@ -145,9 +143,13 @@ add_executable(camera_node
     src/cpp/resizer.cpp
     src/cpp/software_h264_encoder.cpp
     src/cpp/mfc_encoder.cpp
+    src/cpp/third_party/usb_cam.cpp
+    src/cpp/third_party/mfc/func_dev.c
+    src/cpp/third_party/mfc/io_dev.c
+    src/cpp/third_party/mfc/v4l_dev.c
+    src/cpp/third_party/mfc/mfc.c
     src/cpp/video_recorder.cpp)
 target_link_libraries(camera_node 
-    ${rospilot_deps_LIBRARIES}
     ${libgphoto2_LIBRARIES}
     ${libavcodec_LIBRARIES}
     ${libmicrohttpd_LIBRARIES}
@@ -156,7 +158,6 @@ target_link_libraries(camera_node
     ${libswscale_LIBRARIES}
     ${catkin_LIBRARIES})
 add_dependencies(camera_node rospilot_gencpp)
-add_dependencies(camera_node rospilot_deps)
 
 #############
 ## Install ##

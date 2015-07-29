@@ -25,7 +25,7 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <rospilot_deps/mfc/io_dev.h>
+#include <third_party/mfc/io_dev.h>
 }
 
 namespace rospilot {

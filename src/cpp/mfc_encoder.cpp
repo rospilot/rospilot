@@ -26,10 +26,10 @@
 
 extern "C" {
 #include <linux/videodev2.h>
-#include <rospilot_deps/mfc/mfc.h>
-#include <rospilot_deps/mfc/io_dev.h>
-#include <rospilot_deps/mfc/func_dev.h>
-#include <rospilot_deps/mfc/v4l_dev.h>
+#include <third_party/mfc/mfc.h>
+#include <third_party/mfc/io_dev.h>
+#include <third_party/mfc/func_dev.h>
+#include <third_party/mfc/v4l_dev.h>
 }
 
 namespace rospilot {
