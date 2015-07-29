@@ -63,6 +63,9 @@ bool tryResolution(int fd, Resolution resolution)
 {
     v4l2_format format;
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if (ioctl(fd, VIDIOC_G_FMT, &format) == -1) {
+        ROS_FATAL("Can't read format from camera");
+    }
     format.fmt.pix.width = resolution.width;
     format.fmt.pix.height = resolution.height;
     if (ioctl(fd, VIDIOC_TRY_FMT, &format) == -1) {
