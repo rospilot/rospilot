@@ -113,17 +113,9 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 .controller('settings', function ($scope, $rosparam, $rosservice, Camera) {
     var shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
     var globService = $rosservice('/rospilot/glob', 'rospilot/Glob');
-    $scope.selected_codec = '';
-    $scope.codecs = ['h264', 'mjpeg'];
     $scope.selected_video_device = '';
     $scope.video_devices = [];
     $scope.shutdown = shutdownService;
-    $rosparam.get('/rospilot/camera/codec',
-        function(value) {
-            $scope.selected_codec = value;
-            $scope.$apply();
-        }
-    );
     $rosparam.get('/rospilot/camera/video_device',
         function(value) {
             $scope.selected_video_device = value;
@@ -164,11 +156,6 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     $scope.$watch('selected_video_device', function(new_device) {
         if (new_device) {
             $rosparam.set('/rospilot/camera/video_device', new_device);
-        }
-    });
-    $scope.$watch('selected_codec', function(new_codec) {
-        if (new_codec) {
-            $rosparam.set('/rospilot/camera/codec', new_codec);
         }
     });
 })
@@ -259,8 +246,8 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
           }
       ],
   });
-  $scope.server_name = window.location.hostname;
-  var mapnik_url = 'http://' + $scope.server_name + ':8086/ex/{z}/{x}/{y}.png';
+  var server_name = window.location.hostname;
+  var mapnik_url = 'http://' + server_name + ':8086/ex/{z}/{x}/{y}.png';
 
   L.tileLayer(mapnik_url, {
       maxZoom: 18,
@@ -417,44 +404,35 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       });
   })();
 
-  $scope.codec = 'mjpeg';
-  $rosparam.get('/rospilot/camera/codec',
-    function(value) {
-        $scope.codec = value;
-        $scope.$apply();
-  });
-  
   $scope.destroyed = false;
   $scope.$on("$destroy", function() {$scope.destroyed = true});
 
+  var server_name = window.location.hostname;
+
   // Generate a random client id for fetching the stream
   var clientId = Math.floor(Math.random() * 1000 * 1000 * 1000);
-  $scope.$watch('codec', function(new_codec) {
-    if (new_codec === 'h264') {
-      var player = new Player({size: {height: 480, width: 640}});
-      document.querySelector('#video').appendChild(player.canvas);
+  var player = new Player({size: {height: 480, width: 640}});
+  document.querySelector('#video').appendChild(player.canvas);
+  var h264Url = 'http://' + server_name + ':8666/h264/' + clientId;
+  
+  function nextFrame() {
+      $http.get(h264Url, {responseType: 'arraybuffer'})
+      .success(function(data) {
+        player.decode(new Uint8Array(data));
+        if ($scope.destroyed) {
+            return;
+        }
+        $timeout(nextFrame, 1);
+      })
+      .error(function() {
+        if ($scope.destroyed) {
+            return;
+        }
+        $timeout(nextFrame, 1000);
+      });
+  };
+  nextFrame();
 
-      function nextFrame() {
-        $http.get('http://' + $scope.server_name + ':8666/h264/' + clientId, {responseType: 'arraybuffer'})
-          .success(function(data) {
-            player.decode(new Uint8Array(data));
-            if ($scope.destroyed) {
-                return;
-            }
-            $timeout(nextFrame, 1);
-          })
-          .error(function() {
-            if ($scope.destroyed) {
-                return;
-            }
-            $timeout(nextFrame, 1000);
-          });
-      };
-      nextFrame();
-    }
-  });
-
-  $scope.server_name = window.location.hostname;
   $scope.take_picture = Camera.take_picture;
 
   $scope.recording = false;

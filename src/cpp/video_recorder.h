@@ -55,12 +55,11 @@ private:
     int width;
     int height;
     PixelFormat pixelFormat;
-    AVCodecID codecId;
     H264Settings settings;
     std::mutex lock;
 
 public:
-    SoftwareVideoRecorder(PixelFormat pixelFormat, AVCodecID codecId, H264Settings settings);
+    SoftwareVideoRecorder(PixelFormat pixelFormat, H264Settings settings);
     
     // thread-safe
     void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame) override;

@@ -28,7 +28,6 @@ import re
 import glob
 import std_srvs.srv
 import rospilot.srv
-import urllib2
 import cv2
 from optparse import OptionParser
 from catkin.find_in_workspaces import find_in_workspaces
@@ -72,13 +71,6 @@ class API(object):
         cap.release()
         cherrypy.response.headers['Content-Type'] = 'image/jpeg'
         return jpg.tostring()
-
-    @cherrypy.expose
-    def camera(self, action):
-        url = 'http://localhost:8080/snapshot?topic=/rospilot/camera/image_raw/compressed'
-        resp = urllib2.urlopen(url)
-        cherrypy.response.headers['Content-Type'] = resp.info()['Content-Type']
-        return resp.read()
 
 
 class Index(object):

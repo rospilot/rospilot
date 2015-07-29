@@ -30,18 +30,12 @@
       type="camera_node"
       respawn="false"
       output="screen">
-    <param name="codec" value="h264" />
     <param name="camera_type" value="usb" />
     <param name="image_width" value="640" />
     <param name="image_height" value="480" />
     <param name="video_device" value="/dev/video0" />
 </node>
 </group>
-<node name="mjpeg"
-      pkg="rospilot_deps"
-      type="raw_mjpeg_server"
-      respawn="false"
-      output="screen" />
 <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
      <arg name="port" value="8088"/>
 </include>

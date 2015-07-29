@@ -92,9 +92,7 @@ private:
     ros::ServiceServer stopRecordServiceServer;
 
     std::string videoDevice;
-    std::string codec; // "mjpeg" or "h264"
     std::string mfcPath;
-    AVCodecID codecId;
     std::string mediaPath;
     int cameraWidth;
     int cameraHeight;
@@ -107,18 +105,9 @@ private:
         if(camera != nullptr && camera->getLiveImage(&image)) {
             bool keyFrame = false;
             bool transcodedSuccessfully = false;
-            if (codec == "mjpeg") {
-                keyFrame = true;
-                transcodedSuccessfully = true;
-            }
             imagePub.publish(image);
-            if (codec == "h264" && image.format == "jpeg") {
-                jpegDecoder->decodeInPlace(&image);
-            }
-            if (codec == "h264") {
-                // TODO: port the mjpeg streamer to this framework
-                liveStream->addFrame(&image);
-            }
+            jpegDecoder->decodeInPlace(&image);
+            liveStream->addFrame(&image);
             recorder->addFrame(&image);
 
             return true;
@@ -133,15 +122,7 @@ private:
         }
         camera = createCamera();
         resolutionsTopic.publish(camera->getSupportedResolutions());
-        PixelFormat pixelFormat;
-        if (codec == "h264") {
-            pixelFormat = PIX_FMT_YUV420P;
-        }
-        else if (codec == "mjpeg") {
-            // TODO: Do we need to detect this dynamically?
-            // Different cameras might be 4:2:0, 4:2:2, or 4:4:4
-            pixelFormat = PIX_FMT_YUVJ422P;
-        }
+        PixelFormat pixelFormat = PIX_FMT_YUV420P;
 
         std::string videoDevice;
         node.param("video_device", videoDevice, std::string("/dev/video0"));
@@ -175,15 +156,12 @@ private:
         if (liveStream != nullptr) {
             delete liveStream;
         }
-        Resizer *resizer = nullptr;
-        if (codec == "h264") {
-            resizer = new Resizer(
+        Resizer *resizer = new Resizer(
                 cameraWidth,
                 cameraHeight,
                 liveH264Settings.width,
                 liveH264Settings.height,
                 pixelFormat);
-        }
         liveStream = new BackgroundImageSink(
                 &h264Server,
                 createEncoder(liveH264Settings),
@@ -192,8 +170,7 @@ private:
         if (videoRecorder != nullptr) {
             delete videoRecorder;
         }
-        ROS_INFO("Recording in %s", codec.c_str());
-        videoRecorder = new SoftwareVideoRecorder(pixelFormat, codecId, recordingH264Settings);
+        videoRecorder = new SoftwareVideoRecorder(pixelFormat, recordingH264Settings);
         if (recorder != nullptr) {
             delete recorder;
         }
@@ -213,16 +190,6 @@ private:
         node.param("image_width", cameraWidth, 1920);
         node.param("image_height", cameraHeight, 1080);
         node.param("framerate", framerate, 30);
-        node.param("codec", codec, std::string("mjpeg"));
-        if (codec == "h264") {
-            codecId = AV_CODEC_ID_H264;
-        }
-        else if (codec == "mjpeg") {
-            codecId = AV_CODEC_ID_MJPEG;
-        }
-        else {
-            ROS_FATAL("Unknown codec: %s", codec.c_str());
-        }
         node.param("media_path", mediaPath, std::string("~/.rospilot/media"));
         wordexp_t p;
         wordexp(mediaPath.c_str(), &p, 0);
@@ -336,9 +303,6 @@ public:
 
     H264Encoder *createEncoder(H264Settings settings)
     {
-        if (codec == "mjpeg") {
-            return nullptr;
-        }
         if (mfcPath.size() > 0 && !settings.zero_latency) {
             ROS_INFO("Using hardware encoder");
             return new ExynosMultiFormatCodecH264Encoder(mfcPath, settings);
@@ -375,10 +339,7 @@ public:
             node.getParam("image_height", newHeight);
             std::string newVideoDevice;
             node.getParam("video_device", newVideoDevice);
-            std::string newCodec;
-            node.param("codec", newCodec, std::string("mjpeg"));
             if (newVideoDevice != videoDevice || 
-                    newCodec != codec ||
                     newWidth != cameraWidth ||
                     newHeight != cameraHeight) {
                 initCameraAndEncoders();

@@ -38,13 +38,12 @@ namespace rospilot {
 
 using namespace std::chrono;
 
-SoftwareVideoRecorder::SoftwareVideoRecorder(PixelFormat pixelFormat, AVCodecID codecId, H264Settings settings)
+SoftwareVideoRecorder::SoftwareVideoRecorder(PixelFormat pixelFormat, H264Settings settings)
 {
     av_register_all();
     this->width = settings.width;
     this->height = settings.height;
     this->pixelFormat = pixelFormat;
-    this->codecId = codecId;
     this->settings = settings;
 }
 
@@ -102,7 +101,7 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
     AVStream *stream;
     AVCodec *codec;
 
-    codec = avcodec_find_encoder(codecId);
+    codec = avcodec_find_encoder(AV_CODEC_ID_H264);
     if (!codec) {
         ROS_ERROR("codec not found");
     }
@@ -115,7 +114,7 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
     c = stream->codec;
     avcodec_get_context_defaults3(c, codec);
 
-    c->codec_id = codecId;
+    c->codec_id = AV_CODEC_ID_H264;
     c->bit_rate = this->settings.bit_rate;
     c->width = this->width;
     c->height = this->height;
@@ -147,6 +146,7 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
 
 bool SoftwareVideoRecorder::start(const char *name)
 {
+    AVCodecID codecId = AV_CODEC_ID_H264;
     std::lock_guard<std::mutex> guard(lock);
     filename = std::string(name);
     char tempname[] = "/tmp/XXXXXX";
