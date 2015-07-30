@@ -65,6 +65,7 @@ static int ffmpegLockManager(void **mtx, enum AVLockOp op)
    return 0;
  case AV_LOCK_DESTROY:
    delete (std::mutex *) *mtx;
+   *mtx = nullptr;
    return 0;
  }
  return 1;
@@ -319,9 +320,9 @@ public:
             delete camera;
         }
         delete jpegDecoder;
-        delete videoRecorder;
         delete recorder;
         delete liveStream;
+        delete videoRecorder;
         av_lockmgr_register(nullptr);
     }
 

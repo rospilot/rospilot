@@ -20,6 +20,7 @@
 
 #include "background_image_sink.h"
 
+#include<ros/ros.h>
 #include<sensor_msgs/CompressedImage.h>
 
 namespace rospilot {
@@ -37,35 +38,53 @@ BackgroundImageSink::BackgroundImageSink(
     sinkFuture = promise.get_future();
 }
 
+static void asyncWorker(Resizer *_resizer,
+                H264Encoder *_encoder,
+                ImageSink *_sink,
+                sensor_msgs::CompressedImage image) {
+    bool keyFrame = false;
+    bool transcoded = true;
+    if (_resizer != nullptr) {
+        _resizer->resizeInPlace(&image);
+    }
+    if (_encoder != nullptr) {
+        transcoded = _encoder->encodeInPlace(&image, &keyFrame);
+    }
+    if (transcoded) {
+        _sink->addFrame(&image, keyFrame);
+    }
+}
+
 void BackgroundImageSink::addFrame(sensor_msgs::CompressedImage const *input)
 {
     // ignore call if the sink is still processing the last frame
     if (!sinkFuture.valid()) {
         return;
     }
-    sensor_msgs::CompressedImage *imageCopy = new sensor_msgs::CompressedImage();
-    *imageCopy = *input;
+    // Access the future to create a happens-before relation
+    sinkFuture.get();
+    sensor_msgs::CompressedImage copy;
+    copy.header = input->header;
+    copy.data = input->data;
+    // XXX: Use c_str() to force a copy, as operator=(const string&) is COW and just
+    // copies the internal buffer address, which is then not thread-safe
+    copy.format = input->format.c_str();
+    if (copy.data.data() == input->data.data() ||
+            copy.format.c_str() == input->format.c_str()) {
+        ROS_FATAL("copy operator created a non-thread-safe copy");
+    }
     sinkFuture = std::async(
             std::launch::async, 
-            [this](sensor_msgs::CompressedImage *image){
-                bool keyFrame = false;
-                bool transcoded = true;
-                if (resizer != nullptr) {
-                    resizer->resizeInPlace(image);
-                }
-                if (encoder != nullptr) {
-                    transcoded = encoder->encodeInPlace(image, &keyFrame);
-                }
-                if (transcoded) {
-                    sink->addFrame(image, keyFrame);
-                }
-                delete image;
-            },
-            imageCopy);
+            &asyncWorker,
+            resizer,
+            encoder,
+            sink,
+            copy);
 }
 
 BackgroundImageSink::~BackgroundImageSink()
 {
+    sinkFuture.wait();
     if (encoder != nullptr) {
         delete encoder;
     }
