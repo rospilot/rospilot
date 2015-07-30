@@ -123,7 +123,7 @@ int v4l_req_bufs(struct io_dev *dev, enum io_dir dir, int nelem)
    set limit on out port if in port is stopped */
 int v4l_deq_buf(struct io_dev *dev, enum io_dir dir) {
     int flags;
-    v4l_deq_buf_ext(dev, dir, &flags);
+    return v4l_deq_buf_ext(dev, dir, &flags);
 }
 
 int v4l_deq_buf_ext(struct io_dev *dev, enum io_dir dir, int *flags)

@@ -56,7 +56,7 @@ bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
 
 bool UsbCamera::captureImage(sensor_msgs::CompressedImage *image)
 {
-    getLiveImage(image);
+    return getLiveImage(image);
 }
 
 bool tryResolution(int fd, Resolution resolution)
