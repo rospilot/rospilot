@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2015-08-08)
+------------------
 * Switch to H264 codec for streaming and recording
 * Fix a variety of minor bugs
 * Contributors: Christopher Berner
