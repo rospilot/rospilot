@@ -182,6 +182,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   $scope.data = {'channel': []};
   RCState.subscribe(function(rcstate) {
       $scope.data = rcstate;
+      $scope.$apply();
   });
 })
 .controller('imu', function ($scope, IMU) {
@@ -205,6 +206,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
         }
         series.addPoint([x, data.accel.z], redraw, shift);
       }
+      $scope.$apply();
   });
 })
 .controller('status', function ($scope, $timeout, Status) {
@@ -221,6 +223,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   };
   Status.subscribe(function(status) {
       $scope.data = status;
+      $scope.$apply();
   });
 })
 .controller('position', function ($scope, $timeout, Position, Waypoints) {
@@ -283,12 +286,15 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
         // XXX: This should be moved
           $scope.waypoint_marker.setLatLng([lat, lng]);
       }
+      $scope.$apply();
   });
 
+  $scope.data = {latitude: 0, longitude: 0};
   Position.subscribe(function(position) {
       $scope.data = position;
       // XXX: This should be moved
       $scope.marker.setLatLng([position.latitude, position.longitude]);
+      $scope.$apply();
   });
 })
 .controller('attitude', function ($scope, Attitude) {
@@ -333,6 +339,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       }
 
       $scope.data = attitude;
+      $scope.$apply();
   });
 })
 .controller('graphs', function($scope) {
