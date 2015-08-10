@@ -121,8 +121,8 @@ Resizer::Resizer(
 
 Resizer::~Resizer()
 {
-    av_frame_free(sourceFrame);
-    av_frame_free(outputFrame);
+    av_frame_free(&sourceFrame);
+    av_frame_free(&outputFrame);
     sws_freeContext(context);  
     delete[] outputBuffer;
 }
