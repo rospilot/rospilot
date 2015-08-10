@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix compilation error on vivid and utopic
+* Contributors: Christopher Berner
+
 1.0.0 (2015-08-08)
 ------------------
 * Switch to H264 codec for streaming and recording
