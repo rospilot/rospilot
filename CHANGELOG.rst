@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2015-08-09)
+------------------
 * Fix compilation error on vivid and utopic
 * Contributors: Christopher Berner
 
