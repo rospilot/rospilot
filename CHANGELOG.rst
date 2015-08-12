@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2015-08-12)
+------------------
 * Remove unnecessary imports
 * Contributors: Christopher Berner
 
