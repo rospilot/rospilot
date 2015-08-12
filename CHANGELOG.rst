@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove unnecessary imports
+* Contributors: Christopher Berner
+
 1.0.1 (2015-08-09)
 ------------------
 * Fix compilation error on vivid and utopic
