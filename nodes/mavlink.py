@@ -18,12 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-# These must be the first two imports, as they setup sys.path
-import roslib
-roslib.load_manifest('rospilot')
 import rospilot
-#
-
 import rospy
 import rospilot.msg
 import rospilot.srv

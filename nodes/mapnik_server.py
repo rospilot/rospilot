@@ -18,13 +18,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-import roslib
-roslib.load_manifest('rospilot')
-from os.path import expanduser
 import os
 import rospy
 import cherrypy
 import TileStache
+from os.path import expanduser
 from TileStache.Config import buildConfiguration
 from catkin.find_in_workspaces import find_in_workspaces
 
