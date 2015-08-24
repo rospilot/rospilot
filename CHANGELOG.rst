@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2015-08-23)
+------------------
 * Fix race freeing background image sink resources
 * Fix bad free on older versions of libav
 * Improve formatting of first_time_setup.sh output
