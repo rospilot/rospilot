@@ -92,5 +92,6 @@ if [ "$wifi_requested" == "y" ]; then
     echo 'DAEMON_CONF=/etc/hostapd/hostapd.conf' > $tempdir/hostapd
     sudo mv $tempdir/hostapd /etc/default/hostapd
 
+    echo ""
     echo "Please restart your drone"
 fi
