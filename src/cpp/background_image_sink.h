@@ -21,6 +21,7 @@
 #define ROSPILOT_BACKGROUND_IMAGE_SINK_H
 
 #include<future>
+#include<mutex>
 
 #include<transcoders.h>
 #include<resizer.h>
@@ -36,6 +37,8 @@ private:
     H264Encoder * encoder;
     Resizer * resizer;
     std::future<void> sinkFuture;
+    std::mutex lock;
+    bool closed = false;
 
 public:
     // encoder may be null to indicate that no encoding is needed

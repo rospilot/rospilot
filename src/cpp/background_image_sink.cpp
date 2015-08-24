@@ -57,8 +57,9 @@ static void asyncWorker(Resizer *_resizer,
 
 void BackgroundImageSink::addFrame(sensor_msgs::CompressedImage const *input)
 {
+    std::unique_lock<std::mutex> guard(lock);
     // ignore call if the sink is still processing the last frame
-    if (!sinkFuture.valid()) {
+    if (!sinkFuture.valid() || closed) {
         return;
     }
     // Access the future to create a happens-before relation
@@ -84,6 +85,8 @@ void BackgroundImageSink::addFrame(sensor_msgs::CompressedImage const *input)
 
 BackgroundImageSink::~BackgroundImageSink()
 {
+    std::unique_lock<std::mutex> guard(lock);
+    closed = true;
     sinkFuture.wait();
     if (encoder != nullptr) {
         delete encoder;
