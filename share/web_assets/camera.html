@@ -5,17 +5,24 @@
       </div>
     </a>
     <div style="padding-top:5px;">
-      <button type="button" class="btn btn-primary" ng-click='toggle_recording()'>
-        <span ng-hide="recording">
-          <i class="fa fa-video-camera" style="padding-right:7px;"> </i>Record
-        </span>
-        <span ng-show="recording">
-          <i class="fa fa-stop" style="padding-right:7px;"> </i>Stop
-        </span>
-      </button>
-      <button type="button" class="btn btn-primary" ng-click='take_picture()'>
-        <i class="fa fa-camera" style="padding-right:7px;"> </i>Take picture
-      </button>
+      <div class="row">
+        <div class="col-md-10">
+          <button type="button" class="btn btn-primary" ng-click='toggle_recording()'>
+            <span ng-hide="recording">
+              <i class="fa fa-video-camera" style="padding-right:7px;"> </i>Record
+            </span>
+            <span ng-show="recording">
+              <i class="fa fa-stop" style="padding-right:7px;"> </i>Stop
+            </span>
+          </button>
+          <button type="button" class="btn btn-primary" ng-click='take_picture()'>
+            <i class="fa fa-camera" style="padding-right:7px;"> </i>Take picture
+          </button>
+        </div>
+        <div class="col-md-2">
+          FPS: {{fps}}
+        </div>
+      </div>
     </div>
   </div>
 

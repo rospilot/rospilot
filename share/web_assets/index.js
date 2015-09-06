@@ -395,6 +395,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
 })
 .controller('camera', function($scope, $timeout, $http, $rosparam, Media, Camera) {
   $scope.media = [];
+  $scope.fps = 0;
 
   $scope.destroyed = false;
   $scope.$on("$destroy", function() {$scope.destroyed = true});
@@ -419,6 +420,20 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
   // Generate a random client id for fetching the stream
   var clientId = Math.floor(Math.random() * 1000 * 1000 * 1000);
   var player = new Player({size: {height: 480, width: 640}});
+
+  var fpsStartTime = new Date().getTime();
+  var frameCount = 0;
+  player.onPictureDecoded = function() {
+      frameCount++;
+      var currentTime = new Date().getTime();
+      var deltaSeconds = (currentTime - fpsStartTime) / 1000.0
+      if (deltaSeconds > 1) {
+          $scope.fps = Math.floor(frameCount / deltaSeconds);
+          frameCount = 0;
+          fpsStartTime = currentTime;
+      }
+  };
+
   document.querySelector('#video').appendChild(player.canvas);
   var h264Url = 'http://' + server_name + ':8666/h264/' + clientId;
   
