@@ -244,7 +244,14 @@ public:
                 "stop_record", 
                 &CameraNode::stopRecordHandler,
                 this);
-        mfcPath = findMfcDevice();
+
+        std::string mfc;
+        node.param("mfc", mfc, std::string(""));
+        if (mfc.size() > 0) {
+            mfcPath = mfc;
+        } else {
+            mfcPath = findMfcDevice();
+        }
 
         // Install lock manager to make ffmpeg thread-safe
         if (av_lockmgr_register(ffmpegLockManager)) {
