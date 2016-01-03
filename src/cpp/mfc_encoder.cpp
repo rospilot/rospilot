@@ -51,6 +51,11 @@ bool ExynosMultiFormatCodecH264Encoder::encodeInPlace(sensor_msgs::CompressedIma
         return false;
     }
 
+    if (image->data.size() != numPixels * 3 / 2) {
+        ROS_ERROR("Wrong image size. %d != %d", 
+                (int) image->data.size(), numPixels);
+        return -1;
+    }
     inputBridge->priv = &image->data;
     OutputBridgePriv *outPriv = (OutputBridgePriv *)outputBridge->priv;
     outPriv->image = &image->data;
@@ -141,15 +146,15 @@ static int copyToMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)
         ROS_ERROR("Expected 2 buffers and NV12 format to write to, got %d buffers", nbufs);
         return -1;
     }
-    if (image->size() != lens[0] + lens[1]) {
-        ROS_ERROR("Wrong image size. Trying to copy %d into %d + %d", 
+    if (image->size() > lens[0] + lens[1]) {
+        ROS_ERROR("Image buffer too large. Trying to copy %d into %d + %d", 
                 (int) image->size(), lens[0], lens[1]);
         return -1;
     }
     // Copy Y plane
-    memcpy(bufs[0], image->data(), lens[0]);
+    int numPixels = image->size() * 2 / 3;
+    memcpy(bufs[0], image->data(), numPixels);
     // Copy U and V pixels and interleave them
-    int numPixels = lens[0];
     for (int i = 0; i < numPixels / 4; i++) {
         bufs[1][i * 2] = (*image)[numPixels + i];
         bufs[1][i * 2 + 1] = (*image)[(numPixels * 5 / 4) + i];
@@ -180,6 +185,7 @@ ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string
     if (mfc_set_fmt(this->mfc, DIR_IN, settings.width, settings.height)) {
         ROS_FATAL("Failed to set format on MFC");
     }
+    this->numPixels = settings.width * settings.height;
 
     if (mfc_set_codec(this->mfc, DIR_OUT, V4L2_PIX_FMT_H264)) {
         ROS_FATAL("Failed to set codec on MFC");
