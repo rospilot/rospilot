@@ -51,6 +51,8 @@ class API(object):
             paths = os.listdir(self.media_path)
             objs = []
             for path in reversed(sorted(paths)):
+                if path.startswith('.'):
+                    continue
                 if path.endswith('jpg'):
                     objs.append({"type": "image", "url": "/media/" + path,
                                 "id": path})

@@ -171,7 +171,7 @@ private:
         if (videoRecorder != nullptr) {
             delete videoRecorder;
         }
-        videoRecorder = new SoftwareVideoRecorder(pixelFormat, recordingH264Settings);
+        videoRecorder = new SoftwareVideoRecorder(pixelFormat, recordingH264Settings, mediaPath);
         if (recorder != nullptr) {
             delete recorder;
         }

@@ -59,7 +59,7 @@ private:
     std::mutex lock;
 
 public:
-    SoftwareVideoRecorder(PixelFormat pixelFormat, H264Settings settings);
+    SoftwareVideoRecorder(PixelFormat pixelFormat, H264Settings settings, std::string mediaPath);
     
     // thread-safe
     void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame) override;

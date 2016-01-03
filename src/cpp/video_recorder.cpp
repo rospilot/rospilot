@@ -38,13 +38,14 @@ namespace rospilot {
 
 using namespace std::chrono;
 
-SoftwareVideoRecorder::SoftwareVideoRecorder(PixelFormat pixelFormat, H264Settings settings)
+SoftwareVideoRecorder::SoftwareVideoRecorder(PixelFormat pixelFormat, H264Settings settings, std::string mediaPath)
 {
     av_register_all();
     this->width = settings.width;
     this->height = settings.height;
     this->pixelFormat = pixelFormat;
     this->settings = settings;
+    this->tempFilename = mediaPath + "/.tmp.mp4";
 }
 
 void SoftwareVideoRecorder::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
@@ -149,11 +150,6 @@ bool SoftwareVideoRecorder::start(const char *name)
     AVCodecID codecId = AV_CODEC_ID_H264;
     std::lock_guard<std::mutex> guard(lock);
     filename = std::string(name);
-    char tempname[] = "/tmp/XXXXXX";
-    if (mkstemp(tempname) == -1) {
-        ROS_FATAL("Cannot create temp directory to save video");
-    }
-    tempFilename = std::string(tempname);
     formatContext = avformat_alloc_context();
     formatContext->oformat = av_guess_format(nullptr, name, nullptr);
 
@@ -164,6 +160,9 @@ bool SoftwareVideoRecorder::start(const char *name)
             formatContext->oformat->priv_class;
         av_opt_set_defaults(formatContext->priv_data);
     }
+
+    // Clear the file before we start writing
+    remove(tempFilename.c_str());
 
     strncpy(formatContext->filename, 
             tempFilename.c_str(),
