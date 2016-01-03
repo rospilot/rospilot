@@ -202,6 +202,7 @@ int v4l_enq_buf(struct io_dev *dev, enum io_dir dir, int idx)
 	buf.m.planes = planes;
 	buf.length = bufs->nplanes;
 	for (i = 0; i < bufs->nplanes; ++i) {
+        memzero(planes[i]);
 		planes[i].bytesused = bufs->bytesused[idx * bufs->nplanes + i];
 		planes[i].length = bufs->lengths[i];
 		planes[i].m.userptr = (unsigned long)bufs->addr[
