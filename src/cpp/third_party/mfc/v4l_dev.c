@@ -211,7 +211,7 @@ int v4l_enq_buf(struct io_dev *dev, enum io_dir dir, int idx)
 
 	ret = ioctl(dev->fd, VIDIOC_QBUF, &buf);
 	if (ret != 0) {
-		err("Error %d enq buffer %d/%d to %d:%d", errno, idx,
+		err("Error %d (%s) enq buffer %d/%d to %d:%d", errno, strerror(errno), idx,
 						bufs->count, dev->fd, dir);
 		return -1;
 	} else {
