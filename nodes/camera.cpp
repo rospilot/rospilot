@@ -131,7 +131,7 @@ private:
         H264Settings recordingH264Settings;
         recordingH264Settings.height = cameraHeight;
         recordingH264Settings.width = cameraWidth;
-        recordingH264Settings.level = 41;
+        recordingH264Settings.level = 40;
         recordingH264Settings.gop_size = 30;
         recordingH264Settings.zero_latency = false;
         recordingH264Settings.profile = HIGH;

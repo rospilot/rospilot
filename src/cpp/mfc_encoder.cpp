@@ -197,10 +197,7 @@ ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string
     
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_GOP_SIZE, settings.gop_size);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_I_PERIOD, settings.gop_size);
-    // mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_CPB_SIZE, 32);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_MODE, V4L2_MPEG_VIDEO_BITRATE_MODE_CBR);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE, settings.bit_rate);
-    mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_BITRATE_PEAK, settings.bit_rate);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, 23);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_MAX_QP, 50);
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_B_FRAMES, 0);
@@ -229,11 +226,11 @@ ExynosMultiFormatCodecH264Encoder::ExynosMultiFormatCodecH264Encoder(std::string
     else {
         ROS_ERROR("Unknown H264 profile");
     }
-    if (settings.level != 41) {
+    if (settings.level != 40) {
         ROS_ERROR("Unsupported level: %d", settings.level);
     }
     mfc_set_mpeg_control(this->mfc, V4L2_CID_MPEG_VIDEO_H264_LEVEL,
-            V4L2_MPEG_VIDEO_H264_LEVEL_4_1);
+            V4L2_MPEG_VIDEO_H264_LEVEL_4_0);
 
     this->inputBridge = new io_dev();
     this->inputBridge->fd = -1;
