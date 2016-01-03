@@ -284,23 +284,21 @@ public:
                 ROS_WARN("Can't read from %s: %s", path.c_str(), strerror(errno));
             }
             else {
-                if (std::string((char *) videoCap.driver) == "s5p-mfc") {
-                    v4l2_ext_controls ctrls;
-                    v4l2_ext_control ctrl;
+                v4l2_ext_controls ctrls;
+                v4l2_ext_control ctrl;
 
-                    ctrl.id = V4L2_CID_MPEG_VIDEO_H264_I_PERIOD;
-                    // These aren't used for integer controls
-                    ctrl.size = 0;
-                    memzero(ctrl.reserved2);
+                ctrl.id = V4L2_CID_MPEG_MFC51_VIDEO_FRAME_SKIP_MODE;
+                // These aren't used for integer controls
+                ctrl.size = 0;
+                memzero(ctrl.reserved2);
 
-                    ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
-                    ctrls.count = 1;
-                    ctrls.controls = &ctrl;
-                    
-                    if(ioctl(fd, VIDIOC_G_EXT_CTRLS, &ctrls) == 0) {
-                        close(fd);
-                        return path;
-                    }
+                ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
+                ctrls.count = 1;
+                ctrls.controls = &ctrl;
+                
+                if(ioctl(fd, VIDIOC_G_EXT_CTRLS, &ctrls) == 0) {
+                    close(fd);
+                    return path;
                 }
             }
             close(fd);
