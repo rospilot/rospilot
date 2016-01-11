@@ -159,6 +159,17 @@ target_link_libraries(camera_node
     ${catkin_LIBRARIES})
 add_dependencies(camera_node rospilot_gencpp)
 
+add_executable(jpeg_benchmark
+    scripts/jpeg_benchmark.cpp
+    src/cpp/jpeg_decoder.cpp
+    src/cpp/resizer.cpp)
+target_link_libraries(jpeg_benchmark 
+    ${libavcodec_LIBRARIES}
+    ${libavutil_LIBRARIES}
+    ${libavformat_LIBRARIES}
+    ${libswscale_LIBRARIES}
+    ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############
