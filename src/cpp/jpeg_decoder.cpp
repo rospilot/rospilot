@@ -38,7 +38,7 @@ namespace rospilot {
 using std::vector;
 using sensor_msgs::CompressedImage;
 
-bool JpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
+bool FFmpegJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
 {
     if (image->format != "jpeg") {
         ROS_ERROR("Image is not a jpeg");
@@ -94,7 +94,7 @@ bool JpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
     return true;
 }
 
-JpegDecoder::JpegDecoder(int width, int height, PixelFormat outputPixelFormat)
+FFmpegJpegDecoder::FFmpegJpegDecoder(int width, int height, PixelFormat outputPixelFormat)
 {
     avcodec_register_all();
     this->width = width;
@@ -132,9 +132,82 @@ JpegDecoder::JpegDecoder(int width, int height, PixelFormat outputPixelFormat)
     }
 }
 
-JpegDecoder::~JpegDecoder()
+FFmpegJpegDecoder::~FFmpegJpegDecoder()
 {
     delete[] outputBuffer;
+}
+
+bool TurboJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
+{
+    int sub, width, height;
+    int result = tjDecompressHeader2(handle,
+            image->data.data(),
+            image->data.size(),
+            &width,
+            &height,
+            &sub);
+    if (result == -1) {
+        ROS_ERROR("Error decompressing JPEG: %s", tjGetErrorStr());
+        return false;
+    }
+    if (TJSAMP_420 != sub && TJSAMP_422 != sub) {
+        ROS_ERROR("Unexpected jpeg encoding (%d). Expected YUV420/422", sub);
+        return false;
+    }
+    if (this->width != width || this->height != height) {
+        ROS_ERROR("Incorrect width/height. Expected %dx%d. Got %dx%d", 
+                this->width, this->height, width, height);
+        return false;
+    }
+
+    long size = tjBufSizeYUV(width, height, sub);
+    if (outputBufferSize < size) {
+        delete outputBuffer;
+        outputBuffer = new uint8_t[size];
+        outputBufferSize = size;
+    }
+    result = tjDecompressToYUV(handle, 
+                image->data.data(), 
+                image->data.size(),
+                outputBuffer,
+                TJFLAG_FASTUPSAMPLE | TJFLAG_FASTDCT);
+
+    int lineWidth = width / 2;
+    image->data.clear();
+    image->data.reserve(tjBufSizeYUV(width, height, TJSAMP_420));
+    if (TJSAMP_422 == sub) {
+        image->data.insert(image->data.begin(), outputBuffer, outputBuffer + height*width + lineWidth);
+        // TODO: Do a proper conversion, instead of just dropping lines
+        unsigned char *base = outputBuffer + height * width;
+        // Drop half the lines of UV components
+        for (int i = 1; i < height; i++) {
+            image->data.insert(image->data.begin() + width * height + i * lineWidth,
+                    base + 2 * i * lineWidth, base + 2 * i * lineWidth + lineWidth);
+        }
+    }
+    else {
+        image->data.insert(image->data.begin(), outputBuffer, outputBuffer + outputBufferSize);
+    }
+
+    if (result == -1) {
+        ROS_ERROR("Error decompressing JPEG: %s", tjGetErrorStr());
+        return false;
+    }
+    image->format = "yuv420p";
+    return true;   
+}
+
+TurboJpegDecoder::TurboJpegDecoder(int width, int height, PixelFormat outputPixelFormat)
+{
+    handle = tjInitDecompress();
+    this->width = width;
+    this->height = height;
+}
+
+TurboJpegDecoder::~TurboJpegDecoder()
+{
+    tjDestroy(handle);
+    delete outputBuffer;
 }
 
 }

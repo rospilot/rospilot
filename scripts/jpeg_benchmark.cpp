@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 {
     // XXX: Assumes that the input image 1600x1200
     PixelFormat pixelFormat = PIX_FMT_YUV420P;
-    JpegDecoder *jpegDecoder = new JpegDecoder(1600, 1200, pixelFormat);
+    JpegDecoder *jpegDecoder = new FFmpegJpegDecoder(1600, 1200, pixelFormat);
 
     sensor_msgs::CompressedImage image;
     image.format = "jpeg";
@@ -73,6 +73,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < length; i++) {
         image.data.push_back(buffer[i]);
     }
+    delete buffer;
 
     sensor_msgs::CompressedImage images[10];
     for (int i = 0; i < 10; i++) {
@@ -88,9 +89,26 @@ int main(int argc, char **argv)
     }
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     double us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0;
-    std::cout << "FPS " << 10 / us << std::endl;
+    std::cout << "FFmpeg FPS " << 10 / us << std::endl;
+    std::cout << "check: " << junk << std::endl;
+    
+    delete jpegDecoder;
+    jpegDecoder = new TurboJpegDecoder(1600, 1200, pixelFormat);
+    for (int i = 0; i < 10; i++) {
+        images[i] = image;
+    }
+    junk = 0;
+    start = std::chrono::steady_clock::now();
+    for (int i = 0; i < 10; i++) {
+        jpegDecoder->decodeInPlace(&images[i]);
+        // Make sure there's a side effect
+        junk += images[i].data.size();
+    }
+    end = std::chrono::steady_clock::now();
+    us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0;
+    std::cout << "TurboJpeg FPS " << 10 / us << std::endl;
+    std::cout << "check: " << junk << std::endl;
 
-    delete buffer;
     delete jpegDecoder;
     return 0;
 }

@@ -153,7 +153,7 @@ private:
         if (jpegDecoder != nullptr) {
             delete jpegDecoder;
         }
-        jpegDecoder = new JpegDecoder(cameraWidth, cameraHeight, pixelFormat);
+        jpegDecoder = new TurboJpegDecoder(cameraWidth, cameraHeight, pixelFormat);
 
         if (liveStream != nullptr) {
             delete liveStream;

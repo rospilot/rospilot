@@ -113,7 +113,7 @@ Resizer::Resizer(
             targetWidth, 
             targetHeight,
             pixelFormat,
-            SWS_BICUBIC,
+            SWS_POINT,
             nullptr,
             nullptr, 
             nullptr);
