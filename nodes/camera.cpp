@@ -99,10 +99,11 @@ private:
     int cameraHeight;
     int framerate;
 
+    sensor_msgs::CompressedImage image;
+
 private:
     bool sendPreview()
     {
-        sensor_msgs::CompressedImage image;
         if(camera != nullptr && camera->getLiveImage(&image)) {
             bool keyFrame = false;
             bool transcodedSuccessfully = false;

@@ -41,17 +41,17 @@ BackgroundImageSink::BackgroundImageSink(
 static void asyncWorker(Resizer *_resizer,
                 H264Encoder *_encoder,
                 ImageSink *_sink,
-                sensor_msgs::CompressedImage image) {
+                sensor_msgs::CompressedImage *image) {
     bool keyFrame = false;
     bool transcoded = true;
     if (_resizer != nullptr) {
-        _resizer->resizeInPlace(&image);
+        _resizer->resizeInPlace(image);
     }
     if (_encoder != nullptr) {
-        transcoded = _encoder->encodeInPlace(&image, &keyFrame);
+        transcoded = _encoder->encodeInPlace(image, &keyFrame);
     }
     if (transcoded) {
-        _sink->addFrame(&image, keyFrame);
+        _sink->addFrame(image, keyFrame);
     }
 }
 
@@ -64,14 +64,13 @@ void BackgroundImageSink::addFrame(sensor_msgs::CompressedImage const *input)
     }
     // Access the future to create a happens-before relation
     sinkFuture.get();
-    sensor_msgs::CompressedImage copy;
-    copy.header = input->header;
-    copy.data = input->data;
+    currentFrame.header = input->header;
+    currentFrame.data = input->data;
     // XXX: Use c_str() to force a copy, as operator=(const string&) is COW and just
     // copies the internal buffer address, which is then not thread-safe
-    copy.format = input->format.c_str();
-    if (copy.data.data() == input->data.data() ||
-            copy.format.c_str() == input->format.c_str()) {
+    currentFrame.format = input->format.c_str();
+    if (currentFrame.data.data() == input->data.data() ||
+            currentFrame.format.c_str() == input->format.c_str()) {
         ROS_FATAL("copy operator created a non-thread-safe copy");
     }
     sinkFuture = std::async(
@@ -80,7 +79,7 @@ void BackgroundImageSink::addFrame(sensor_msgs::CompressedImage const *input)
             resizer,
             encoder,
             sink,
-            copy);
+            &currentFrame);
 }
 
 BackgroundImageSink::~BackgroundImageSink()

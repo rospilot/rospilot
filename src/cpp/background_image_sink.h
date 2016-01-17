@@ -39,6 +39,7 @@ private:
     std::future<void> sinkFuture;
     std::mutex lock;
     bool closed = false;
+    sensor_msgs::CompressedImage currentFrame;
 
 public:
     // encoder may be null to indicate that no encoding is needed
