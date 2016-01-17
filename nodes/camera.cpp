@@ -126,9 +126,6 @@ private:
         resolutionsTopic.publish(camera->getSupportedResolutions());
         PixelFormat pixelFormat = PIX_FMT_YUV420P;
 
-        std::string videoDevice;
-        node.param("video_device", videoDevice, std::string("/dev/video0"));
-
         H264Settings recordingH264Settings;
         recordingH264Settings.height = cameraHeight;
         recordingH264Settings.width = cameraWidth;
@@ -183,12 +180,47 @@ private:
         );
     }
 
+    std::string findCameraDevice()
+    {
+        // Look for the MFC
+        DIR *dir = opendir("/dev");
+        dirent *dirEntry = nullptr;
+        while ((dirEntry = readdir(dir)) != nullptr) {
+            int fd;
+            v4l2_capability videoCap;
+            std::string path = std::string("/dev/") + dirEntry->d_name;
+            if (path.substr(0, std::string("/dev/video").size()) != "/dev/video") {
+                continue;
+            }
+            ROS_INFO("Querying %s", path.c_str());
+            if((fd = open(path.c_str(), O_RDONLY)) == -1){
+                ROS_WARN("Can't open %s: %s", path.c_str(), strerror(errno));
+                continue;
+            }
+
+            if(ioctl(fd, VIDIOC_QUERYCAP, &videoCap) == -1) {
+                ROS_WARN("Can't read from %s: %s", path.c_str(), strerror(errno));
+                continue;
+            }
+            else {
+                if (videoCap.capabilities & V4L2_CAP_VIDEO_CAPTURE) {
+                    close(fd);
+                    closedir(dir);
+                    return path;
+                }
+            }
+            close(fd);
+        }
+        closedir(dir);
+        return "";
+    }
+
     BaseCamera *createCamera()
     {
         std::string cameraType;
         node.param("camera_type", cameraType, std::string("usb"));
 
-        node.param("video_device", videoDevice, std::string("/dev/video0"));
+        node.param("video_device", videoDevice, std::string(""));
         node.param("image_width", cameraWidth, 1920);
         node.param("image_height", cameraHeight, 1080);
         node.param("framerate", framerate, 30);
@@ -204,6 +236,10 @@ private:
         }
         wordfree(&p);
 
+        if (videoDevice.size() == 0) {
+            videoDevice = findCameraDevice();
+            node.setParam("video_device", videoDevice);
+        }
 
         if (cameraType == "ptp") {
             return new PtpCamera();
@@ -299,6 +335,7 @@ public:
                 
                 if(ioctl(fd, VIDIOC_G_EXT_CTRLS, &ctrls) == 0) {
                     close(fd);
+                    closedir(dir);
                     return path;
                 }
             }

@@ -33,7 +33,6 @@
     <param name="camera_type" value="usb" />
     <param name="image_width" value="640" />
     <param name="image_height" value="480" />
-    <param name="video_device" value="/dev/video0" />
 </node>
 </group>
 <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
