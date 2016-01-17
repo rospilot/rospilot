@@ -113,7 +113,6 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
     }
 
     c = stream->codec;
-    avcodec_get_context_defaults3(c, codec);
 
     c->codec_id = AV_CODEC_ID_H264;
     c->bit_rate = this->settings.bit_rate;
@@ -141,6 +140,10 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
     c->level = this->settings.level;
     c->pix_fmt = this->pixelFormat;
     c->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    if (avcodec_open2(c, codec, nullptr) < 0) {
+        ROS_ERROR("could not open codec");
+    }
 
     return stream;
 }
@@ -173,9 +176,6 @@ bool SoftwareVideoRecorder::start(const char *name)
                 formatContext->oformat->long_name);
     }
     videoStream = createVideoStream(formatContext);
-    if (avcodec_open2(videoStream->codec, nullptr, nullptr) < 0) {
-        ROS_ERROR("could not open codec");
-    }
     av_dump_format(formatContext, 0, tempFilename.c_str(), 1);
 
     if (avio_open(&formatContext->pb, 
