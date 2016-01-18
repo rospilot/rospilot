@@ -21,31 +21,11 @@
 #include<time.h>
 #include<fstream>
 #include<chrono>
-#include<boost/filesystem.hpp>
-#include<wordexp.h>
-#include<dirent.h>
-#include<sys/ioctl.h>
-#include<fcntl.h>
 #include<errno.h>
-#include<mutex>
 
-#include<ros/ros.h>
-#include<rospilot/CaptureImage.h>
-#include<rospilot/Resolutions.h>
-#include<std_srvs/Empty.h>
 #include<sensor_msgs/CompressedImage.h>
 
-#include<background_image_sink.h>
-#include<ptp.h>
-#include<usb_camera.h>
-#include<video_recorder.h>
 #include<transcoders.h>
-#include<resizer.h>
-#include<h264_server.h>
-
-extern "C" {
-#include <linux/videodev2.h>
-}
 
 using namespace rospilot;
 
