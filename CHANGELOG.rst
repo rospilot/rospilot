@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2016-01-18)
+------------------
 * Auto-detect camera device path
 * Improve video streaming FPS ~2x
 * Add support for hardware h264 acceleration on Odroid XU4
