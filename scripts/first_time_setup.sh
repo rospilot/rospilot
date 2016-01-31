@@ -24,7 +24,8 @@ if [ $(catkin_find --share rospilot share/mapnik-style/ | wc -l) -ne 1 ]; then
     exit 1
 fi
 rosrun rospilot get_mapnik_shapefiles.sh
-mv -f $tempdir/data $(catkin_find --share rospilot share/mapnik-style/)
+echo "Copying mapnik files to rospilot data directory"
+sudo mv -f $tempdir/data $(catkin_find --share rospilot share/mapnik-style/)
 wget -O kathmandu.osm "http://api.openstreetmap.org/api/0.6/map?bbox=27.713,85.308,27.717,85.312"
 rosrun rospilot load_osm.sh kathmandu.osm
 rm -rf $tempdir
