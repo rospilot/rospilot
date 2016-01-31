@@ -2,6 +2,15 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Copy files to /etc as part of setup script instead of package install
+* Fix warnings and installation of mapnik files
+* Add missing python-serial dependency
+* Cleanup linking of libturbojpeg
+  This should fix compiling on other platforms like x86_32
+* Contributors: Christopher Berner
+
 1.1.0 (2016-01-18)
 ------------------
 * Auto-detect camera device path
