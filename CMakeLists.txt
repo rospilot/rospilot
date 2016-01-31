@@ -214,17 +214,6 @@ install(TARGETS choose_wifi_device
 #   PATTERN ".svn" EXCLUDE
 # )
 
-# Mark other files for installation (e.g. launch and bag files, etc.)
-install(FILES
-  etc/rospilot.rules
-  DESTINATION /etc/udev/rules.d/
-)
-
-install(PROGRAMS
-  etc/init.d/rospilot
-  DESTINATION /etc/init.d/
-)
-
 install(FILES
   launch/rospilot.launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
