@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2016-01-31)
+------------------
 * Copy files to /etc as part of setup script instead of package install
 * Fix warnings and installation of mapnik files
 * Add missing python-serial dependency
