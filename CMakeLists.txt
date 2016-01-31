@@ -41,14 +41,8 @@ roslint_add_test()
      message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
  endif()
 
- # XXX: Awful hack because libturbojpeg doesn't come with pkg-config file
- if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-     set(LIBJPEG_TURBO_PATH "/usr/lib/x86_64-linux-gnu/libturbojpeg.so.0")
- elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
-     set(LIBJPEG_TURBO_PATH "/usr/lib/arm-linux-gnueabihf/libturbojpeg.so.0")
- else()
-     message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}")
- endif()
+# XXX: Awful hack because libturbojpeg doesn't come with pkg-config file
+set(LIBJPEG_TURBO_PATH "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/libturbojpeg.so.0")
 #######################################
 ## Declare ROS messages and services ##
 #######################################
