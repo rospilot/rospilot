@@ -66,6 +66,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>rosbridge_suite</run_depend>
+  <run_depend>python-serial</run_depend>
   <run_depend>python-cherrypy</run_depend>
   <run_depend>python-psutil</run_depend>
   <run_depend>python-colorama</run_depend>
