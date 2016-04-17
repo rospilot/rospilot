@@ -58,6 +58,8 @@ add_message_files(
   Resolutions.msg
   Waypoint.msg
   Waypoints.msg
+  VisionTarget.msg
+  VisionTargets.msg
   IMURaw.msg
 )
 
