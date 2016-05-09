@@ -10,6 +10,9 @@
       ng-options='resolution for resolution in resolutions'>
     </select>
   </p>
+  <p>
+    Computer vision: <input type="checkbox" ng-model='detector_enabled'>
+  </p>
   <div>
     <button type="button" class="btn btn-danger" ng-click="shutdown()">
       Shutdown On-board Computer

@@ -88,7 +88,7 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
       };
 })
 .factory('VisionTargets', function ($rostopic) {
-      return $rostopic('/rospilot/vision_targets', 'rospilot/VisionTargets');
+      return $rostopic('/rospilot/camera/vision_targets', 'rospilot/VisionTargets');
 })
 .factory('Position', function ($rostopic) {
       return $rostopic('/rospilot/gpsraw', 'rospilot/GPSRaw');
@@ -117,8 +117,15 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
     var shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
     var globService = $rosservice('/rospilot/glob', 'rospilot/Glob');
     $scope.selected_video_device = '';
+    $scope.detector_enabled = false;
     $scope.video_devices = [];
     $scope.shutdown = shutdownService;
+    $rosparam.get('/rospilot/camera/detector_enabled',
+        function(value) {
+            $scope.detector_enabled = value;
+            $scope.$apply();
+        }
+    );
     $rosparam.get('/rospilot/camera/video_device',
         function(value) {
             $scope.selected_video_device = value;
@@ -160,6 +167,10 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
         if (new_device) {
             $rosparam.set('/rospilot/camera/video_device', new_device);
         }
+    });
+
+    $scope.$watch('detector_enabled', function(value) {
+        $rosparam.set('/rospilot/camera/detector_enabled', value);
     });
 })
 .controller('waypoints', function ($scope, $timeout, Waypoints) {
@@ -434,6 +445,8 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
           renderer.resize(width, height);
           videoWidth = width;
           videoHeight = height;
+          document.getElementById('video').style.width = width + "px";
+          document.getElementById('video').style.height = height + "px";
       }
       frameCount++;
       var currentTime = new Date().getTime();
@@ -460,12 +473,14 @@ angular.module('rospilot', ['ngRoute', 'ngResource'])
               stage.addChild(textObjs.get(target.id));
           }
           var textObj = textObjs.get(target.id);
+          textObj.visible = true;
           textObj.x = videoWidth * (target.x + 1) / 2.0;
           textObj.y = videoHeight * (1 - target.y) / 2.0;
       }
       for (let [key, value] of textObjs) {
           if (!targetIds.has(key)) {
-              stage.removeChild(value);
+              // Hide element rather than removing it. Because adding/removing is more expensive
+              value.visible = false;
           }
       }
       renderer.render(stage);

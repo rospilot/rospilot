@@ -6,6 +6,7 @@ project(rospilot)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS geometry_msgs sensor_msgs std_msgs message_generation roslint roscpp)
 find_package(PkgConfig REQUIRED)
+find_package(OpenCV 3 REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED libgphoto2)
 pkg_check_modules(libavcodec REQUIRED libavcodec)
 pkg_check_modules(libavformat REQUIRED libavformat)
@@ -103,6 +104,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include src/cpp
+    ${OpenCV_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
     ${libnl-3.0_INCLUDE_DIRS}
     ${libnl-genl-3.0_INCLUDE_DIRS}
@@ -144,6 +146,7 @@ add_executable(camera_node
     src/cpp/background_image_sink.cpp
     src/cpp/jpeg_decoder.cpp
     src/cpp/h264_server.cpp
+    src/cpp/people_detector.cpp
     src/cpp/resizer.cpp
     src/cpp/software_h264_encoder.cpp
     src/cpp/mfc_encoder.cpp
@@ -154,6 +157,7 @@ add_executable(camera_node
     src/cpp/third_party/mfc/mfc.c
     src/cpp/video_recorder.cpp)
 target_link_libraries(camera_node 
+    ${OpenCV_LIBRARIES}
     ${LIBJPEG_TURBO_PATH}
     ${libgphoto2_LIBRARIES}
     ${libavcodec_LIBRARIES}

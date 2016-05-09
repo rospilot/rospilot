@@ -32,12 +32,14 @@
 #include<ros/ros.h>
 #include<rospilot/CaptureImage.h>
 #include<rospilot/Resolutions.h>
+#include<rospilot/VisionTargets.h>
 #include<std_srvs/Empty.h>
 #include<sensor_msgs/CompressedImage.h>
 
 #include<background_image_sink.h>
 #include<ptp.h>
 #include<usb_camera.h>
+#include<people_detector.h>
 #include<video_recorder.h>
 #include<transcoders.h>
 #include<resizer.h>
@@ -84,10 +86,13 @@ private:
     SoftwareVideoRecorder *videoRecorder = nullptr;
     BackgroundImageSink *liveStream = nullptr;
     BackgroundImageSink *recorder = nullptr;
+    BackgroundImageSink *detector = nullptr;
     H264Server h264Server;
+    PeopleDetector *peopleDetector = nullptr;
 
     ros::Publisher resolutionsTopic;
     ros::Publisher imagePub;
+    ros::Publisher detectedPeopleTopic;
     ros::ServiceServer captureServiceServer;
     ros::ServiceServer startRecordServiceServer;
     ros::ServiceServer stopRecordServiceServer;
@@ -98,6 +103,7 @@ private:
     int cameraWidth;
     int cameraHeight;
     int framerate;
+    bool detectorEnabled = false;
 
     sensor_msgs::CompressedImage image;
 
@@ -111,6 +117,9 @@ private:
             jpegDecoder->decodeInPlace(&image);
             liveStream->addFrame(&image);
             recorder->addFrame(&image);
+            if (detector != nullptr) {
+                detector->addFrame(&image);
+            }
 
             return true;
         }
@@ -178,6 +187,21 @@ private:
                 createEncoder(recordingH264Settings),
                 nullptr
         );
+
+        node.param("detector_enabled", detectorEnabled, false);
+        if (detector != nullptr) {
+            delete detector;
+            detector = nullptr;
+        }
+        if (peopleDetector != nullptr) {
+            delete peopleDetector;
+            peopleDetector = nullptr;
+        }
+        if (detectorEnabled) {
+            peopleDetector = new PeopleDetector(&detectedPeopleTopic, cameraWidth, cameraHeight);
+            detector = new BackgroundImageSink(peopleDetector, nullptr, nullptr);
+        }
+
     }
 
     std::string findCameraDevice()
@@ -269,6 +293,8 @@ public:
                 "resolutions", 1, true);
         imagePub = node.advertise<sensor_msgs::CompressedImage>(
                 "image_raw/compressed", 1);
+        detectedPeopleTopic = node.advertise<rospilot::VisionTargets>(
+                "vision_targets", 1);
         captureServiceServer = node.advertiseService(
                 "capture_image", 
                 &CameraNode::captureImageCallback,
@@ -366,6 +392,12 @@ public:
         delete recorder;
         delete liveStream;
         delete videoRecorder;
+        if (detector != nullptr) {
+            delete detector;
+        }
+        if (peopleDetector != nullptr) {
+            delete peopleDetector;
+        }
         av_lockmgr_register(nullptr);
     }
 
@@ -383,7 +415,10 @@ public:
             node.getParam("image_height", newHeight);
             std::string newVideoDevice;
             node.getParam("video_device", newVideoDevice);
+            bool newDetectorEnabled;
+            node.getParam("detector_enabled", newDetectorEnabled);
             if (newVideoDevice != videoDevice || 
+                    newDetectorEnabled != detectorEnabled ||
                     newWidth != cameraWidth ||
                     newHeight != cameraHeight) {
                 initCameraAndEncoders();
