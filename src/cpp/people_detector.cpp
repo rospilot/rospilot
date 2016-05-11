@@ -58,7 +58,7 @@ void PeopleDetector::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame
     uint8_t *inData[3] = { base, base + width * height, base + width * height * 5 / 4 }; // YUV420 has three plane
     uint8_t *outData[1] = { bgrData.data() }; // BGR has one plane
     int outLinesize[1] = { 3 * width }; // RGB stride
-    int inLinesize[3] = { width, width / 4, width / 4 }; // YUV420 stride
+    int inLinesize[3] = { width, width / 2, width / 2 }; // YUV420 stride
     sws_scale(context, inData, inLinesize, 0, height, outData, outLinesize);
 
 //    if (result == -1) {
