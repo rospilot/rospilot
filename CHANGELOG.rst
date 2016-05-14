@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add people detector using OpenCV
+* Contributors: Christopher Berner
+
 1.1.1 (2016-01-31)
 ------------------
 * Copy files to /etc as part of setup script instead of package install
