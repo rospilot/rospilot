@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2016-05-14)
+------------------
 * Add people detector using OpenCV
 * Contributors: Christopher Berner
 
