@@ -97,6 +97,25 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+
+###############################
+## Generate Javascript files ##
+###############################
+
+# Likely need a newer npm version
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/node_modules/npm/cli.js
+    COMMAND npm install npm 2> /dev/null
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Updating npm")
+
+add_custom_command(OUTPUT DIRECTORY share/web_assets/node_modules
+    COMMAND ${CMAKE_BINARY_DIR}/node_modules/npm/cli.js install
+    DEPENDS share/web_assets/package.json ${CMAKE_BINARY_DIR}/node_modules/npm/cli.js
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/share/web_assets
+    COMMENT "Building Javascript files")
+
+add_custom_target(javascript_assets ALL
+    DEPENDS DIRECTORY share/web_assets/node_modules)
 ###########
 ## Build ##
 ###########
@@ -224,7 +243,6 @@ install(FILES
   launch/rospilot.launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
 install(DIRECTORY
   share/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/share
