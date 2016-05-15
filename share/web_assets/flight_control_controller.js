@@ -35,13 +35,6 @@ angular.module('rospilot')
       $scope.$apply();
   });
 })
-.controller('rcstate', function ($scope, RCState) {
-  $scope.data = {'channel': []};
-  RCState.subscribe(function(rcstate) {
-      $scope.data = rcstate;
-      $scope.$apply();
-  });
-})
 .controller('imu', function ($scope, IMU) {
   $scope.data = {
       'gyro': {'x': 0, 'y': 0, 'z': 0},

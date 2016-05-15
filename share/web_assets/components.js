@@ -15,14 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const upgradeAdapter = new ng.upgrade.UpgradeAdapter();
-upgradeAdapter.addProvider(RosParam);
-upgradeAdapter.addProvider(Copter);
-upgradeAdapter.upgradeNg1Provider('ROS');
-upgradeAdapter.upgradeNg1Provider('$rostopic');
-angular.module('rospilot')
-  .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))
-  .directive('rcstate', upgradeAdapter.downgradeNg2Component(RCStateComponent));
-angular.element(document).ready(function() {
-    upgradeAdapter.bootstrap(document, ['rospilot']);
-});
+class RCStateComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rcstate',
+            template: '<div>RC Channels: {{channels | async}}</div>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.channels = Copter.getRCChannels();
+    }
+}

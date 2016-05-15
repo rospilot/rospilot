@@ -73,9 +73,6 @@ angular.module('rospilot')
 .factory('Attitude', function ($rostopic) {
       return $rostopic('/rospilot/attitude', 'rospilot/Attitude');
 })
-.factory('RCState', function ($rostopic) {
-      return $rostopic('/rospilot/rcstate', 'rospilot/RCState');
-})
 .factory('IMU', function ($rostopic) {
       return $rostopic('/rospilot/imuraw', 'rospilot/IMURaw');
 })

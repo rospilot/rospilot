@@ -15,6 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+class Copter
+{
+    static get parameters()
+    {
+        return [new ng.core.Inject('$rostopic')];
+    }
+
+    constructor($rostopic)
+    {
+        // TODO: should return a disposable to clean up the subscription
+        this.rc_channels = Rx.Observable.create(function(observer) {
+            $rostopic('/rospilot/rcstate', 'rospilot/RCState')
+                .subscribe((data) => {
+                    observer.next(data.channel);
+                });
+        });
+    }
+
+    getRCChannels()
+    {
+        return this.rc_channels;
+    }
+}
+
 class RosParam
 {
     static get parameters()
