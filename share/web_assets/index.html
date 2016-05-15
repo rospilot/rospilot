@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app=rospilot lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,6 +10,18 @@
     <script src="/static/node_modules/angular/angular.min.js"></script>
     <script src="/static/node_modules/angular-resource/angular-resource.min.js"></script>
     <script src="/static/node_modules/angular-route/angular-route.min.js"></script>
+
+    <script src="/static/node_modules/es6-shim/es6-shim.min.js"></script>
+    <script src="/static/node_modules/zone.js/dist/zone.js"></script>
+    <script src="/static/node_modules/reflect-metadata/Reflect.js"></script>
+    <script src="/static/node_modules/rxjs/bundles/Rx.umd.js"></script>
+    <script src="/static/node_modules/@angular/core/core.umd.js"></script>
+    <script src="/static/node_modules/@angular/common/common.umd.js"></script>
+    <script src="/static/node_modules/@angular/compiler/compiler.umd.js"></script>
+    <script src="/static/node_modules/@angular/platform-browser/platform-browser.umd.js"></script>
+    <script src="/static/node_modules/@angular/platform-browser-dynamic/platform-browser-dynamic.umd.js"></script>
+    <script src="/static/node_modules/@angular/upgrade/upgrade.umd.js"></script>
+
     <script src="/static/third-party/jquery-2.0.3.min.js"></script>
     <script src="/static/third-party/leaflet/leaflet.js"></script>
     <script src="/static/third-party/leaflet.awesome-markers/leaflet.awesome-markers.js"></script>
@@ -22,6 +34,7 @@
     <script src="/static/third-party/eventemitter2.min.js"></script>
     <script src="/static/third-party/roslib.js"></script>
     <script src="/static/third-party/pixi/pixi.min.js"></script>
+
     <script src="/static/index.js"></script>
     <script src="/static/factories.js"></script>
     <script src="/static/directives.js"></script>
@@ -39,6 +52,7 @@
   </head>
 
   <body ng-controller='rospilot'>
+    <script src="/static/bootstrap.js"></script>
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
