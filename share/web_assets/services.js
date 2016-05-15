@@ -15,11 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const upgradeAdapter = new ng.upgrade.UpgradeAdapter();
-upgradeAdapter.addProvider(RosParam);
-upgradeAdapter.upgradeNg1Provider('ROS');
-angular.module('rospilot')
-  .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam));
-angular.element(document).ready(function() {
-    upgradeAdapter.bootstrap(document, ['rospilot']);
-});
+class RosParam
+{
+    static get parameters()
+    {
+        return [new ng.core.Inject('ROS')];
+    }
+
+    constructor(ROS)
+    {
+        this.ROS = ROS;
+    }
+
+    get(key, callback)
+    {
+        var param = new ROSLIB.Param({ros: this.ROS, name: key});
+        param.get(callback);
+    }
+
+    set(key, value)
+    {
+        var param = new ROSLIB.Param({ros: this.ROS, name: key});
+        param.set(value);
+    }
+}

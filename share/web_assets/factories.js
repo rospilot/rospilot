@@ -39,18 +39,6 @@ angular.module('rospilot')
         };
     };
 })
-.factory('$rosparam', function(ROS) {
-    return {
-        get: function(key, callback) {
-            var param = new ROSLIB.Param({ros: ROS, name: key});
-            param.get(callback);
-        },
-        set: function(key, value) {
-            var param = new ROSLIB.Param({ros: ROS, name: key});
-            param.set(value);
-        }
-    };
-})
 .factory('$rostopic', function(ROS) {
     return function(topic, type) {
         return new ROSLIB.Topic({
