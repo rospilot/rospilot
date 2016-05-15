@@ -41,10 +41,17 @@ angular.module('rospilot')
 })
 .factory('$rostopic', function(ROS) {
     return function(topic, type) {
-        return new ROSLIB.Topic({
+        var topic = new ROSLIB.Topic({
             ros : ROS,
             name : topic,
             messageType : type
+        });
+        return Rx.Observable.create((observer) => {
+            topic.subscribe(message => {
+                observer.next(message);
+            });
+            // TODO: should return a dispose method, but ROSLIB
+            // can only remove all subscribers, not individual ones.
         });
     };
 })

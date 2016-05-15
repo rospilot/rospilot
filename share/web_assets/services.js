@@ -24,13 +24,8 @@ class Copter
 
     constructor($rostopic)
     {
-        // TODO: should return a disposable to clean up the subscription
-        this.rc_channels = Rx.Observable.create(function(observer) {
-            $rostopic('/rospilot/rcstate', 'rospilot/RCState')
-                .subscribe((data) => {
-                    observer.next(data.channel);
-                });
-        });
+        this.rc_channels = $rostopic('/rospilot/rcstate', 'rospilot/RCState')
+            .map(message => message.channel);
     }
 
     getRCChannels()
