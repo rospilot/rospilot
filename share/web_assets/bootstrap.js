@@ -25,6 +25,7 @@ angular.module('rospilot')
   .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))
   .directive('rospilotwaypoint', upgradeAdapter.downgradeNg2Component(WaypointComponent))
   .directive('globalposition', upgradeAdapter.downgradeNg2Component(GlobalPositionComponent))
+  .directive('rospilotmap', upgradeAdapter.downgradeNg2Component(MapComponent))
   .directive('rcstate', upgradeAdapter.downgradeNg2Component(RCStateComponent));
 angular.element(document).ready(function() {
     upgradeAdapter.bootstrap(document, ['rospilot']);

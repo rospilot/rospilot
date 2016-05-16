@@ -85,3 +85,76 @@ class GlobalPositionComponent
             .map(position => position.longitude);
     }
 }
+
+class MapComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotmap',
+            template: ''
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        var map = L.map('map', {
+            crs: L.CRS.EPSG3857,
+            center: {lat: 37.77, lng: -122.49},
+            zoom: 10,
+            contextmenu: true,
+            contextmenuWidth: 150,
+            contextmenuItems: [
+                {
+                    text: 'Set Waypoint',
+                    callback: function(e) {
+                        Copter.setWaypoint(e.latlng.lat, e.latlng.lng);
+                    },
+                }
+            ],
+        });
+        var server_name = window.location.hostname;
+        var mapnik_url = 'http://' + server_name + ':8086/ex/{z}/{x}/{y}.png';
+
+        L.tileLayer(mapnik_url, {
+            maxZoom: 18,
+        }).addTo(map);
+
+        var copterIcon = L.AwesomeMarkers.icon({
+            prefix: 'fa',
+            icon: 'plane',
+            markerColor: 'red'
+        });
+
+        this.marker = L.marker([37.77, -122.49], {
+            title: 'Multicopter',
+            icon: copterIcon
+        }).addTo(map);
+
+        var waypointIcon = L.AwesomeMarkers.icon({
+            prefix: 'fa',
+            icon: 'flag',
+            markerColor: 'green'
+        });
+
+        this.waypoint_marker = L.marker([37.77, -122.49], {
+            title: 'Waypoint',
+            icon: waypointIcon
+        }).addTo(map);
+
+        Copter.getWaypoint().subscribe((waypoint) => {
+            var lat = waypoint.latitude;
+            var lng = waypoint.longitude;
+            this.waypoint_marker.setLatLng([lat, lng]);
+        });
+
+        Copter.getGlobalPosition().subscribe((position) => {
+            this.marker.setLatLng([position.latitude, position.longitude]);
+        });
+    }
+}

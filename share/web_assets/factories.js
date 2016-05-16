@@ -74,9 +74,6 @@ angular.module('rospilot')
 .factory('VisionTargets', function ($rostopic) {
       return $rostopic('/rospilot/camera/vision_targets', 'rospilot/VisionTargets');
 })
-.factory('Position', function ($rostopic) {
-      return $rostopic('/rospilot/gpsraw', 'rospilot/GPSRaw');
-})
 .factory('Attitude', function ($rostopic) {
       return $rostopic('/rospilot/attitude', 'rospilot/Attitude');
 })
