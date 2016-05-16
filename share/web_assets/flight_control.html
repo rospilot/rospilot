@@ -44,14 +44,9 @@
   <div class="col-md-6">
     <div ng-controller='position' id="map" style='height:400px;width:500px;'></div>
 
-    <div ng-controller='waypoints'>
-      <h2>Waypoints</h2>
-      <ol>
-        <li ng-repeat="waypoint in waypoints">
-          Lat: {{waypoint.latitude|number:6}}, Lng: {{waypoint.longitude|number:6}}, 
-          Alt: {{waypoint.altitude|number:3}}m
-        </li>
-      </ol>
+    <div>
+      <h2>Waypoint</h2>
+      <rospilotwaypoint></rospilotwaypoint>
     </div>
 
     <div>

@@ -20,8 +20,10 @@ upgradeAdapter.addProvider(RosParam);
 upgradeAdapter.addProvider(Copter);
 upgradeAdapter.upgradeNg1Provider('ROS');
 upgradeAdapter.upgradeNg1Provider('$rostopic');
+upgradeAdapter.upgradeNg1Provider('$rosservice');
 angular.module('rospilot')
   .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))
+  .directive('rospilotwaypoint', upgradeAdapter.downgradeNg2Component(WaypointComponent))
   .directive('globalposition', upgradeAdapter.downgradeNg2Component(GlobalPositionComponent))
   .directive('rcstate', upgradeAdapter.downgradeNg2Component(RCStateComponent));
 angular.element(document).ready(function() {

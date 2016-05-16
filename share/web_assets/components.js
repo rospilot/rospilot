@@ -36,6 +36,32 @@ class RCStateComponent
     }
 }
 
+class WaypointComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotwaypoint',
+            template: "<div>Lat: {{latitude | async | number:'1.1-5'}}, Lng: {{longitude | async | number:'1.1-5'}}, Alt: {{altitude | async | number:'1.1-1'}}m</div>"
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.latitude = Copter.getWaypoint()
+            .map(waypoint => waypoint.latitude);
+        this.longitude = Copter.getWaypoint()
+            .map(waypoint => waypoint.longitude);
+        this.altitude = Copter.getWaypoint()
+            .map(waypoint => waypoint.altitude);
+    }
+}
+
 class GlobalPositionComponent
 {
     static get annotations()

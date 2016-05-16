@@ -19,16 +19,20 @@ class Copter
 {
     static get parameters()
     {
-        return [new ng.core.Inject('$rostopic')];
+        return [new ng.core.Inject('$rostopic'), new ng.core.Inject('$rosservice')];
     }
 
-    constructor($rostopic)
+    constructor($rostopic, $rosservice)
     {
         this.rc_channels = $rostopic('/rospilot/rcstate', 'rospilot/RCState')
             .map(message => message.channel);
 
         this.global_position = $rostopic('/rospilot/gpsraw', 'rospilot/GPSRaw');
 
+        this.waypoint = $rostopic('/rospilot/waypoints', 'rospilot/Waypoints')
+            .filter(message => message.waypoints.length > 0)
+            .map(message => message.waypoints[0]);
+        this.waypoint_service = $rosservice('/rospilot/set_waypoints', 'rospilot/SetWaypoints');
     }
 
     getRCChannels()
@@ -39,6 +43,22 @@ class Copter
     getGlobalPosition()
     {
         return this.global_position;
+    }
+
+    getWaypoint()
+    {
+        return this.waypoint;
+    }
+
+    setWaypoint(latitude, longitude)
+    {
+        var waypoints = {
+            waypoints: [{
+                'latitude': latitude,
+                'longitude': longitude,
+                'altitude': 5.0
+            }]};
+        this.waypoint_service(waypoints);
     }
 }
 

@@ -17,7 +17,6 @@
  */
 angular.module('rospilot')
 .controller('waypoints', function ($scope, $timeout, Waypoints) {
-  $scope.waypoints = [];
   $scope.come_here = function() {
       navigator.geolocation.getCurrentPosition(function(location){
           var waypoints = {
@@ -29,11 +28,6 @@ angular.module('rospilot')
           Waypoints.set(waypoints);
       });
   };
-  Waypoints.subscribe(function(waypoints) {
-      $scope.waypoints = waypoints.waypoints;
-      // XXX: This shouldn't be necessary
-      $scope.$apply();
-  });
 })
 .controller('imu', function ($scope, IMU) {
   $scope.data = {
