@@ -26,11 +26,19 @@ class Copter
     {
         this.rc_channels = $rostopic('/rospilot/rcstate', 'rospilot/RCState')
             .map(message => message.channel);
+
+        this.global_position = $rostopic('/rospilot/gpsraw', 'rospilot/GPSRaw');
+
     }
 
     getRCChannels()
     {
         return this.rc_channels;
+    }
+
+    getGlobalPosition()
+    {
+        return this.global_position;
     }
 }
 

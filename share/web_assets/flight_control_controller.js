@@ -139,12 +139,9 @@ angular.module('rospilot')
       $scope.$apply();
   });
 
-  $scope.data = {latitude: 0, longitude: 0};
   Position.subscribe(function(position) {
-      $scope.data = position;
       // XXX: This should be moved
       $scope.marker.setLatLng([position.latitude, position.longitude]);
-      $scope.$apply();
   });
 })
 .controller('attitude', function ($scope, Attitude) {

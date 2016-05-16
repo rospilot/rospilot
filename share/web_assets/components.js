@@ -35,3 +35,27 @@ class RCStateComponent
         this.channels = Copter.getRCChannels();
     }
 }
+
+class GlobalPositionComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'globalposition',
+            template: '<div>Lat: {{latitude | async}}, Lng: {{longitude | async}}</div>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.latitude = Copter.getGlobalPosition()
+            .map(position => position.latitude);
+        this.longitude = Copter.getGlobalPosition()
+            .map(position => position.longitude);
+    }
+}

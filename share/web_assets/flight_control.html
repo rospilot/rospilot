@@ -42,7 +42,7 @@
   </div>
 
   <div class="col-md-6">
-    <div id="map" style='height:400px;width:500px;'></div>
+    <div ng-controller='position' id="map" style='height:400px;width:500px;'></div>
 
     <div ng-controller='waypoints'>
       <h2>Waypoints</h2>
@@ -63,9 +63,8 @@
           Yaw: {{data.yaw|number:4}}
         </span>
       </div>
-      <div ng-controller='position'>
-        <div>Lat: {{data.latitude}}, Lng: {{data.longitude}}</div>
-      </div>
+
+      <globalposition></globalposition>
 
       <rcstate></rcstate>
 
