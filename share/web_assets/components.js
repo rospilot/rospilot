@@ -158,3 +158,31 @@ class MapComponent
         });
     }
 }
+
+class ComeHereComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotcomehere',
+            template: '<button type="button" class="btn" (click)="clicked()">Come To Me</button>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.copter = Copter;
+    }
+
+    clicked()
+    {
+        navigator.geolocation.getCurrentPosition((loc) => {
+            this.copter.setWaypoint(loc.coords.latitude, loc.coords.longitude);
+        });
+    }
+}

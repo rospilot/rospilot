@@ -16,19 +16,6 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.controller('waypoints', function ($scope, $timeout, Waypoints) {
-  $scope.come_here = function() {
-      navigator.geolocation.getCurrentPosition(function(location){
-          var waypoints = {
-              waypoints: [{
-              'latitude': location.coords.latitude,
-              'longitude': location.coords.longitude,
-              'altitude': 5.0
-          }]};
-          Waypoints.set(waypoints);
-      });
-  };
-})
 .controller('imu', function ($scope, IMU) {
   $scope.data = {
       'gyro': {'x': 0, 'y': 0, 'z': 0},

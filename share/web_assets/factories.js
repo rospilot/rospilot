@@ -79,12 +79,4 @@ angular.module('rospilot')
 })
 .factory('IMU', function ($rostopic) {
       return $rostopic('/rospilot/imuraw', 'rospilot/IMURaw');
-})
-.factory('Waypoints', function ($rostopic, $rosservice) {
-      return {
-          subscribe: function(callback) {
-              $rostopic('/rospilot/waypoints', 'rospilot/Waypoints').subscribe(callback);
-          },
-          set: $rosservice('/rospilot/set_waypoints', 'rospilot/SetWaypoints')
-      };
 });
