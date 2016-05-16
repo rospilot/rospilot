@@ -209,6 +209,8 @@ class MavlinkNode:
                             self.conn.target_system,
                             self.conn.target_component,
                             1)
+                    else:
+                        self.waypoint_read_in_progress = False
             elif msg_type == "MISSION_REQUEST":
                 if not self.waypoint_write_in_progress:
                     rospy.logwarn("Waypoint write not in progress, but received a request for a waypoint")
@@ -226,7 +228,7 @@ class MavlinkNode:
                         msg.seq,
                         frame,
                         mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                        1 if msg.seq == 0 else 0,  # Set current
+                        1 if msg.seq == 1 else 0,  # Set current
                         1,  # Auto continue after this waypoint
                         1.0,  # "reached waypoint" is +/- 1.0m
                         5.0,  # Stay for 5 secs then move on
