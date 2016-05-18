@@ -72,6 +72,7 @@ class MavlinkNode:
         self.num_waypoints = 0
         self.waypoint_read_in_progress = False
         self.waypoint_write_in_progress = False
+        self.last_waypoint_message_time = 0
 
     def reset_rc_override(self):
         # Send 0 to reset the channel
@@ -83,12 +84,13 @@ class MavlinkNode:
         if self.waypoint_read_in_progress or self.waypoint_write_in_progress:
             rospy.logwarn("Can't write waypoints because a read/write is already in progress")
             return rospilot.srv.SetWaypointsResponse()
-        self.waypoint_write_in_progress = True
-        # XXX: APM seems to overwrite index 0, so insert the first waypoint
-        # twice
-        self.waypoint_buffer = [message.waypoints[0]] + message.waypoints
 
         if message.waypoints:
+            self.waypoint_write_in_progress = True
+            # XXX: APM seems to overwrite index 0, so insert the first waypoint
+            # twice
+            self.waypoint_buffer = [message.waypoints[0]] + message.waypoints
+            self.last_waypoint_message_time = time()
             self.conn.mav.mission_count_send(
                 self.conn.target_system,
                 self.conn.target_component,
@@ -132,6 +134,7 @@ class MavlinkNode:
     def request_waypoints(self):
         if self.waypoint_read_in_progress or self.waypoint_write_in_progress:
             return
+        self.last_waypoint_message_time = time()
         self.conn.mav.mission_request_list_send(
             self.conn.target_system,
             self.conn.target_component)
@@ -153,6 +156,9 @@ class MavlinkNode:
         while not rospy.is_shutdown():
             rospy.sleep(0.001)
             msg = self.conn.recv_match(blocking=True)
+            if time() - self.last_waypoint_message_time > 5:
+                self.waypoint_read_in_progress = False
+                self.waypoint_write_in_progress = False
             if time() - last_waypoint_read > 10:
                 last_waypoint_read = time()
                 self.request_waypoints()
@@ -205,6 +211,7 @@ class MavlinkNode:
                     # Ignore the first one, because it's some magic waypoint
                     if msg.count > 1:
                         # Request the first waypoint
+                        self.last_waypoint_message_time = time()
                         self.conn.mav.mission_request_send(
                             self.conn.target_system,
                             self.conn.target_component,
@@ -222,6 +229,7 @@ class MavlinkNode:
                         # GLOBAL frame. It also is magically reset in the
                         # firmware, so this probably doesn't matter.
                         frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+                    self.last_waypoint_message_time = time()
                     self.conn.mav.mission_item_send(
                         self.conn.target_system,
                         self.conn.target_component,
@@ -248,6 +256,7 @@ class MavlinkNode:
                 else:
                     # All waypoints have been sent, read them back
                     self.waypoint_write_in_progress = False
+                    self.last_waypoint_message_time = time()
                     self.conn.mav.mission_request_list_send(
                         self.conn.target_system,
                         self.conn.target_component)
@@ -265,6 +274,7 @@ class MavlinkNode:
                         self.pub_waypoints.publish(self.waypoint_buffer)
                         self.waypoint_read_in_progress = False
                     else:
+                        self.last_waypoint_message_time = time()
                         self.conn.mav.mission_request_send(
                             self.conn.target_system,
                             self.conn.target_component,
