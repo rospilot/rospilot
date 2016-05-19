@@ -13,7 +13,7 @@
   </div>
 
   <div class="col-md-4">
-    <div ng-controller='attitude'>
+    <div>
       <div>
         <object id="attitude_svg" data="/static/attitude.svg" type="image/svg+xml">
           <rospilotrollguage></rospilotrollguage>
@@ -37,13 +37,7 @@
 
     <div>
       <h3>Info</h3>
-      <div ng-controller='attitude'>
-        <span>
-          Roll: {{data.roll|number:4}}, 
-          Pitch: {{data.pitch|number:4}}, 
-          Yaw: {{data.yaw|number:4}}
-        </span>
-      </div>
+      <rospilotattitude></rospilotattitude>
 
       <globalposition></globalposition>
 

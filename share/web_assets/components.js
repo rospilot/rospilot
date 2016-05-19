@@ -209,6 +209,32 @@ class CompassComponent
     }
 }
 
+class AttitudeComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotattitude',
+            template: "<div>Roll: {{roll | async | number:'1.4-4'}}, Pitch: {{pitch | async | number:'1.4-4'}}, Yaw: {{yaw | async | number:'1.4-4'}}</div>"
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.roll = Copter.getAttitude()
+            .map(attitude => attitude.roll);
+        this.pitch = Copter.getAttitude()
+            .map(attitude => attitude.pitch);
+        this.yaw = Copter.getAttitude()
+            .map(attitude => attitude.yaw);
+    }
+}
+
 class RCStateComponent
 {
     static get annotations()
