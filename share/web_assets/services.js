@@ -41,6 +41,7 @@ class Copter
         this.accelerometer = imu.map(message => message.accel);
         this.gyroscope = imu.map(message => message.gyro);
         this.magnetometer = imu.map(message => message.mag);
+        this.attitude = $rostopic('/rospilot/attitude', 'rospilot/Attitude');
     }
 
     getRCChannels()
@@ -92,6 +93,11 @@ class Copter
     getMagnetometer()
     {
         return this.magnetometer;
+    }
+
+    getAttitude()
+    {
+        return this.attitude;
     }
 }
 

@@ -128,6 +128,44 @@ class MagnetometerComponent
     }
 }
 
+class CompassComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotcompass',
+            template: ''
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        var compass = document.getElementById("compass");
+        var needle = null;
+        var needle_translate = null;
+        compass.addEventListener('load', function() {
+            needle = compass.getSVGDocument().getElementById("needle");
+            needle_translate = needle.getAttribute("transform");
+        });
+        Copter.getAttitude()
+            .subscribe(attitude => {
+                if (needle != null) {
+                    var x = needle.getBBox().width / 2.0;
+                    var y = needle.getBBox().height / 2.0;
+                    var yaw = attitude.yaw * 180 / Math.PI;
+                    needle.setAttribute("transform",
+                        "rotate(" + -yaw + " " + x + " " + y + ") "
+                        + needle_translate);
+                }
+            });
+    }
+}
+
 class RCStateComponent
 {
     static get annotations()

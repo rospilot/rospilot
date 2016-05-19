@@ -17,17 +17,10 @@
  */
 angular.module('rospilot')
 .controller('attitude', function ($scope, Attitude) {
-  var compass = document.getElementById("compass");
   var attitude_svg = document.getElementById("attitude_svg");
-  var needle = null;
-  var needle_translate = null;
   var roll_gauge = null;
   var roll_gauge_translate = null;
   var roll_needle = null;
-  compass.addEventListener('load', function() {
-      needle = compass.getSVGDocument().getElementById("needle");
-      needle_translate = needle.getAttribute("transform");
-  });
   attitude_svg.addEventListener('load', function() {
       roll_needle = attitude_svg.getSVGDocument().getElementById("layer2");
       roll_gauge = attitude_svg.getSVGDocument().getElementById("layer5");
@@ -36,15 +29,6 @@ angular.module('rospilot')
   $scope.data = {'roll': 0, 'pitch': 0, 'yaw': 0};
 
   Attitude.subscribe(function(attitude) {
-      if (needle != null) {
-          var x = needle.getBBox().width / 2.0;
-          var y = needle.getBBox().height / 2.0;
-          var yaw = attitude.yaw * 180 / Math.PI;
-          needle.setAttribute("transform", 
-              "rotate(" + -yaw + " " + x + " " + y + ") "
-              + needle_translate);
-      }
-
       if (roll_gauge != null) {
           var x = roll_needle.getBBox().width / 2.0;
           var y = roll_needle.getBBox().height / 2.0;
