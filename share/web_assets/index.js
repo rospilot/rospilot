@@ -18,7 +18,7 @@
 angular.module('rospilot', ['ngRoute', 'ngResource'])
 .config(function($routeProvider) {
     $routeProvider
-    .when("/graphs", {templateUrl:'static/graphs.html', controller:'graphs'})
+    .when("/graphs", {templateUrl:'static/graphs.html'})
     .when("/camera", {templateUrl:'static/camera.html', controller:'camera'})
     .when("/settings", {templateUrl:'static/settings.html'})
     .when("/flight_control", {templateUrl: 'static/flight_control.html'})

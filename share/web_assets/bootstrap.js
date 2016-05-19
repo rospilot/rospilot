@@ -23,6 +23,7 @@ upgradeAdapter.upgradeNg1Provider('$rostopic');
 upgradeAdapter.upgradeNg1Provider('$rosservice');
 angular.module('rospilot')
   .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))
+  .directive('accelerometergraph', upgradeAdapter.downgradeNg2Component(AccelerometerGraphComponent))
   .directive('rospilotstatus', upgradeAdapter.downgradeNg2Component(StatusComponent))
   .directive('rospilotwaypoint', upgradeAdapter.downgradeNg2Component(WaypointComponent))
   .directive('globalposition', upgradeAdapter.downgradeNg2Component(GlobalPositionComponent))

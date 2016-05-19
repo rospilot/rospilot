@@ -36,6 +36,9 @@ class Copter
 
         this.status = $rostopic('/rospilot/basic_status', 'rospilot/BasicStatus');
         this.status_service = $rosservice('/rospilot/set_mode', 'rospilot/SetBasicMode');
+
+        this.accelerometer = $rostopic('/rospilot/imuraw', 'rospilot/IMURaw')
+            .map(message => message.accel);
     }
 
     getRCChannels()
@@ -72,6 +75,11 @@ class Copter
     setArmed(armedStatus)
     {
         this.status_service({armed: armedStatus});
+    }
+
+    getAccelerometer()
+    {
+        return this.accelerometer;
     }
 }
 

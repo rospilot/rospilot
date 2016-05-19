@@ -25,18 +25,6 @@ angular.module('rospilot')
   $scope._last_redraw = new Date().getTime();
   IMU.subscribe(function(data) {
       $scope.data = data;
-      if ($('#accel_z_chart').length > 0) {
-        var series = $('#accel_z_chart').highcharts().series[0];
-        var x = (new Date()).getTime();
-        var redraw = x - $scope._last_redraw > 500;
-        var extremes = series.xAxis.getExtremes();
-        // Shift out the data if there's more than 15secs on-screen
-        var shift = extremes.dataMax - extremes.dataMin > 15000;
-        if (redraw) {
-            $scope._last_redraw = x;
-        }
-        series.addPoint([x, data.accel.z], redraw, shift);
-      }
       $scope.$apply();
   });
 })
