@@ -63,14 +63,6 @@ angular.module('rospilot')
         stop_recording: $rosservice('/rospilot/camera/stop_record', 'std_srvs/Empty')
     };
 })
-.factory('Status', function ($rostopic, $rosservice) {
-      return {
-          subscribe: function(callback) {
-              $rostopic('/rospilot/basic_status', 'rospilot/BasicStatus').subscribe(callback);
-          },
-          set: $rosservice('/rospilot/set_mode', 'rospilot/SetBasicMode')
-      };
-})
 .factory('VisionTargets', function ($rostopic) {
       return $rostopic('/rospilot/camera/vision_targets', 'rospilot/VisionTargets');
 })

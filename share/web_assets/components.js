@@ -15,6 +15,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+class StatusComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotstatus',
+            templateUrl: '/static/status_component.html'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(copter)
+    {
+        this.copter = copter;
+        this.flight_mode = copter.getStatus()
+            .map(status => status.flight_mode);
+        this.armed = copter.getStatus()
+            .map(status => status.armed);
+    }
+
+    disarm()
+    {
+        this.copter.setArmed(false);
+    }
+
+    arm()
+    {
+        this.copter.setArmed(true);
+    }
+}
+
 class RCStateComponent
 {
     static get annotations()

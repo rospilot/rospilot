@@ -40,23 +40,6 @@ angular.module('rospilot')
       $scope.$apply();
   });
 })
-.controller('status', function ($scope, $timeout, Status) {
-  $scope.data = {armed: false, flight_mode: ''};
-  $scope.arm = function() {
-      Status.set({
-          armed: true
-      });
-  };
-  $scope.disarm = function() {
-      Status.set({
-          armed: false
-      });
-  };
-  Status.subscribe(function(status) {
-      $scope.data = status;
-      $scope.$apply();
-  });
-})
 .controller('attitude', function ($scope, Attitude) {
   var compass = document.getElementById("compass");
   var attitude_svg = document.getElementById("attitude_svg");

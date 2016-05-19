@@ -33,6 +33,9 @@ class Copter
             .filter(message => message.waypoints.length > 0)
             .map(message => message.waypoints[0]);
         this.waypoint_service = $rosservice('/rospilot/set_waypoints', 'rospilot/SetWaypoints');
+
+        this.status = $rostopic('/rospilot/basic_status', 'rospilot/BasicStatus');
+        this.status_service = $rosservice('/rospilot/set_mode', 'rospilot/SetBasicMode');
     }
 
     getRCChannels()
@@ -59,6 +62,16 @@ class Copter
                 'altitude': 5.0
             }]};
         this.waypoint_service(waypoints);
+    }
+
+    getStatus()
+    {
+        return this.status;
+    }
+
+    setArmed(armedStatus)
+    {
+        this.status_service({armed: armedStatus});
     }
 }
 

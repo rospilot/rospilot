@@ -3,21 +3,7 @@
   <div class="col-md-2">
     <ul id="flight_control_actions" class="nav nav-stacked">
       <li>
-        <div ng-controller='status'>
-          <div class="alert alert-info">
-            MODE: {{data.flight_mode}}
-          </div>
-          <div ng-switch on='data.armed'>
-            <div ng-switch-when='true'>
-              <button type="button" class="btn btn-warning"
-                ng-click='disarm()'>DISARM</button>
-            </div>
-            <div ng-switch-when='false'>
-              <button type="button" class="btn btn-danger"
-                ng-click='arm()'>ARM</button>
-            </div>
-          </div>
-        </div>
+        <rospilotstatus></rospilotstatus>
       </li>
 
       <li>

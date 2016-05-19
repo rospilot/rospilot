@@ -1,0 +1,15 @@
+<div>
+  <div class="alert alert-info">
+    MODE: {{flight_mode | async}}
+  </div>
+  <div [ngSwitch]='armed | async'>
+    <div *ngSwitchWhen='true'>
+      <button type="button" class="btn btn-warning"
+        (click)='disarm()'>DISARM</button>
+    </div>
+    <div *ngSwitchWhen='false'>
+      <button type="button" class="btn btn-danger"
+        (click)='arm()'>ARM</button>
+    </div>
+  </div>
+</div>
