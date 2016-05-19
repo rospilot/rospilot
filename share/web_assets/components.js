@@ -128,6 +128,49 @@ class MagnetometerComponent
     }
 }
 
+class RollGuageComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotrollguage',
+            template: ''
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        var attitude_svg = document.getElementById("attitude_svg");
+        var roll_gauge = null;
+        var roll_gauge_translate = null;
+        var roll_needle = null;
+        attitude_svg.addEventListener('load', function() {
+            roll_needle = attitude_svg.getSVGDocument().getElementById("layer2");
+            roll_gauge = attitude_svg.getSVGDocument().getElementById("layer5");
+            roll_gauge_translate = roll_gauge.getAttribute("transform");
+        });
+        Copter.getAttitude()
+            .subscribe(attitude => {
+                if (roll_gauge != null) {
+                    var x = roll_needle.getBBox().width / 2.0;
+                    var y = roll_needle.getBBox().height / 2.0;
+                    var roll = -attitude.roll * 180 / Math.PI;
+                    var pitch = attitude.pitch * roll_gauge.getBBox().height / Math.PI;
+                    roll_needle.setAttribute("transform",
+                        "rotate(" + roll + " " + x + " " + y + ")");
+                    roll_gauge.setAttribute("transform",
+                        "rotate(" + roll + " " + x + " " + y + ") " +
+                        roll_gauge_translate + " translate(0 " + pitch + ")");
+                }
+            });
+    }
+}
+
 class CompassComponent
 {
     static get annotations()
