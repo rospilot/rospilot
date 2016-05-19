@@ -50,6 +50,84 @@ class StatusComponent
     }
 }
 
+class AccelerometerComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotaccelerometer',
+            template: '<div>Accel: x: {{x | async}}, y: {{y | async}}, z: {{z | async}}</div>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.x = Copter.getAccelerometer()
+            .map(accel => accel.x);
+        this.y = Copter.getAccelerometer()
+            .map(accel => accel.y);
+        this.z = Copter.getAccelerometer()
+            .map(accel => accel.z);
+    }
+}
+
+class GyroscopeComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotgyroscope',
+            template: '<div>Gyro: x: {{x | async}}, y: {{y | async}}, z: {{z | async}}</div>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.x = Copter.getGyroscope()
+            .map(gyro => gyro.x);
+        this.y = Copter.getGyroscope()
+            .map(gyro => gyro.y);
+        this.z = Copter.getGyroscope()
+            .map(gyro => gyro.z);
+    }
+}
+
+class MagnetometerComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotmagnetometer',
+            template: '<div>Mag: x: {{x | async}}, y: {{y | async}}, z: {{z | async}}</div>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(Copter)
+    {
+        this.x = Copter.getMagnetometer()
+            .map(mag => mag.x);
+        this.y = Copter.getMagnetometer()
+            .map(mag => mag.y);
+        this.z = Copter.getMagnetometer()
+            .map(mag => mag.z);
+    }
+}
+
 class RCStateComponent
 {
     static get annotations()

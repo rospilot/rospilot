@@ -16,18 +16,6 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.controller('imu', function ($scope, IMU) {
-  $scope.data = {
-      'gyro': {'x': 0, 'y': 0, 'z': 0},
-      'accel': {'x': 0, 'y': 0, 'z': 0},
-      'mag': {'x': 0, 'y': 0, 'z': 0}
-  };
-  $scope._last_redraw = new Date().getTime();
-  IMU.subscribe(function(data) {
-      $scope.data = data;
-      $scope.$apply();
-  });
-})
 .controller('attitude', function ($scope, Attitude) {
   var compass = document.getElementById("compass");
   var attitude_svg = document.getElementById("attitude_svg");

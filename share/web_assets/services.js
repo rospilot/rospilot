@@ -37,8 +37,10 @@ class Copter
         this.status = $rostopic('/rospilot/basic_status', 'rospilot/BasicStatus');
         this.status_service = $rosservice('/rospilot/set_mode', 'rospilot/SetBasicMode');
 
-        this.accelerometer = $rostopic('/rospilot/imuraw', 'rospilot/IMURaw')
-            .map(message => message.accel);
+        var imu = $rostopic('/rospilot/imuraw', 'rospilot/IMURaw');
+        this.accelerometer = imu.map(message => message.accel);
+        this.gyroscope = imu.map(message => message.gyro);
+        this.magnetometer = imu.map(message => message.mag);
     }
 
     getRCChannels()
@@ -80,6 +82,16 @@ class Copter
     getAccelerometer()
     {
         return this.accelerometer;
+    }
+
+    getGyroscope()
+    {
+        return this.gyroscope;
+    }
+
+    getMagnetometer()
+    {
+        return this.magnetometer;
     }
 }
 
