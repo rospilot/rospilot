@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 const upgradeAdapter = new ng.upgrade.UpgradeAdapter();
+upgradeAdapter.addProvider(RosLib);
 upgradeAdapter.addProvider(RosParam);
 upgradeAdapter.addProvider(Copter);
-upgradeAdapter.upgradeNg1Provider('ROS');
 upgradeAdapter.upgradeNg1Provider('$rostopic');
 upgradeAdapter.upgradeNg1Provider('$rosservice');
 angular.module('rospilot')
+  .service('ROS', upgradeAdapter.downgradeNg2Provider(RosLib))
   .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))
   .directive('rospilotattitude', upgradeAdapter.downgradeNg2Component(AttitudeComponent))
   .directive('rospilotrollguage', upgradeAdapter.downgradeNg2Component(RollGuageComponent))

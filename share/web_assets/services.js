@@ -105,12 +105,12 @@ class RosParam
 {
     static get parameters()
     {
-        return [new ng.core.Inject('ROS')];
+        return [new ng.core.Inject(RosLib)];
     }
 
     constructor(ROS)
     {
-        this.ROS = ROS;
+        this.ROS = ROS.getRos();
     }
 
     get(key, callback)
@@ -123,5 +123,19 @@ class RosParam
     {
         var param = new ROSLIB.Param({ros: this.ROS, name: key});
         param.set(value);
+    }
+}
+
+class RosLib
+{
+    constructor()
+    {
+        var url = 'ws://' + window.location.hostname + ':8088';
+        this.ros = new ROSLIB.Ros({url: url});
+    }
+
+    getRos()
+    {
+        return this.ros;
     }
 }

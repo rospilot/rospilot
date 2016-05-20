@@ -16,15 +16,10 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.factory('ROS', function() {
-    var url = 'ws://' + window.location.hostname + ':8088';
-    var ros = new ROSLIB.Ros({url: url});
-    return ros;
-})
 .factory('$rosservice', function(ROS) {
     return function(service_name, type) {
         var service = new ROSLIB.Service({
-            ros : ROS,
+            ros : ROS.getRos(),
             name : service_name,
             messageType : type
         });
@@ -42,7 +37,7 @@ angular.module('rospilot')
 .factory('$rostopic', function(ROS) {
     return function(topic, type) {
         var topic = new ROSLIB.Topic({
-            ros : ROS,
+            ros : ROS.getRos(),
             name : topic,
             messageType : type
         });
