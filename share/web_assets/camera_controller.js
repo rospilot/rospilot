@@ -121,14 +121,4 @@ angular.module('rospilot')
   nextFrame();
 
   $scope.take_picture = Camera.take_picture;
-
-  $scope.recording = false;
-  $scope.toggle_recording = function() {
-    if ($scope.recording) {
-      Camera.stop_recording();
-    } else {
-      Camera.start_recording();
-    }
-    $scope.recording = !$scope.recording;
-  };
 });

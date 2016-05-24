@@ -139,3 +139,53 @@ class RosLib
         return this.ros;
     }
 }
+
+class OnboardComputer
+{
+    static get parameters()
+    {
+        return [Camera];
+    }
+
+    constructor(camera)
+    {
+        this.camera = camera;
+    }
+
+    getCamera()
+    {
+        return this.camera;
+    }
+}
+
+class Camera
+{
+    static get parameters()
+    {
+        return [new ng.core.Inject('$rostopic'), new ng.core.Inject('$rosservice')];
+    }
+
+    constructor($rostopic, $rosservice)
+    {
+        this.start_recording = $rosservice('/rospilot/camera/start_record', 'std_srvs/Empty');
+        this.stop_recording = $rosservice('/rospilot/camera/stop_record', 'std_srvs/Empty');
+        this.recording = false;
+    }
+
+    getRecording()
+    {
+        return this.recording;
+    }
+
+    startRecording()
+    {
+        this.recording = true;
+        this.start_recording();
+    }
+
+    stopRecording()
+    {
+        this.recording = false;
+        this.stop_recording();
+    }
+}

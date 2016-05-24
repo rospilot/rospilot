@@ -53,9 +53,7 @@ angular.module('rospilot')
 .factory('Camera', function ($rosservice, $rostopic) {
     return {
         resolutions: $rostopic('/rospilot/camera/resolutions', 'rospilot/Resolutions'),
-        take_picture: $rosservice('/rospilot/camera/capture_image', 'std_srvs/Empty'),
-        start_recording: $rosservice('/rospilot/camera/start_record', 'std_srvs/Empty'),
-        stop_recording: $rosservice('/rospilot/camera/stop_record', 'std_srvs/Empty')
+        take_picture: $rosservice('/rospilot/camera/capture_image', 'std_srvs/Empty')
     };
 })
 .factory('VisionTargets', function ($rostopic) {

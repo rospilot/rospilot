@@ -1,0 +1,8 @@
+<button type="button" class="btn btn-primary" (click)='clicked()'>
+  <span [hidden]="camera.getRecording()">
+    <i class="fa fa-video-camera" style="padding-right:7px;"> </i>Record
+  </span>
+  <span [hidden]="!camera.getRecording()">
+    <i class="fa fa-stop" style="padding-right:7px;"> </i>Stop
+  </span>
+</button>

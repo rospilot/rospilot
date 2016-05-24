@@ -19,11 +19,14 @@ const upgradeAdapter = new ng.upgrade.UpgradeAdapter();
 upgradeAdapter.addProvider(RosLib);
 upgradeAdapter.addProvider(RosParam);
 upgradeAdapter.addProvider(Copter);
+upgradeAdapter.addProvider(OnboardComputer);
+upgradeAdapter.addProvider(Camera);
 upgradeAdapter.upgradeNg1Provider('$rostopic');
 upgradeAdapter.upgradeNg1Provider('$rosservice');
 angular.module('rospilot')
   .service('ROS', upgradeAdapter.downgradeNg2Provider(RosLib))
   .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))
+  .directive('rospilotrecordingbutton', upgradeAdapter.downgradeNg2Component(RecordingButton))
   .directive('rospilotattitude', upgradeAdapter.downgradeNg2Component(AttitudeComponent))
   .directive('rospilotrollguage', upgradeAdapter.downgradeNg2Component(RollGuageComponent))
   .directive('rospilotcompass', upgradeAdapter.downgradeNg2Component(CompassComponent))

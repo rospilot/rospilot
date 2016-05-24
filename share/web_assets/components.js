@@ -491,3 +491,34 @@ class AccelerometerGraphComponent
         });
     }
 }
+
+class RecordingButton
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotrecordingbutton',
+            templateUrl: '/static/recording_button.html'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Camera];
+    }
+
+    constructor(camera)
+    {
+        this.camera = camera;
+    }
+
+    clicked()
+    {
+        if (this.camera.getRecording()) {
+            this.camera.stopRecording();
+        }
+        else {
+            this.camera.startRecording();
+        }
+    }
+}
