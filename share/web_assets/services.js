@@ -169,6 +169,7 @@ class Camera
     {
         this.start_recording = $rosservice('/rospilot/camera/start_record', 'std_srvs/Empty');
         this.stop_recording = $rosservice('/rospilot/camera/stop_record', 'std_srvs/Empty');
+        this.take_picture = $rosservice('/rospilot/camera/capture_image', 'std_srvs/Empty');
         this.recording = false;
     }
 
@@ -187,5 +188,10 @@ class Camera
     {
         this.recording = false;
         this.stop_recording();
+    }
+
+    takePicture()
+    {
+        this.take_picture();
     }
 }

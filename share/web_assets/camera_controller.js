@@ -19,7 +19,7 @@ angular.module('rospilot')
 .factory('Media', function ($resource) {
       return $resource('/api/media/:mediaId', {mediaId: '@id'});
 })
-.controller('camera', function($scope, $timeout, $http, $rosparam, Media, Camera, VisionTargets) {
+.controller('camera', function($scope, $timeout, $http, $rosparam, Media, VisionTargets) {
   $scope.media = [];
   $scope.fps = 0;
 
@@ -119,6 +119,4 @@ angular.module('rospilot')
       });
   };
   nextFrame();
-
-  $scope.take_picture = Camera.take_picture;
 });

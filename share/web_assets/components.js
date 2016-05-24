@@ -522,3 +522,24 @@ class RecordingButton
         }
     }
 }
+
+class TakePictureButton
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'takepicturebutton',
+            templateUrl: '/static/take_picture_button.html'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Camera];
+    }
+
+    constructor(camera)
+    {
+        this.camera = camera;
+    }
+}
