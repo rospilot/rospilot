@@ -543,3 +543,24 @@ class TakePictureButton
         this.camera = camera;
     }
 }
+
+class MediaListComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotmedialist',
+            templateUrl: '/static/media_list.html'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [OnboardComputer];
+    }
+
+    constructor(computer)
+    {
+        this.media = computer.getMedia();
+    }
+}

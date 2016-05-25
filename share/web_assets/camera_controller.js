@@ -16,27 +16,8 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.factory('Media', function ($resource) {
-      return $resource('/api/media/:mediaId', {mediaId: '@id'});
-})
-.controller('camera', function($scope, $timeout, $http, $rosparam, Media, VisionTargets) {
-  $scope.media = [];
+.controller('camera', function($scope, $timeout, $http, $rosparam, VisionTargets) {
   $scope.fps = 0;
-
-  $scope.destroyed = false;
-  $scope.$on("$destroy", function() {$scope.destroyed = true});
-
-  (function tick() {
-      Media.query(function(data) {
-          if (data.length != $scope.media.length) {
-            $scope.media = data;
-          }
-          if ($scope.destroyed) {
-            return;
-          }
-          $timeout(tick, 1000);
-      });
-  })();
 
   $scope.destroyed = false;
   $scope.$on("$destroy", function() {$scope.destroyed = true});

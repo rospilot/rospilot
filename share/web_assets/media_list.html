@@ -1,0 +1,10 @@
+<div class="col-md-12" *ngFor="let obj of media | async">
+  <div class="camera-thumbnail">
+    <i class="fa fa-trash fa-2x" (click)="obj.delete()"></i>
+    <a *ngIf="obj.type == 'video'" [href]="obj.url">
+      <i class="fa fa-youtube-play fa-3x"></i>
+      <img [src]="obj.thumbnail"/>
+    </a>
+    <img *ngIf="obj.type == 'image'" [src]="obj.url"/>
+  </div>
+</div>

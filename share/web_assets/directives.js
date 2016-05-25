@@ -16,22 +16,6 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.directive('ngConfirmClick', [function() {
-    return {
-        restrict: 'A',
-        link: function(scope, element, attrs) {
-            element.bind('click', function() {
-                var message = attrs.ngConfirmMessage;
-                if (!message) {
-                    message = "<insert message here>"
-                }
-                if (message && confirm(message)) {
-                    scope.$apply(attrs.ngConfirmClick);
-                }
-            });
-        }
-    }
-}])
 .directive('activeClass', function($location) {
     return {
         restrict: 'A',

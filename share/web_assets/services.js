@@ -144,17 +144,38 @@ class OnboardComputer
 {
     static get parameters()
     {
-        return [Camera];
+        return [Camera, ng.http.Http];
     }
 
-    constructor(camera)
+    constructor(camera, http)
     {
         this.camera = camera;
+        this.media = Rx.Observable.interval(1000)
+            .flatMap(() => {
+                return http.get('/api/media/')
+                .map(response => {
+                    var objs = response.json();
+                    for (let obj of objs) {
+                        obj.delete = function() {
+                            if (confirm("Are you sure?")) {
+                                http.delete('/api/media?id=' + obj.id)
+                                    .subscribe();
+                            }
+                        };
+                    }
+                    return objs;
+                });
+            });
     }
 
     getCamera()
     {
         return this.camera;
+    }
+
+    getMedia()
+    {
+        return this.media;
     }
 }
 
