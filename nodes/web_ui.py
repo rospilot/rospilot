@@ -94,8 +94,11 @@ class WebUiNode(object):
 
         cherrypy.server.socket_port = PORT_NUMBER
         cherrypy.server.socket_host = '0.0.0.0'
-        # No autoreloading
-        cherrypy.engine.autoreload.unsubscribe()
+        cherrypy.config.update({
+            'global': {
+                'environment': 'production'
+                }
+            })
         conf = {
             '/static': {'tools.staticdir.on': True,
                         'tools.staticdir.dir': STATIC_PATH
@@ -107,7 +110,6 @@ class WebUiNode(object):
         index = Index()
         index.api = API(self.media_path)
         cherrypy.tree.mount(index, config=conf)
-        cherrypy.log.screen = False
 
     def handle_shutdown(self, request):
         os.system('shutdown now -P')
