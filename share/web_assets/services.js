@@ -144,11 +144,12 @@ class OnboardComputer
 {
     static get parameters()
     {
-        return [Camera, ng.http.Http];
+        return [Camera, ng.http.Http, new ng.core.Inject('$rosservice')];
     }
 
-    constructor(camera, http)
+    constructor(camera, http, $rosservice)
     {
+        this.shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
         this.camera = camera;
         this.media = Rx.Observable.interval(1000)
             .flatMap(() => {
@@ -166,6 +167,11 @@ class OnboardComputer
                     return objs;
                 });
             });
+    }
+
+    shutdown()
+    {
+        this.shutdownService();
     }
 
     getCamera()

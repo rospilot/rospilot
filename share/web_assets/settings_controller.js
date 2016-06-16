@@ -17,12 +17,10 @@
  */
 angular.module('rospilot')
 .controller('settings', function ($scope, $rosparam, $rosservice, Camera) {
-    var shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
     var globService = $rosservice('/rospilot/glob', 'rospilot/Glob');
     $scope.selected_video_device = '';
     $scope.detector_enabled = false;
     $scope.video_devices = [];
-    $scope.shutdown = shutdownService;
     $rosparam.get('/rospilot/camera/detector_enabled',
         function(value) {
             $scope.detector_enabled = value;

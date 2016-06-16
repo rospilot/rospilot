@@ -564,3 +564,29 @@ class MediaListComponent
         this.media = computer.getMedia();
     }
 }
+
+class ShutdownComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'shutdownbutton',
+            template: '<button type="button" class="btn btn-danger" (click)="clicked()">Shutdown On-board Computer</button>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [OnboardComputer];
+    }
+
+    constructor(computer)
+    {
+        this.computer = computer;
+    }
+
+    clicked()
+    {
+        this.computer.shutdown();
+    }
+}
