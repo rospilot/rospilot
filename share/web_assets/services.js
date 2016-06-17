@@ -19,7 +19,7 @@ class Copter
 {
     static get parameters()
     {
-        return [new ng.core.Inject('$rostopic'), new ng.core.Inject('$rosservice')];
+        return [new ng.core.Inject('$rostopic'), RosService];
     }
 
     constructor($rostopic, $rosservice)
@@ -32,10 +32,10 @@ class Copter
         this.waypoint = $rostopic('/rospilot/waypoints', 'rospilot/Waypoints')
             .filter(message => message.waypoints.length > 0)
             .map(message => message.waypoints[0]);
-        this.waypoint_service = $rosservice('/rospilot/set_waypoints', 'rospilot/SetWaypoints');
+        this.waypoint_service = $rosservice.getService('/rospilot/set_waypoints', 'rospilot/SetWaypoints');
 
         this.status = $rostopic('/rospilot/basic_status', 'rospilot/BasicStatus');
-        this.status_service = $rosservice('/rospilot/set_mode', 'rospilot/SetBasicMode');
+        this.status_service = $rosservice.getService('/rospilot/set_mode', 'rospilot/SetBasicMode');
 
         var imu = $rostopic('/rospilot/imuraw', 'rospilot/IMURaw');
         this.accelerometer = imu.map(message => message.accel);
@@ -126,6 +126,38 @@ class RosParam
     }
 }
 
+class RosService
+{
+    static get parameters()
+    {
+        return [RosLib];
+    }
+
+    constructor(ROS)
+    {
+        this.ros = ROS.getRos();
+    }
+
+    getService(service_name, type)
+    {
+        var service = new ROSLIB.Service({
+            ros: this.ros,
+            name: service_name,
+            messageType: type
+        });
+
+        return (args, callback) => {
+            if (typeof args === 'undefined') {
+                args = {};
+            }
+            if (typeof callback === 'undefined') {
+                callback = function(result) {};
+            }
+            service.callService(new ROSLIB.ServiceRequest(args), callback);
+        };
+    }
+}
+
 class RosLib
 {
     constructor()
@@ -144,12 +176,12 @@ class OnboardComputer
 {
     static get parameters()
     {
-        return [Camera, ng.http.Http, new ng.core.Inject('$rosservice'), RosParam];
+        return [Camera, ng.http.Http, RosService, RosParam];
     }
 
     constructor(camera, http, $rosservice, $rosparam)
     {
-        this.shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
+        this.shutdownService = $rosservice.getService('/rospilot/shutdown', 'std_srvs/Empty');
         this.camera = camera;
         this.http = http;
         this.rosparam = $rosparam;
@@ -211,14 +243,14 @@ class Camera
 {
     static get parameters()
     {
-        return [new ng.core.Inject('$rostopic'), new ng.core.Inject('$rosservice')];
+        return [new ng.core.Inject('$rostopic'), RosService];
     }
 
     constructor($rostopic, $rosservice)
     {
-        this.start_recording = $rosservice('/rospilot/camera/start_record', 'std_srvs/Empty');
-        this.stop_recording = $rosservice('/rospilot/camera/stop_record', 'std_srvs/Empty');
-        this.take_picture = $rosservice('/rospilot/camera/capture_image', 'std_srvs/Empty');
+        this.start_recording = $rosservice.getService('/rospilot/camera/start_record', 'std_srvs/Empty');
+        this.stop_recording = $rosservice.getService('/rospilot/camera/stop_record', 'std_srvs/Empty');
+        this.take_picture = $rosservice.getService('/rospilot/camera/capture_image', 'std_srvs/Empty');
         this.recording = false;
     }
 

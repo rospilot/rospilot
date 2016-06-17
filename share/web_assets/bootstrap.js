@@ -18,12 +18,12 @@
 const upgradeAdapter = new ng.upgrade.UpgradeAdapter();
 upgradeAdapter.addProvider(RosLib);
 upgradeAdapter.addProvider(RosParam);
+upgradeAdapter.addProvider(RosService);
 upgradeAdapter.addProvider(Copter);
 upgradeAdapter.addProvider(OnboardComputer);
 upgradeAdapter.addProvider(Camera);
 upgradeAdapter.addProvider(ng.http.HTTP_PROVIDERS);
 upgradeAdapter.upgradeNg1Provider('$rostopic');
-upgradeAdapter.upgradeNg1Provider('$rosservice');
 angular.module('rospilot')
   .service('ROS', upgradeAdapter.downgradeNg2Provider(RosLib))
   .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))

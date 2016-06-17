@@ -16,24 +16,6 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.factory('$rosservice', function(ROS) {
-    return function(service_name, type) {
-        var service = new ROSLIB.Service({
-            ros : ROS.getRos(),
-            name : service_name,
-            messageType : type
-        });
-        return function(args, callback) {
-            if (typeof args === 'undefined') {
-                args = {};
-            }
-            if (typeof callback === 'undefined') {
-                callback = function(result) {};
-            }
-            service.callService(new ROSLIB.ServiceRequest(args), callback);
-        };
-    };
-})
 .factory('$rostopic', function(ROS) {
     return function(topic, type) {
         var topic = new ROSLIB.Topic({
@@ -50,7 +32,7 @@ angular.module('rospilot')
         });
     };
 })
-.factory('Camera', function ($rosservice, $rostopic) {
+.factory('Camera', function ($rostopic) {
     return {
         resolutions: $rostopic('/rospilot/camera/resolutions', 'rospilot/Resolutions')
     };
