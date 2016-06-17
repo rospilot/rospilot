@@ -590,3 +590,31 @@ class ShutdownComponent
         this.computer.shutdown();
     }
 }
+
+class VideoDevicesComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'videodevices',
+            templateUrl: '/static/video_devices_component.html'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [OnboardComputer];
+    }
+
+    constructor(computer)
+    {
+        this.computer = computer;
+        this.devices = computer.getVideoDevices();
+        this.selected_device = computer.getActiveVideoDevice();
+    }
+
+    onSelected(device)
+    {
+        this.computer.setActiveVideoDevice(device);
+    }
+}

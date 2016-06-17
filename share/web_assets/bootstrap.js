@@ -27,6 +27,7 @@ upgradeAdapter.upgradeNg1Provider('$rosservice');
 angular.module('rospilot')
   .service('ROS', upgradeAdapter.downgradeNg2Provider(RosLib))
   .service('$rosparam', upgradeAdapter.downgradeNg2Provider(RosParam))
+  .directive('videodevices', upgradeAdapter.downgradeNg2Component(VideoDevicesComponent))
   .directive('shutdownbutton', upgradeAdapter.downgradeNg2Component(ShutdownComponent))
   .directive('rospilotmedialist', upgradeAdapter.downgradeNg2Component(MediaListComponent))
   .directive('takepicturebutton', upgradeAdapter.downgradeNg2Component(TakePictureButton))

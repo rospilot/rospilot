@@ -41,6 +41,10 @@ class API(object):
         self.media_path = media_path
 
     @cherrypy.expose
+    def video_devices(self):
+        return json.dumps(glob.glob('/dev/video*'))
+
+    @cherrypy.expose
     def media(self, id=None):
         if cherrypy.request.method == "DELETE":
             if not re.match(r"([a-z]+\.)?[a-zA-Z0-9_-]+\.\w{2,5}", id):
@@ -81,9 +85,6 @@ class Index(object):
 
 class WebUiNode(object):
     def __init__(self, media_path):
-        rospy.Service('glob',
-                      rospilot.srv.Glob,
-                      self.handle_glob)
         rospy.Service('shutdown',
                       std_srvs.srv.Empty,
                       self.handle_shutdown)
@@ -107,9 +108,6 @@ class WebUiNode(object):
         index.api = API(self.media_path)
         cherrypy.tree.mount(index, config=conf)
         cherrypy.log.screen = False
-
-    def handle_glob(self, request):
-        return rospilot.srv.GlobResponse(glob.glob(request.pattern))
 
     def handle_shutdown(self, request):
         os.system('shutdown now -P')

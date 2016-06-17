@@ -1,0 +1,5 @@
+<div>
+  Device: <select [ngModel]='selected_device | async' (ngModelChange)="onSelected($event)">
+    <option *ngFor="let device of devices | async" [value]="device">{{device}}</option>
+  </select>
+</div>

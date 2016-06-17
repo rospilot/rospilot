@@ -16,20 +16,11 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.controller('settings', function ($scope, $rosparam, $rosservice, Camera) {
-    var globService = $rosservice('/rospilot/glob', 'rospilot/Glob');
-    $scope.selected_video_device = '';
+.controller('settings', function ($scope, $rosparam, Camera) {
     $scope.detector_enabled = false;
-    $scope.video_devices = [];
     $rosparam.get('/rospilot/camera/detector_enabled',
         function(value) {
             $scope.detector_enabled = value;
-            $scope.$apply();
-        }
-    );
-    $rosparam.get('/rospilot/camera/video_device',
-        function(value) {
-            $scope.selected_video_device = value;
             $scope.$apply();
         }
     );
@@ -57,16 +48,6 @@ angular.module('rospilot')
             var parts = new_resolution.split('x');
             $rosparam.set('/rospilot/camera/image_width', parseInt(parts[0]));
             $rosparam.set('/rospilot/camera/image_height', parseInt(parts[1]));
-        }
-    });
-    globService({pattern: '/dev/video*'}, function(result) {
-        $scope.video_devices = result.paths.sort();
-        $scope.$apply();
-    });
-
-    $scope.$watch('selected_video_device', function(new_device) {
-        if (new_device) {
-            $rosparam.set('/rospilot/camera/video_device', new_device);
         }
     });
 

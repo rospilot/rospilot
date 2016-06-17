@@ -69,7 +69,6 @@ add_service_files(
   FILES
   SetBasicMode.srv
   SetWaypoints.srv
-  Glob.srv
   CaptureImage.srv
 )
 

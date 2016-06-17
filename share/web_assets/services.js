@@ -144,13 +144,19 @@ class OnboardComputer
 {
     static get parameters()
     {
-        return [Camera, ng.http.Http, new ng.core.Inject('$rosservice')];
+        return [Camera, ng.http.Http, new ng.core.Inject('$rosservice'), RosParam];
     }
 
-    constructor(camera, http, $rosservice)
+    constructor(camera, http, $rosservice, $rosparam)
     {
         this.shutdownService = $rosservice('/rospilot/shutdown', 'std_srvs/Empty');
         this.camera = camera;
+        this.http = http;
+        this.rosparam = $rosparam;
+        this.active_video_device = Rx.Observable.interval(1000)
+            .flatMap(() => Rx.Observable.create((observer) => {
+                $rosparam.get('/rospilot/camera/video_device', device => observer.next(device));
+            }));
         this.media = Rx.Observable.interval(1000)
             .flatMap(() => {
                 return http.get('/api/media/')
@@ -182,6 +188,22 @@ class OnboardComputer
     getMedia()
     {
         return this.media;
+    }
+
+    getVideoDevices()
+    {
+        return this.http.get('/api/video_devices/')
+            .map(response => response.json());
+    }
+
+    getActiveVideoDevice()
+    {
+        return this.active_video_device;
+    }
+
+    setActiveVideoDevice(device)
+    {
+        this.rosparam.set('/rospilot/camera/video_device', device);
     }
 }
 
