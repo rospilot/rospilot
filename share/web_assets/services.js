@@ -220,6 +220,10 @@ class OnboardComputer
             .flatMap(() => Rx.Observable.create((observer) => {
                 $rosparam.get('/rospilot/camera/video_device', device => observer.next(device));
             }));
+        this.computer_vision_enabled = Rx.Observable.interval(1000)
+            .flatMap(() => Rx.Observable.create((observer) => {
+                $rosparam.get('/rospilot/camera/detector_enabled', enabled => observer.next(enabled));
+            }));
         this.media = Rx.Observable.interval(1000)
             .flatMap(() => {
                 return http.get('/api/media/')
@@ -241,6 +245,16 @@ class OnboardComputer
     shutdown()
     {
         this.shutdownService();
+    }
+
+    isComputerVisionEnabled()
+    {
+        return this.computer_vision_enabled;
+    }
+
+    setComputerVision(enabled)
+    {
+        this.rosparam.set('/rospilot/camera/detector_enabled', enabled);
     }
 
     getVisionTargets()

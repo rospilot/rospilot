@@ -646,3 +646,30 @@ class CameraResolutionsComponent
         this.camera.setResolution(resolution);
     }
 }
+
+class ComputerVisionToggle
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'computervisiontoggle',
+            template: 'Computer vision: <input type="checkbox" [ngModel]="enabled | async" (ngModelChange)="setEnabled($event)">'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [OnboardComputer];
+    }
+
+    constructor(computer)
+    {
+        this.computer = computer;
+        this.enabled = computer.isComputerVisionEnabled();
+    }
+
+    setEnabled(enable)
+    {
+        this.computer.setComputerVision(enable);
+    }
+}
