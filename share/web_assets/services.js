@@ -352,3 +352,86 @@ class Camera
         this.rosparam.set('/rospilot/camera/resolution', resolution);
     }
 }
+
+class VideoStream
+{
+    static get parameters()
+    {
+        return [ng.http.Http];
+    }
+
+    constructor(http)
+    {
+        this.resolution = new Rx.Subject();
+        var videoWidth = 640;
+        var videoHeight = 480;
+        this.fps = new Rx.Subject();
+        var fpsStartTime = new Date().getTime();
+        var frameCount = 0;
+        var player = new Player({size: {width: videoWidth, height: videoHeight}});
+        this.canvas = player.canvas;
+        player.onPictureDecoded = (data, width, height) => {
+            if (width != videoWidth || height != videoHeight) {
+                this.resolution.next({width: width, height: height});
+                videoWidth = width;
+                videoHeight = height;
+            }
+            frameCount++;
+            var currentTime = new Date().getTime();
+            var deltaSeconds = (currentTime - fpsStartTime) / 1000.0
+            if (deltaSeconds > 1) {
+                this.fps.next(Math.floor(frameCount / deltaSeconds));
+                frameCount = 0;
+                fpsStartTime = currentTime;
+            }
+        };
+
+        var server_name = window.location.hostname;
+        // Generate a random client id for fetching the stream
+        var clientId = Math.floor(Math.random() * 1000 * 1000 * 1000);
+        var h264Url = 'http://' + server_name + ':8666/h264/' + clientId;
+
+        function nextFrame() {
+            let req = new XMLHttpRequest();
+            req.open('get', h264Url);
+            req.responseType = "arraybuffer";
+            req.onreadystatechange = function() {
+                if (req.readyState == 4) {
+                    if (req.status == 200) {
+                        player.decode(new Uint8Array(req.response));
+                        setTimeout(nextFrame, 1);
+                    }
+                    else {
+                        setTimeout(nextFrame, 1000);
+                    }
+                }
+            };
+            req.send();
+            // TODO: the below code should work, but data.arrayBuffer() isn't implemented in Angular 2 yet
+            //http.get(h264Url)
+            //    .subscribe(data => {
+            //        player.decode(new Uint8Array(data.arrayBuffer()));
+            //        setTimeout(nextFrame, 1);
+            //    },
+            //    () => {
+            //        setTimeout(nextFrame, 1000);
+            //    });
+        };
+        nextFrame();
+    }
+
+    getFPS()
+    {
+        return this.fps;
+    }
+
+    getResolution()
+    {
+        return this.resolution;
+    }
+
+    getCanvas()
+    {
+        return this.canvas;
+    }
+}
