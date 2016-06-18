@@ -1,0 +1,5 @@
+<div>
+  Recording resolution: <select [ngModel]='selected_resolution | async' (ngModelChange)="onSelected($event)">
+    <option *ngFor="let resolution of resolutions | async" [value]="resolution">{{resolution}}</option>
+  </select>
+</div>

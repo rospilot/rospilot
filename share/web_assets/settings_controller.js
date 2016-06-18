@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.controller('settings', function ($scope, $rosparam, Camera) {
+.controller('settings', function ($scope, $rosparam) {
     $scope.detector_enabled = false;
     $rosparam.get('/rospilot/camera/detector_enabled',
         function(value) {
@@ -24,26 +24,6 @@ angular.module('rospilot')
             $scope.$apply();
         }
     );
-    $scope.resolutions = [];
-    $scope.selected_resolution = '';
-    Camera.resolutions.subscribe(function(resolutions) {
-        var options = $.map(resolutions.resolutions, function(value) {
-            return value.width + 'x' + value.height;
-        });
-        $scope.resolutions = options;
-        $scope.$apply();
-    });
-    $rosparam.get('/rospilot/camera/resolution',
-        function(resolution) {
-            $scope.selected_resolution = resolution;
-            $scope.$apply();
-        }
-    );
-    $scope.$watch('selected_resolution', function(new_resolution) {
-        if (new_resolution) {
-            $rosparam.set('/rospilot/camera/resolution', new_resolution);
-        }
-    });
 
     $scope.$watch('detector_enabled', function(value) {
         $rosparam.set('/rospilot/camera/detector_enabled', value);

@@ -243,14 +243,23 @@ class Camera
 {
     static get parameters()
     {
-        return [new ng.core.Inject('$rostopic'), RosService];
+        return [new ng.core.Inject('$rostopic'), RosService, RosParam];
     }
 
-    constructor($rostopic, $rosservice)
+    constructor($rostopic, $rosservice, $rosparam)
     {
         this.start_recording = $rosservice.getService('/rospilot/camera/start_record', 'std_srvs/Empty');
         this.stop_recording = $rosservice.getService('/rospilot/camera/stop_record', 'std_srvs/Empty');
         this.take_picture = $rosservice.getService('/rospilot/camera/capture_image', 'std_srvs/Empty');
+        this.resolutions = $rostopic('/rospilot/camera/resolutions', 'rospilot/Resolutions')
+            .map(message => {
+                var strings = [];
+                for (let resolution of message.resolutions) {
+                    strings.push(resolution.width + 'x' + resolution.height);
+                }
+                return strings;
+            });
+        this.rosparam = $rosparam;
         this.recording = false;
     }
 
@@ -274,5 +283,22 @@ class Camera
     takePicture()
     {
         this.take_picture();
+    }
+
+    getAllResolutions()
+    {
+        return this.resolutions;
+    }
+
+    getResolution()
+    {
+        return Rx.Observable.create((observer) => {
+                this.rosparam.get('/rospilot/camera/resolution', resolution => observer.next(resolution));
+            });
+    }
+
+    setResolution(resolution)
+    {
+        this.rosparam.set('/rospilot/camera/resolution', resolution);
     }
 }

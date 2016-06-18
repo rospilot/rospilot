@@ -618,3 +618,31 @@ class VideoDevicesComponent
         this.computer.setActiveVideoDevice(device);
     }
 }
+
+class CameraResolutionsComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'cameraresolutions',
+            templateUrl: '/static/camera_resolutions_component.html'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Camera];
+    }
+
+    constructor(camera)
+    {
+        this.camera = camera;
+        this.resolutions = camera.getAllResolutions();
+        this.selected_resolution = camera.getResolution();
+    }
+
+    onSelected(resolution)
+    {
+        this.camera.setResolution(resolution);
+    }
+}

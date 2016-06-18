@@ -32,11 +32,6 @@ angular.module('rospilot')
         });
     };
 })
-.factory('Camera', function ($rostopic) {
-    return {
-        resolutions: $rostopic('/rospilot/camera/resolutions', 'rospilot/Resolutions')
-    };
-})
 .factory('VisionTargets', function ($rostopic) {
       return $rostopic('/rospilot/camera/vision_targets', 'rospilot/VisionTargets');
 });

@@ -1,11 +1,7 @@
 <div ng-controller='settings'>
   <h2>Camera</h2>
   <videodevices></videodevices>
-  <p>
-    Recording resolution: <select ng-model='selected_resolution' 
-      ng-options='resolution for resolution in resolutions'>
-    </select>
-  </p>
+  <cameraresolutions></cameraresolutions>
   <p>
     Computer vision: <input type="checkbox" ng-model='detector_enabled'>
   </p>
