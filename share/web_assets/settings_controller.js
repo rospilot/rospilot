@@ -33,21 +33,15 @@ angular.module('rospilot')
         $scope.resolutions = options;
         $scope.$apply();
     });
-    $rosparam.get('/rospilot/camera/image_width',
-        function(width) {
-            $rosparam.get('/rospilot/camera/image_height',
-                function(height) {
-                    $scope.selected_resolution = width + 'x' + height;
-                    $scope.$apply();
-                }
-            );
+    $rosparam.get('/rospilot/camera/resolution',
+        function(resolution) {
+            $scope.selected_resolution = resolution;
+            $scope.$apply();
         }
     );
     $scope.$watch('selected_resolution', function(new_resolution) {
         if (new_resolution) {
-            var parts = new_resolution.split('x');
-            $rosparam.set('/rospilot/camera/image_width', parseInt(parts[0]));
-            $rosparam.set('/rospilot/camera/image_height', parseInt(parts[1]));
+            $rosparam.set('/rospilot/camera/resolution', new_resolution);
         }
     });
 

@@ -20,6 +20,7 @@
 #include<stdio.h>
 #include<time.h>
 #include<fstream>
+#include<sstream>
 #include<chrono>
 #include<boost/filesystem.hpp>
 #include<wordexp.h>
@@ -245,8 +246,10 @@ private:
         node.param("camera_type", cameraType, std::string("usb"));
 
         node.param("video_device", videoDevice, std::string(""));
-        node.param("image_width", cameraWidth, 1920);
-        node.param("image_height", cameraHeight, 1080);
+        std::string resolution;
+        node.getParam("resolution", resolution);
+        cameraWidth = std::stoi(resolution.substr(0, resolution.find('x')));
+        cameraHeight = std::stoi(resolution.substr(resolution.find('x') + 1));
         node.param("framerate", framerate, 30);
         node.param("media_path", mediaPath, std::string("~/.rospilot/media"));
         wordexp_t p;
@@ -275,8 +278,9 @@ private:
             // something it supports
             cameraWidth = camera->getWidth();
             cameraHeight = camera->getHeight();
-            node.setParam("image_width", cameraWidth);
-            node.setParam("image_height", cameraHeight);
+            std::stringstream ss;
+            ss << cameraWidth << "x" << cameraHeight;
+            node.setParam("resolution", ss.str());
             ROS_INFO("Camera selected res %dx%d", cameraWidth, cameraHeight);
             return camera;
         }
@@ -409,10 +413,10 @@ public:
         {
             // Process any pending service callbacks
             ros::spinOnce();
-            int newWidth;
-            node.getParam("image_width", newWidth);
-            int newHeight;
-            node.getParam("image_height", newHeight);
+            std::string newResolution;
+            node.getParam("resolution", newResolution);
+            int newWidth = std::stoi(newResolution.substr(0, newResolution.find('x')));
+            int newHeight = std::stoi(newResolution.substr(newResolution.find('x') + 1));
             std::string newVideoDevice;
             node.getParam("video_device", newVideoDevice);
             bool newDetectorEnabled;

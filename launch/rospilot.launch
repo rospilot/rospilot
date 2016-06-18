@@ -32,8 +32,7 @@
       output="screen">
     <param name="camera_type" value="usb" />
     <param name="detector_enabled" value="false" />
-    <param name="image_width" value="640" />
-    <param name="image_height" value="480" />
+    <param name="resolution" value="640x480" />
 </node>
 </group>
 <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
