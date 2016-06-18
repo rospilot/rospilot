@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 angular.module('rospilot')
-.controller('camera', function($scope, $timeout, $http, $rosparam, VisionTargets) {
+.controller('camera', function($scope, $timeout, $http, OnboardComputer) {
   $scope.fps = 0;
 
   $scope.destroyed = false;
@@ -57,7 +57,7 @@ angular.module('rospilot')
   // create the root of the scene graph
   var stage = new PIXI.Container();
   var textObjs = new Map();
-  VisionTargets.subscribe(function(message) {
+  OnboardComputer.getVisionTargets().subscribe(function(message) {
       var targetIds = new Set();
       for (let target of message.targets) {
           targetIds.add(target.id);

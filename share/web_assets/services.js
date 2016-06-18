@@ -19,29 +19,29 @@ class Copter
 {
     static get parameters()
     {
-        return [new ng.core.Inject('$rostopic'), RosService];
+        return [RosTopic, RosService];
     }
 
     constructor($rostopic, $rosservice)
     {
-        this.rc_channels = $rostopic('/rospilot/rcstate', 'rospilot/RCState')
+        this.rc_channels = $rostopic.getTopic('/rospilot/rcstate', 'rospilot/RCState')
             .map(message => message.channel);
 
-        this.global_position = $rostopic('/rospilot/gpsraw', 'rospilot/GPSRaw');
+        this.global_position = $rostopic.getTopic('/rospilot/gpsraw', 'rospilot/GPSRaw');
 
-        this.waypoint = $rostopic('/rospilot/waypoints', 'rospilot/Waypoints')
+        this.waypoint = $rostopic.getTopic('/rospilot/waypoints', 'rospilot/Waypoints')
             .filter(message => message.waypoints.length > 0)
             .map(message => message.waypoints[0]);
         this.waypoint_service = $rosservice.getService('/rospilot/set_waypoints', 'rospilot/SetWaypoints');
 
-        this.status = $rostopic('/rospilot/basic_status', 'rospilot/BasicStatus');
+        this.status = $rostopic.getTopic('/rospilot/basic_status', 'rospilot/BasicStatus');
         this.status_service = $rosservice.getService('/rospilot/set_mode', 'rospilot/SetBasicMode');
 
-        var imu = $rostopic('/rospilot/imuraw', 'rospilot/IMURaw');
+        var imu = $rostopic.getTopic('/rospilot/imuraw', 'rospilot/IMURaw');
         this.accelerometer = imu.map(message => message.accel);
         this.gyroscope = imu.map(message => message.gyro);
         this.magnetometer = imu.map(message => message.mag);
-        this.attitude = $rostopic('/rospilot/attitude', 'rospilot/Attitude');
+        this.attitude = $rostopic.getTopic('/rospilot/attitude', 'rospilot/Attitude');
     }
 
     getRCChannels()
@@ -98,6 +98,36 @@ class Copter
     getAttitude()
     {
         return this.attitude;
+    }
+}
+
+class RosTopic
+{
+    static get parameters()
+    {
+        return [RosLib];
+    }
+
+    constructor(ros)
+    {
+        this.ros = ros.getRos();
+    }
+
+    getTopic(topic, type)
+    {
+        var topic = new ROSLIB.Topic({
+            ros: this.ros,
+            name: topic,
+            messageType: type
+        });
+
+        return Rx.Observable.create((observer) => {
+            topic.subscribe(message => {
+                observer.next(message);
+            });
+            // TODO: should return a dispose method, but ROSLIB
+            // can only remove all subscribers, not individual ones.
+        });
     }
 }
 
@@ -176,15 +206,16 @@ class OnboardComputer
 {
     static get parameters()
     {
-        return [Camera, ng.http.Http, RosService, RosParam];
+        return [Camera, ng.http.Http, RosService, RosParam, RosTopic];
     }
 
-    constructor(camera, http, $rosservice, $rosparam)
+    constructor(camera, http, $rosservice, $rosparam, $rostopic)
     {
         this.shutdownService = $rosservice.getService('/rospilot/shutdown', 'std_srvs/Empty');
         this.camera = camera;
         this.http = http;
         this.rosparam = $rosparam;
+        this.vision_targets = $rostopic.getTopic('/rospilot/camera/vision_targets', 'rospilot/VisionTargets');
         this.active_video_device = Rx.Observable.interval(1000)
             .flatMap(() => Rx.Observable.create((observer) => {
                 $rosparam.get('/rospilot/camera/video_device', device => observer.next(device));
@@ -210,6 +241,11 @@ class OnboardComputer
     shutdown()
     {
         this.shutdownService();
+    }
+
+    getVisionTargets()
+    {
+        return this.vision_targets;
     }
 
     getCamera()
@@ -243,7 +279,7 @@ class Camera
 {
     static get parameters()
     {
-        return [new ng.core.Inject('$rostopic'), RosService, RosParam];
+        return [RosTopic, RosService, RosParam];
     }
 
     constructor($rostopic, $rosservice, $rosparam)
@@ -251,7 +287,7 @@ class Camera
         this.start_recording = $rosservice.getService('/rospilot/camera/start_record', 'std_srvs/Empty');
         this.stop_recording = $rosservice.getService('/rospilot/camera/stop_record', 'std_srvs/Empty');
         this.take_picture = $rosservice.getService('/rospilot/camera/capture_image', 'std_srvs/Empty');
-        this.resolutions = $rostopic('/rospilot/camera/resolutions', 'rospilot/Resolutions')
+        this.resolutions = $rostopic.getTopic('/rospilot/camera/resolutions', 'rospilot/Resolutions')
             .map(message => {
                 var strings = [];
                 for (let resolution of message.resolutions) {
