@@ -154,7 +154,7 @@ class RollGuageComponent
             roll_gauge = attitude_svg.getSVGDocument().getElementById("layer5");
             roll_gauge_translate = roll_gauge.getAttribute("transform");
         });
-        Copter.getAttitude()
+        this.subscription = Copter.getAttitude()
             .subscribe(attitude => {
                 if (roll_gauge != null) {
                     var x = roll_needle.getBBox().width / 2.0;
@@ -168,6 +168,11 @@ class RollGuageComponent
                         roll_gauge_translate + " translate(0 " + pitch + ")");
                 }
             });
+    }
+
+    ngOnDestroy()
+    {
+        this.subscription.unsubscribe();
     }
 }
 
@@ -195,7 +200,7 @@ class CompassComponent
             needle = compass.getSVGDocument().getElementById("needle");
             needle_translate = needle.getAttribute("transform");
         });
-        Copter.getAttitude()
+        this.subscription = Copter.getAttitude()
             .subscribe(attitude => {
                 if (needle != null) {
                     var x = needle.getBBox().width / 2.0;
@@ -206,6 +211,11 @@ class CompassComponent
                         + needle_translate);
                 }
             });
+    }
+
+    ngOnDestroy()
+    {
+        this.subscription.unsubscribe();
     }
 }
 
@@ -372,15 +382,21 @@ class MapComponent
             icon: waypointIcon
         }).addTo(map);
 
-        this.copter.getWaypoint().subscribe((waypoint) => {
+        this.waypoint_subscription = this.copter.getWaypoint().subscribe((waypoint) => {
             var lat = waypoint.latitude;
             var lng = waypoint.longitude;
             this.waypoint_marker.setLatLng([lat, lng]);
         });
 
-        this.copter.getGlobalPosition().subscribe((position) => {
+        this.gps_subscription = this.copter.getGlobalPosition().subscribe((position) => {
             this.marker.setLatLng([position.latitude, position.longitude]);
         });
+    }
+
+    ngOnDestroy()
+    {
+        this.waypoint_subscription.unsubscribe();
+        this.gps_subscription.unsubscribe();
     }
 }
 
@@ -480,7 +496,7 @@ class AccelerometerGraphComponent
         });
 
         var last_redraw = new Date().getTime();
-        Copter.getAccelerometer().subscribe(accel => {
+        this.subscription = Copter.getAccelerometer().subscribe(accel => {
             if ($('#accel_z_chart').length > 0) {
                 var series = $('#accel_z_chart').highcharts().series[0];
                 var x = (new Date()).getTime();
@@ -494,6 +510,11 @@ class AccelerometerGraphComponent
                 series.addPoint([x, accel.z], redraw, shift);
             }
         });
+    }
+
+    ngOnDestroy()
+    {
+        this.subscription.unsubscribe();
     }
 }
 
@@ -725,7 +746,7 @@ class VideoDisplay
     ngOnInit()
     {
         var renderer = PIXI.autoDetectRenderer(640, 480, {transparent: true});
-        this.stream.getResolution().subscribe(resolution => {
+        this.resolution_subscription = this.stream.getResolution().subscribe(resolution => {
             renderer.resize(resolution.width, resolution.height);
             document.getElementById('video').style.width = resolution.width + "px";
             document.getElementById('video').style.height = resolution.height + "px";
@@ -737,7 +758,7 @@ class VideoDisplay
         // create the root of the scene graph
         var stage = new PIXI.Container();
         var textObjs = new Map();
-        this.computer.getVisionTargets().subscribe(function(message) {
+        this.vision_subscription = this.computer.getVisionTargets().subscribe(function(message) {
             var targetIds = new Set();
             for (let target of message.targets) {
                 targetIds.add(target.id);
@@ -767,6 +788,8 @@ class VideoDisplay
 
     ngOnDestroy()
     {
+        this.resolution_subscription.unsubscribe();
+        this.vision_subscription.unsubscribe();
         this.canvas_subscription.unsubscribe();
     }
 }
