@@ -257,9 +257,10 @@ class VideoStream
         this.fps = new Rx.Subject();
         var fpsStartTime = new Date().getTime();
         var frameCount = 0;
-        var player = new Player({size: {width: videoWidth, height: videoHeight}});
-        this.canvas = player.canvas;
-        player.onPictureDecoded = (data, width, height) => {
+        this.player = new Player({size: {width: videoWidth, height: videoHeight}});
+        this.canvas_subscribers = 0;
+
+        this.player.onPictureDecoded = (data, width, height) => {
             if (width != videoWidth || height != videoHeight) {
                 this.resolution.next({width: width, height: height});
                 videoWidth = width;
@@ -278,35 +279,39 @@ class VideoStream
         var server_name = window.location.hostname;
         // Generate a random client id for fetching the stream
         var clientId = Math.floor(Math.random() * 1000 * 1000 * 1000);
-        var h264Url = 'http://' + server_name + ':8666/h264/' + clientId;
+        this.url = 'http://' + server_name + ':8666/h264/' + clientId;
+    }
 
-        function nextFrame() {
-            let req = new XMLHttpRequest();
-            req.open('get', h264Url);
-            req.responseType = "arraybuffer";
-            req.onreadystatechange = function() {
-                if (req.readyState == 4) {
-                    if (req.status == 200) {
-                        player.decode(new Uint8Array(req.response));
-                        setTimeout(nextFrame, 1);
-                    }
-                    else {
-                        setTimeout(nextFrame, 1000);
+    nextFrame()
+    {
+        let req = new XMLHttpRequest();
+        req.open('get', this.url);
+        req.responseType = "arraybuffer";
+        req.onreadystatechange = () => {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    this.player.decode(new Uint8Array(req.response));
+                    if (this.canvas_subscribers > 0) {
+                        this.timeout_id = setTimeout(() => this.nextFrame(), 1);
                     }
                 }
-            };
-            req.send();
-            // TODO: the below code should work, but data.arrayBuffer() isn't implemented in Angular 2 yet
-            //http.get(h264Url)
-            //    .subscribe(data => {
-            //        player.decode(new Uint8Array(data.arrayBuffer()));
-            //        setTimeout(nextFrame, 1);
-            //    },
-            //    () => {
-            //        setTimeout(nextFrame, 1000);
-            //    });
+                else {
+                    if (this.canvas_subscribers > 0) {
+                        this.timeout_id = setTimeout(() => this.nextFrame(), 1000);
+                    }
+                }
+            }
         };
-        nextFrame();
+        req.send();
+        // TODO: the below code should work, but data.arrayBuffer() isn't implemented in Angular 2 yet
+        //http.get(h264Url)
+        //    .subscribe(data => {
+        //        player.decode(new Uint8Array(data.arrayBuffer()));
+        //        setTimeout(nextFrame, 1);
+        //    },
+        //    () => {
+        //        setTimeout(nextFrame, 1000);
+        //    });
     }
 
     getFPS()
@@ -321,6 +326,19 @@ class VideoStream
 
     getCanvas()
     {
-        return this.canvas;
+        return Rx.Observable.create(observer => {
+            this.canvas_subscribers++;
+            if (this.canvas_subscribers == 1) {
+                // Start fetching frames for the first subscriber
+                this.nextFrame();
+            }
+            observer.next(this.player.canvas);
+            return () => {
+                this.canvas_subscribers--;
+                if (this.canvas_subscribers == 0) {
+                    clearTimeout(this.timeout_id);
+                }
+            };
+        });
     }
 }

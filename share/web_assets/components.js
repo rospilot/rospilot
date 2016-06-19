@@ -759,8 +759,14 @@ class VideoDisplay
             renderer.render(stage);
         });
 
-        var canvas = this.stream.getCanvas();
-        document.getElementById('video').appendChild(canvas);
-        canvas.style.zIndex = "1";
+        this.canvas_subscription = this.stream.getCanvas().subscribe(canvas =>{
+            document.getElementById('video').appendChild(canvas);
+            canvas.style.zIndex = "1";
+        });
+    }
+
+    ngOnDestroy()
+    {
+        this.canvas_subscription.unsubscribe();
     }
 }
