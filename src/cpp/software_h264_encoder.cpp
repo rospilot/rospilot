@@ -112,6 +112,9 @@ SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
     context = avcodec_alloc_context3(encoder);
     avcodec_get_context_defaults3(context, encoder);
     sourceFrame = allocFrame();
+    sourceFrame->width = this->width;
+    sourceFrame->height = this->height;
+    sourceFrame->format = this->pixelFormat;
 
     context->codec_id = encoder->id;
     context->width = settings.width;
