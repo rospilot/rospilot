@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-angular.module('rospilot', ['ngRoute', 'ngResource'])
+angular.module('rospilot', ['ngRoute'])
 .config(function($routeProvider) {
     $routeProvider
     .when("/graphs", {templateUrl:'static/graphs.html'})
