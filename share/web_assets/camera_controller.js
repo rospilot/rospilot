@@ -17,8 +17,6 @@
  */
 angular.module('rospilot')
 .controller('camera', function($scope, VideoStream, OnboardComputer) {
-  $scope.fps = 0;
-  VideoStream.getFPS().subscribe(fps => $scope.fps = fps);
   var renderer = PIXI.autoDetectRenderer(640, 480, {transparent: true});
   VideoStream.getResolution().subscribe(resolution => {
       renderer.resize(resolution.width, resolution.height);

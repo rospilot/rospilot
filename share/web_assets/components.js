@@ -673,3 +673,24 @@ class ComputerVisionToggle
         this.computer.setComputerVision(enable);
     }
 }
+
+class FPSDisplay
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'fpsdisplay',
+            template: 'FPS: {{fps | async}}'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [VideoStream];
+    }
+
+    constructor(stream)
+    {
+        this.fps = stream.getFPS();
+    }
+}
