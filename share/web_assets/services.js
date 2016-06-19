@@ -108,21 +108,13 @@ class OnboardComputer
         return [Camera, ng.http.Http, RosService, RosParam, RosTopic];
     }
 
-    constructor(camera, http, $rosservice, $rosparam, $rostopic)
+    constructor(camera, http, $rosservice, rosparam, $rostopic)
     {
         this.shutdownService = $rosservice.getService('/rospilot/shutdown', 'std_srvs/Empty');
         this.camera = camera;
         this.http = http;
-        this.rosparam = $rosparam;
+        this.rosparam = rosparam;
         this.vision_targets = $rostopic.getTopic('/rospilot/camera/vision_targets', 'rospilot/VisionTargets');
-        this.active_video_device = Rx.Observable.interval(1000)
-            .flatMap(() => Rx.Observable.create((observer) => {
-                $rosparam.get('/rospilot/camera/video_device', device => observer.next(device));
-            }));
-        this.computer_vision_enabled = Rx.Observable.interval(1000)
-            .flatMap(() => Rx.Observable.create((observer) => {
-                $rosparam.get('/rospilot/camera/detector_enabled', enabled => observer.next(enabled));
-            }));
         this.media = Rx.Observable.interval(1000)
             .flatMap(() => {
                 return http.get('/api/media/')
@@ -148,7 +140,7 @@ class OnboardComputer
 
     isComputerVisionEnabled()
     {
-        return this.computer_vision_enabled;
+        return this.rosparam.get('/rospilot/camera/detector_enabled');
     }
 
     setComputerVision(enabled)
@@ -179,7 +171,7 @@ class OnboardComputer
 
     getActiveVideoDevice()
     {
-        return this.active_video_device;
+        return this.rosparam.get('/rospilot/camera/video_device');
     }
 
     setActiveVideoDevice(device)
@@ -195,7 +187,7 @@ class Camera
         return [RosTopic, RosService, RosParam];
     }
 
-    constructor($rostopic, $rosservice, $rosparam)
+    constructor($rostopic, $rosservice, rosparam)
     {
         this.start_recording = $rosservice.getService('/rospilot/camera/start_record', 'std_srvs/Empty');
         this.stop_recording = $rosservice.getService('/rospilot/camera/stop_record', 'std_srvs/Empty');
@@ -208,7 +200,7 @@ class Camera
                 }
                 return strings;
             });
-        this.rosparam = $rosparam;
+        this.rosparam = rosparam;
         this.recording = false;
     }
 
@@ -241,9 +233,7 @@ class Camera
 
     getResolution()
     {
-        return Rx.Observable.create((observer) => {
-                this.rosparam.get('/rospilot/camera/resolution', resolution => observer.next(resolution));
-            });
+        return this.rosparam.get('/rospilot/camera/resolution');
     }
 
     setResolution(resolution)

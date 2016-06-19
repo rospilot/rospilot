@@ -57,10 +57,12 @@ class RosParam
         this.ros = ros.getRos();
     }
 
-    get(key, callback)
+    get(key)
     {
         var param = new ROSLIB.Param({ros: this.ros, name: key});
-        param.get(callback);
+        return Rx.Observable.create(observer => {
+            param.get(value => observer.next(value));
+        });
     }
 
     set(key, value)
