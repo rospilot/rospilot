@@ -65,13 +65,13 @@ class AccelerometerComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.x = Copter.getAccelerometer()
+        this.x = copter.getAccelerometer()
             .map(accel => accel.x);
-        this.y = Copter.getAccelerometer()
+        this.y = copter.getAccelerometer()
             .map(accel => accel.y);
-        this.z = Copter.getAccelerometer()
+        this.z = copter.getAccelerometer()
             .map(accel => accel.z);
     }
 }
@@ -91,13 +91,13 @@ class GyroscopeComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.x = Copter.getGyroscope()
+        this.x = copter.getGyroscope()
             .map(gyro => gyro.x);
-        this.y = Copter.getGyroscope()
+        this.y = copter.getGyroscope()
             .map(gyro => gyro.y);
-        this.z = Copter.getGyroscope()
+        this.z = copter.getGyroscope()
             .map(gyro => gyro.z);
     }
 }
@@ -117,13 +117,13 @@ class MagnetometerComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.x = Copter.getMagnetometer()
+        this.x = copter.getMagnetometer()
             .map(mag => mag.x);
-        this.y = Copter.getMagnetometer()
+        this.y = copter.getMagnetometer()
             .map(mag => mag.y);
-        this.z = Copter.getMagnetometer()
+        this.z = copter.getMagnetometer()
             .map(mag => mag.z);
     }
 }
@@ -143,7 +143,7 @@ class RollGuageComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
         var attitude_svg = document.getElementById("attitude_svg");
         var roll_gauge = null;
@@ -154,7 +154,7 @@ class RollGuageComponent
             roll_gauge = attitude_svg.getSVGDocument().getElementById("layer5");
             roll_gauge_translate = roll_gauge.getAttribute("transform");
         });
-        this.subscription = Copter.getAttitude()
+        this.subscription = copter.getAttitude()
             .subscribe(attitude => {
                 if (roll_gauge != null) {
                     var x = roll_needle.getBBox().width / 2.0;
@@ -191,7 +191,7 @@ class CompassComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
         var compass = document.getElementById("compass");
         var needle = null;
@@ -200,7 +200,7 @@ class CompassComponent
             needle = compass.getSVGDocument().getElementById("needle");
             needle_translate = needle.getAttribute("transform");
         });
-        this.subscription = Copter.getAttitude()
+        this.subscription = copter.getAttitude()
             .subscribe(attitude => {
                 if (needle != null) {
                     var x = needle.getBBox().width / 2.0;
@@ -234,13 +234,13 @@ class AttitudeComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.roll = Copter.getAttitude()
+        this.roll = copter.getAttitude()
             .map(attitude => attitude.roll);
-        this.pitch = Copter.getAttitude()
+        this.pitch = copter.getAttitude()
             .map(attitude => attitude.pitch);
-        this.yaw = Copter.getAttitude()
+        this.yaw = copter.getAttitude()
             .map(attitude => attitude.yaw);
     }
 }
@@ -260,9 +260,9 @@ class RCStateComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.channels = Copter.getRCChannels();
+        this.channels = copter.getRCChannels();
     }
 }
 
@@ -281,13 +281,13 @@ class WaypointComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.latitude = Copter.getWaypoint()
+        this.latitude = copter.getWaypoint()
             .map(waypoint => waypoint.latitude);
-        this.longitude = Copter.getWaypoint()
+        this.longitude = copter.getWaypoint()
             .map(waypoint => waypoint.longitude);
-        this.altitude = Copter.getWaypoint()
+        this.altitude = copter.getWaypoint()
             .map(waypoint => waypoint.altitude);
     }
 }
@@ -307,11 +307,11 @@ class GlobalPositionComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.latitude = Copter.getGlobalPosition()
+        this.latitude = copter.getGlobalPosition()
             .map(position => position.latitude);
-        this.longitude = Copter.getGlobalPosition()
+        this.longitude = copter.getGlobalPosition()
             .map(position => position.longitude);
     }
 }
@@ -415,9 +415,9 @@ class ComeHereComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
-        this.copter = Copter;
+        this.copter = copter;
     }
 
     clicked()
@@ -443,7 +443,7 @@ class AccelerometerGraphComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
     {
         Highcharts.setOptions({
             global: {
@@ -496,7 +496,7 @@ class AccelerometerGraphComponent
         });
 
         var last_redraw = new Date().getTime();
-        this.subscription = Copter.getAccelerometer().subscribe(accel => {
+        this.subscription = copter.getAccelerometer().subscribe(accel => {
             if ($('#accel_z_chart').length > 0) {
                 var series = $('#accel_z_chart').highcharts().series[0];
                 var x = (new Date()).getTime();
