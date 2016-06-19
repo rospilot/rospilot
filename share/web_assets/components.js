@@ -699,3 +699,68 @@ class FPSDisplay
         this.fps = stream.getFPS();
     }
 }
+
+class VideoDisplay
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'videodisplay',
+            template: '<div id="video" style="cursor: pointer;" (click)="camera.takePicture()"></div>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [VideoStream, Camera, OnboardComputer];
+    }
+
+    constructor(stream, camera, computer)
+    {
+        this.camera = camera;
+        this.stream = stream;
+        this.computer = computer;
+    }
+
+    ngOnInit()
+    {
+        var renderer = PIXI.autoDetectRenderer(640, 480, {transparent: true});
+        this.stream.getResolution().subscribe(resolution => {
+            renderer.resize(resolution.width, resolution.height);
+            document.getElementById('video').style.width = resolution.width + "px";
+            document.getElementById('video').style.height = resolution.height + "px";
+        });
+
+        document.getElementById('video').appendChild(renderer.view);
+        renderer.view.style.zIndex = "2";
+
+        // create the root of the scene graph
+        var stage = new PIXI.Container();
+        var textObjs = new Map();
+        this.computer.getVisionTargets().subscribe(function(message) {
+            var targetIds = new Set();
+            for (let target of message.targets) {
+                targetIds.add(target.id);
+                if (!textObjs.has(target.id)) {
+                    textObjs.set(target.id, new PIXI.Text(target.description, {fill: 'red'}));
+                    stage.addChild(textObjs.get(target.id));
+                }
+                var textObj = textObjs.get(target.id);
+                textObj.visible = true;
+                textObj.x = renderer.width * (target.x + 1) / 2.0;
+                textObj.y = renderer.height * (1 - target.y) / 2.0;
+            }
+            for (let [key, value] of textObjs) {
+                if (!targetIds.has(key)) {
+                    // Hide element rather than removing it. Because adding/removing is more expensive
+                    value.visible = false;
+                }
+            }
+            renderer.render(stage);
+        });
+
+        var canvas = this.stream.getCanvas();
+        document.getElementById('video').appendChild(canvas);
+        canvas.style.zIndex = "1";
+    }
+}

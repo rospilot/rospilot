@@ -26,8 +26,7 @@ upgradeAdapter.addProvider(VideoStream);
 upgradeAdapter.addProvider(Camera);
 upgradeAdapter.addProvider(ng.http.HTTP_PROVIDERS);
 angular.module('rospilot')
-  .service('OnboardComputer', upgradeAdapter.downgradeNg2Provider(OnboardComputer))
-  .service('VideoStream', upgradeAdapter.downgradeNg2Provider(VideoStream))
+  .directive('videodisplay', upgradeAdapter.downgradeNg2Component(VideoDisplay))
   .directive('fpsdisplay', upgradeAdapter.downgradeNg2Component(FPSDisplay))
   .directive('computervisiontoggle', upgradeAdapter.downgradeNg2Component(ComputerVisionToggle))
   .directive('videodevices', upgradeAdapter.downgradeNg2Component(VideoDevicesComponent))
