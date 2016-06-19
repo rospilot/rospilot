@@ -312,7 +312,7 @@ class MapComponent
     {
         return [new ng.core.Component({
             selector: 'rospilotmap',
-            template: ''
+            template: '<div id="map" style="height:400px;width:500px;"></div>'
         })];
     }
 
@@ -321,7 +321,12 @@ class MapComponent
         return [Copter];
     }
 
-    constructor(Copter)
+    constructor(copter)
+    {
+        this.copter = copter;
+    }
+
+    ngOnInit()
     {
         var map = L.map('map', {
             crs: L.CRS.EPSG3857,
@@ -333,7 +338,7 @@ class MapComponent
                 {
                     text: 'Set Waypoint',
                     callback: function(e) {
-                        Copter.setWaypoint(e.latlng.lat, e.latlng.lng);
+                        this.copter.setWaypoint(e.latlng.lat, e.latlng.lng);
                     },
                 }
             ],
@@ -367,13 +372,13 @@ class MapComponent
             icon: waypointIcon
         }).addTo(map);
 
-        Copter.getWaypoint().subscribe((waypoint) => {
+        this.copter.getWaypoint().subscribe((waypoint) => {
             var lat = waypoint.latitude;
             var lng = waypoint.longitude;
             this.waypoint_marker.setLatLng([lat, lng]);
         });
 
-        Copter.getGlobalPosition().subscribe((position) => {
+        this.copter.getGlobalPosition().subscribe((position) => {
             this.marker.setLatLng([position.latitude, position.longitude]);
         });
     }
