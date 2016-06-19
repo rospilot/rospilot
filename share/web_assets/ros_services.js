@@ -35,12 +35,24 @@ class RosTopic
             messageType: type
         });
 
-        return Rx.Observable.create((observer) => {
-            topic.subscribe(message => {
-                observer.next(message);
-            });
-            // TODO: should return a dispose method, but ROSLIB
-            // can only remove all subscribers, not individual ones.
+        var subscribers = [];
+        return Rx.Observable.create(observer => {
+            subscribers.push(observer);
+            if (subscribers.length == 1) {
+                topic.subscribe(message => {
+                    for (let subscriber of subscribers) {
+                        subscriber.next(message);
+                    }
+                });
+            }
+            return () => {
+                var index = subscribers.findIndex(value => value == observer);
+                subscribers[index] = subscribers[subscribers.length];
+                subscribers.pop();
+                if (subscribers.length == 0) {
+                    topic.unsubscribe();
+                }
+            };
         });
     }
 }
