@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <base href=".">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="shortcut icon" href="/favicon.png">
-    <script src="/static/node_modules/angular/angular.min.js"></script>
-    <script src="/static/node_modules/angular-route/angular-route.min.js"></script>
 
     <script src="/static/node_modules/zone.js/dist/zone.js"></script>
     <script src="/static/node_modules/reflect-metadata/Reflect.js"></script>
@@ -19,7 +18,14 @@
     <script src="/static/node_modules/@angular/platform-browser/bundles/platform-browser.umd.js"></script>
     <script src="/static/node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js"></script>
     <script src="/static/node_modules/@angular/http/bundles/http.umd.js"></script>
-    <script src="/static/node_modules/@angular/upgrade/bundles/upgrade.umd.js"></script>
+    <script>
+      // XXX: Patch Rx into the global scope for Angular router to use
+      // This seems to be necessary for it to work without SystemJS
+      window.rxjs_observable_of = Rx.Observable;
+      window.rxjs_observable_fromPromise = Rx.Observable;
+      window.rxjs_observable_forkJoin = Rx.Observable;
+    </script>
+    <script src="/static/node_modules/@angular/router/bundles/router.umd.js"></script>
 
     <script src="/static/third-party/jquery-2.0.3.min.js"></script>
     <script src="/static/third-party/leaflet/leaflet.js"></script>
@@ -34,11 +40,9 @@
     <script src="/static/third-party/roslib.js"></script>
     <script src="/static/third-party/pixi/pixi.min.js"></script>
 
-    <script src="/static/index.js"></script>
     <script src="/static/ros_services.js"></script>
     <script src="/static/services.js"></script>
     <script src="/static/components.js"></script>
-    <script src="/static/directives.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/third-party/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.css">
     <link rel="stylesheet" href="/static/third-party/leaflet/leaflet.css" />
@@ -48,31 +52,8 @@
     <title>Rospilot</title>
   </head>
 
-  <body ng-controller='rospilot'>
+  <body>
+    <rospilotapp></rospilotapp>
     <script src="/static/bootstrap.js"></script>
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Rospilot</a>
-        </div>
-        <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li active-class="active"><a href="#/flight_control">Flight Control</a></li>
-            <li active-class="active"><a href="#/graphs">Graphs</a></li>
-            <li active-class="active"><a href="#/camera">Camera</a></li>
-            <li active-class="active"><a href="#/settings">Settings</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
-      </div>
-    </div><!-- end navbar -->
-    <div class="container">
-      <div ng-view></div>
-    </div>
   </body>
 </html>

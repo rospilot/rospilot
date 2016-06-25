@@ -105,13 +105,12 @@ class OnboardComputer
 {
     static get parameters()
     {
-        return [Camera, ng.http.Http, RosService, RosParam, RosTopic];
+        return [ng.http.Http, RosService, RosParam, RosTopic];
     }
 
-    constructor(camera, http, rosservice, rosparam, rostopic)
+    constructor(http, rosservice, rosparam, rostopic)
     {
         this.shutdownService = rosservice.getService('/rospilot/shutdown', 'std_srvs/Empty');
-        this.camera = camera;
         this.http = http;
         this.rosparam = rosparam;
         this.vision_targets = rostopic.getTopic('/rospilot/camera/vision_targets', 'rospilot/VisionTargets');
@@ -151,11 +150,6 @@ class OnboardComputer
     getVisionTargets()
     {
         return this.vision_targets;
-    }
-
-    getCamera()
-    {
-        return this.camera;
     }
 
     getMedia()

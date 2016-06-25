@@ -145,6 +145,11 @@ class RollGuageComponent
 
     constructor(copter)
     {
+        this.copter = copter;
+    }
+
+    ngOnInit()
+    {
         var attitude_svg = document.getElementById("attitude_svg");
         var roll_gauge = null;
         var roll_gauge_translate = null;
@@ -154,7 +159,7 @@ class RollGuageComponent
             roll_gauge = attitude_svg.getSVGDocument().getElementById("layer5");
             roll_gauge_translate = roll_gauge.getAttribute("transform");
         });
-        this.subscription = copter.getAttitude()
+        this.subscription = this.copter.getAttitude()
             .subscribe(attitude => {
                 if (roll_gauge != null) {
                     var x = roll_needle.getBBox().width / 2.0;
@@ -193,6 +198,11 @@ class CompassComponent
 
     constructor(copter)
     {
+        this.copter = copter;
+    }
+
+    ngOnInit()
+    {
         var compass = document.getElementById("compass");
         var needle = null;
         var needle_translate = null;
@@ -200,7 +210,7 @@ class CompassComponent
             needle = compass.getSVGDocument().getElementById("needle");
             needle_translate = needle.getAttribute("transform");
         });
-        this.subscription = copter.getAttitude()
+        this.subscription = this.copter.getAttitude()
             .subscribe(attitude => {
                 if (needle != null) {
                     var x = needle.getBBox().width / 2.0;
@@ -445,6 +455,11 @@ class AccelerometerGraphComponent
 
     constructor(copter)
     {
+        this.copter = copter;
+    }
+
+    ngOnInit()
+    {
         Highcharts.setOptions({
             global: {
                 useUTC: false
@@ -496,7 +511,7 @@ class AccelerometerGraphComponent
         });
 
         var last_redraw = new Date().getTime();
-        this.subscription = copter.getAccelerometer().subscribe(accel => {
+        this.subscription = this.copter.getAccelerometer().subscribe(accel => {
             if ($('#accel_z_chart').length > 0) {
                 var series = $('#accel_z_chart').highcharts().series[0];
                 var x = (new Date()).getTime();
@@ -791,5 +806,88 @@ class VideoDisplay
         this.resolution_subscription.unsubscribe();
         this.vision_subscription.unsubscribe();
         this.canvas_subscription.unsubscribe();
+    }
+}
+
+class RospilotApp
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotapp',
+            templateUrl: '/static/app.html',
+            directives: [ng.router.ROUTER_DIRECTIVES]
+        })];
+    }
+
+    static get parameters()
+    {
+        return [];
+    }
+}
+
+class FlightControlPage
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            templateUrl: '/static/flight_control.html',
+            directives: [StatusComponent, ComeHereComponent, RollGuageComponent, CompassComponent,
+                MapComponent, WaypointComponent, AttitudeComponent, GlobalPositionComponent, RCStateComponent,
+                GyroscopeComponent, AccelerometerComponent, MagnetometerComponent]
+        })];
+    }
+
+    static get parameters()
+    {
+        return [];
+    }
+}
+
+class GraphsPage
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            templateUrl: '/static/graphs.html',
+            directives: [AccelerometerGraphComponent]
+        })];
+    }
+
+    static get parameters()
+    {
+        return [];
+    }
+}
+
+class CameraPage
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            templateUrl: '/static/camera.html',
+            directives: [VideoDisplay, RecordingButton, TakePictureButton, FPSDisplay, MediaListComponent]
+        })];
+    }
+
+    static get parameters()
+    {
+        return [];
+    }
+}
+
+class SettingsPage
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            templateUrl: '/static/settings.html',
+            directives: [VideoDevicesComponent, CameraResolutionsComponent, ComputerVisionToggle, ShutdownComponent]
+        })];
+    }
+
+    static get parameters()
+    {
+        return [];
     }
 }
