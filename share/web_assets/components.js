@@ -134,7 +134,7 @@ class RollGuageComponent
     {
         return [new ng.core.Component({
             selector: 'rospilotrollguage',
-            template: ''
+            template: '<object id="attitude_svg" data="/static/attitude.svg" type="image/svg+xml"></object>'
         })];
     }
 
@@ -187,7 +187,7 @@ class CompassComponent
     {
         return [new ng.core.Component({
             selector: 'rospilotcompass',
-            template: ''
+            template: '<object id="compass" data="/static/compass.svg" type="image/svg+xml"></object>'
         })];
     }
 
@@ -452,7 +452,7 @@ class AccelerometerGraphComponent
     {
         return [new ng.core.Component({
             selector: 'accelerometergraph',
-            template: ''
+            template: '<div id="accel_z_chart" style="min-width: 400px; height: 400px; margin: 0 auto;"></div>'
         })];
     }
 
