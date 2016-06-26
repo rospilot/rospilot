@@ -235,7 +235,11 @@ class AttitudeComponent
     {
         return [new ng.core.Component({
             selector: 'rospilotattitude',
-            template: "<div>Roll: {{roll | async | number:'1.4-4'}}, Pitch: {{pitch | async | number:'1.4-4'}}, Yaw: {{yaw | async | number:'1.4-4'}}</div>"
+            template: `<div>
+                Roll: {{roll | async | number:'1.4-4'}}, 
+                Pitch: {{pitch | async | number:'1.4-4'}}, 
+                Yaw: {{yaw | async | number:'1.4-4'}}
+            </div>`
         })];
     }
 
@@ -282,7 +286,11 @@ class WaypointComponent
     {
         return [new ng.core.Component({
             selector: 'rospilotwaypoint',
-            template: "<div>Lat: {{latitude | async | number:'1.1-5'}}, Lng: {{longitude | async | number:'1.1-5'}}, Alt: {{altitude | async | number:'1.1-1'}}m</div>"
+            template: `<div>
+                Lat: {{latitude | async | number:'1.1-5'}}, 
+                Lng: {{longitude | async | number:'1.1-5'}}, 
+                Alt: {{altitude | async | number:'1.1-1'}}m
+                </div>`
         })];
     }
 
@@ -612,7 +620,8 @@ class ShutdownComponent
     {
         return [new ng.core.Component({
             selector: 'shutdownbutton',
-            template: '<button type="button" class="btn btn-danger" (click)="clicked()">Shutdown On-board Computer</button>'
+            template: `<button type="button" class="btn btn-danger" 
+                (click)="clicked()">Shutdown On-board Computer</button>`
         })];
     }
 
@@ -694,7 +703,8 @@ class ComputerVisionToggle
     {
         return [new ng.core.Component({
             selector: 'computervisiontoggle',
-            template: 'Computer vision: <input type="checkbox" [ngModel]="enabled | async" (ngModelChange)="setEnabled($event)">'
+            template: `Computer vision: <input type="checkbox" [ngModel]="enabled | async" 
+                (ngModelChange)="setEnabled($event)">`
         })];
     }
 
