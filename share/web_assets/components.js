@@ -365,7 +365,7 @@ class MapComponent
             contextmenuItems: [
                 {
                     text: 'Set Waypoint',
-                    callback: function(e) {
+                    callback: e => {
                         this.copter.setWaypoint(e.latlng.lat, e.latlng.lng);
                     },
                 }
