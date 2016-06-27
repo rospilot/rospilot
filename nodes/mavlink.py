@@ -40,8 +40,7 @@ class MavlinkNode:
         if device == "auto":
             candidates = glob("/dev/ardupilot_*")
             if len(candidates) != 1:
-                rospy.logfatal("Cannot find Ardupilot device")
-                raise Exception("Cannot find Ardupilot device")
+                raise SerialException("Cannot find Ardupilot device")
             device = candidates[0]
             baudrate = int(device.split("_")[1])
         self.conn = mavutil.mavlink_connection(device, baud=baudrate)
