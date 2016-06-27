@@ -141,7 +141,15 @@ class MavlinkNode:
 
     def run(self):
         rospy.loginfo("Waiting for heartbeat")
-        self.conn.wait_heartbeat()
+        try:
+            while not self.conn.wait_heartbeat(blocking=False) and not rospy.is_shutdown():
+                pass
+            if rospy.is_shutdown():
+                return
+        except SerialException as e:
+            # Ignore since we're shutting down
+            return
+
         rospy.loginfo("Got heartbeat. Waiting 10secs for APM to be ready")
         rospy.sleep(10)
 
