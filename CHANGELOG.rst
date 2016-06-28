@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2016-06-27)
+------------------
 * Reduce chart update rate to 2Hz to improve performance
 * Contributors: Christopher Berner
 
