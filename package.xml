@@ -80,6 +80,7 @@
   <run_depend>osm2pgsql</run_depend>
   <run_depend>postgresql-9.x-postgis</run_depend>
   <run_depend>curl</run_depend>
+  <run_depend>unzip</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
