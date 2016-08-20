@@ -2,6 +2,22 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Initialize source frame data structure
+* Update init script to Kinetic
+* Set CherryPy to production instead of manually configuring it
+* Use npm for build
+* Use more canonical license string
+* Fix scoping in set waypoint callback
+* Improve mavlink wait logic to be interruptable
+* Fix retry logic for serial mavlink
+* Migrate to Angular 2.0
+* Add timeout to waypoint fetching
+  Previously, if a message was lost waypoints would no longer be fetched
+  and new ones could not be set
+* Contributors: Christopher Berner
+
 1.2.0 (2016-05-14)
 ------------------
 * Add people detector using OpenCV
