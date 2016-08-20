@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2016-08-20)
+------------------
 * Initialize source frame data structure
 * Update init script to Kinetic
 * Set CherryPy to production instead of manually configuring it
