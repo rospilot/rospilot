@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.1 (2016-08-21)
+------------------
 * Fix build on Wily
 * Contributors: Christopher Berner
 
