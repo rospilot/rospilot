@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix build on Wily
+* Contributors: Christopher Berner
+
 1.3.0 (2016-08-20)
 ------------------
 * Initialize source frame data structure
