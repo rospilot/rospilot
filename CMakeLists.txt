@@ -42,8 +42,7 @@ roslint_add_test()
      message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
  endif()
 
-# XXX: Awful hack because libturbojpeg doesn't come with pkg-config file
-set(LIBJPEG_TURBO_PATH "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/libturbojpeg.so.0")
+find_library(LIBJPEG_TURBO_PATH "libturbojpeg.so.0" "libturbojpeg.so.1")
 #######################################
 ## Declare ROS messages and services ##
 #######################################
