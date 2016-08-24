@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support building on Debian
+* Contributors: Christopher Berner
+
 1.3.1 (2016-08-21)
 ------------------
 * Fix build on Wily
