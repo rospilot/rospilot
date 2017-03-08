@@ -378,7 +378,7 @@ public:
     H264Encoder *createEncoder(H264Settings settings)
     {
         if (mfcPath.size() > 0 && !settings.zero_latency) {
-            ROS_INFO("Using hardware encoder");
+            ROS_INFO("Using hardware encoder: %s", mfcPath.c_str());
             return new ExynosMultiFormatCodecH264Encoder(mfcPath, settings);
         }
         else {
