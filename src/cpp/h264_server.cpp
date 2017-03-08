@@ -51,10 +51,13 @@ void H264Server::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
     std::unique_lock<std::mutex> guard(lock);
     time_point<high_resolution_clock> currentTime = high_resolution_clock::now();
     // Purge clients that haven't accessed the stream in 10secs
-    for (auto iter = clients.begin(); iter != clients.end(); iter++) {
+    for (auto iter = clients.begin(); iter != clients.end(); ) {
         duration<double> duration = currentTime - iter->second.lastAccessTime;
         if (duration.count() > 10) {
-            clients.erase(iter);
+            iter = clients.erase(iter);
+        }
+        else {
+            iter++;
         }
     }
     // Add data to all the clients, so they can fetch at their own pace
