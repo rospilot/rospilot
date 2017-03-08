@@ -80,7 +80,8 @@ void SoftwareVideoRecorder::addFrame(sensor_msgs::CompressedImage *image, bool k
         AVPacket pkt;
         av_init_packet(&pkt);
 
-        pkt.pts = pts;
+        pkt.pts = av_rescale_q(pts, (AVRational){1, FPS},
+                formatContext->streams[0]->time_base);
         if (keyFrame) {
             pkt.flags |= AV_PKT_FLAG_KEY;
         }
