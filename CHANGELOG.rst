@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.4 (2017-03-08)
+------------------
 * Rescale PTS properly
 * Fix usage of deprecated API
 * Fix usage of invalid iterator
