@@ -31,6 +31,7 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/opt.h>
+#include <libavutil/mathematics.h>
 #include <libavformat/avformat.h>
 }
 
