@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing include needed on Debian
+* Contributors: Christopher Berner
+
 1.3.4 (2017-03-08)
 ------------------
 * Rescale PTS properly
