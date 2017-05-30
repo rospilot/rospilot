@@ -1,6 +1,9 @@
 # Copy this file to /etc/udev/rules.d/
 # It sets up symlinks for all the usb devices that talk over serial
 
+# Pixhawk 2.1
+SUBSYSTEM=="tty", ATTRS{idVendor}=="26ac", ATTRS{idProduct}=="0011", MODE="0666", GROUP="dialout", SYMLINK+="ardupilot_115200"
+# APM 2.6
 SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0010", MODE="0666", GROUP="dialout", SYMLINK+="ardupilot_115200"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666", GROUP="dialout", SYMLINK+="ardupilot_57600"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="26ac", ATTRS{idProduct}=="0015", MODE="0666", GROUP="dialout", SYMLINK+="px4flow"
