@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.6 (2017-05-29)
+------------------
 * Add support for Pixhawk2.1
 * Contributors: Christopher Berner
 
