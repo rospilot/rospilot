@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add support for Pixhawk2.1
+* Contributors: Christopher Berner
+
 1.3.5 (2017-03-12)
 ------------------
 * Add missing include needed on Debian
