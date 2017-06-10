@@ -101,14 +101,14 @@ catkin_package(
 ###############################
 
 # Likely need a newer npm version
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/node_modules/npm/cli.js
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/node_modules/npm/bin/npm-cli.js
     COMMAND npm install npm 2> /dev/null
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Updating npm")
 
 add_custom_command(OUTPUT DIRECTORY share/web_assets/node_modules
-    COMMAND ${CMAKE_BINARY_DIR}/node_modules/npm/cli.js install
-    DEPENDS share/web_assets/package.json ${CMAKE_BINARY_DIR}/node_modules/npm/cli.js
+    COMMAND ${CMAKE_BINARY_DIR}/node_modules/npm/bin/npm-cli.js install
+    DEPENDS share/web_assets/package.json ${CMAKE_BINARY_DIR}/node_modules/npm/bin/npm-cli.js
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/share/web_assets
     COMMENT "Building Javascript files")
 
