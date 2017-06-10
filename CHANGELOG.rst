@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.7 (2017-06-10)
+------------------
 * Update for newest NPM
 * Contributors: Christopher Berner
 
