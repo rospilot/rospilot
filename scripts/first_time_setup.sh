@@ -97,6 +97,11 @@ if [ "$wifi_requested" == "y" ]; then
     echo 'DAEMON_CONF=/etc/hostapd/hostapd.conf' > $tempdir/hostapd
     sudo mv $tempdir/hostapd /etc/default/hostapd
 
+    sudo mkdir -p /etc/systemd/system/dnsmasq.service.d/
+    echo "After=sys-subsystem-net-devices-$wlan.device" > $tempdir/override.conf
+    sudo mv $tempdir/override.conf /etc/systemd/system/dnsmasq.service.d/override.conf
+    sudo systemctl daemon-reload
+
     echo ""
     echo "Please restart your drone"
 fi
