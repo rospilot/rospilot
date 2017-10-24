@@ -1,0 +1,10 @@
+[Unit]
+Description=Rospilot services
+After=local-fs.target network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart=/bin/bash -c 'source /opt/ros/kinetic/setup.bash; roslaunch rospilot rospilot.launch'
+
+[Install]
+WantedBy=multi-user.target

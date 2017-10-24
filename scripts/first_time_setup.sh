@@ -1,13 +1,13 @@
 #!/bin/bash
 echo "Installing udev and init.d rules"
 sudo cp $(catkin_find --share rospilot share/etc/rospilot.rules) /etc/udev/rules.d/
-sudo cp $(catkin_find --share rospilot share/etc/init.d/rospilot) /etc/init.d/
-sudo chmod +x /etc/init.d/rospilot
+sudo cp $(catkin_find --share rospilot share/etc/rospilot.service) /etc/systemd/system/
 message="Enabling rospilot service. \
-Uninstall it with 'update-rc.d -f rospilot remove'"
+Disable it with 'systemctl disable rospilot'"
 
 echo "$(tput setaf 1)${message}$(tput sgr 0)"
-sudo update-rc.d rospilot defaults
+sudo systemctl enable rospilot
+sudo systemctl daemon-reload
 
 echo "Setting up postgis"
 # Change to /tmp because postgres user might not be able to see the cwd,
