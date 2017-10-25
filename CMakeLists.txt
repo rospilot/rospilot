@@ -100,14 +100,24 @@ catkin_package(
 ## Generate Javascript files ##
 ###############################
 
-add_custom_command(OUTPUT DIRECTORY share/web_assets/node_modules
+configure_file(
+    share/web_assets/package.json
+    ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/package.json
+    COPYONLY)
+configure_file(
+    share/web_assets/package-lock.json
+    ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/package-lock.json
+    COPYONLY)
+
+add_custom_command(OUTPUT DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/node_modules
     COMMAND npm install
-    DEPENDS share/web_assets/package.json
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/share/web_assets
+    DEPENDS ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/package.json
+            ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/package-lock.json
+    WORKING_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps
     COMMENT "Building Javascript files")
 
 add_custom_target(javascript_assets ALL
-    DEPENDS DIRECTORY share/web_assets/node_modules)
+    DEPENDS DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/node_modules)
 ###########
 ## Build ##
 ###########
@@ -239,6 +249,10 @@ install(DIRECTORY
   share/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/share
   PATTERN "mapnik-style/data" EXCLUDE
+)
+install(DIRECTORY
+  ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/node_modules/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodejs_deps/node_modules
 )
 
 #############

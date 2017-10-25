@@ -1,7 +1,5 @@
 # Downloaded mapnik data files
 share/mapnik-style/data
-# Downloaded npm packages
-share/web_assets/node_modules
 
 # ROS
 msg_gen
