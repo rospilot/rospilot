@@ -44,6 +44,7 @@ class MavlinkNode:
             device = candidates[0]
             baudrate = int(device.split("_")[1])
         self.conn = mavutil.mavlink_connection(device, baud=baudrate)
+        self.pub_battery = rospy.Publisher('battery', rospilot.msg.Battery, queue_size=1)
         self.pub_attitude = rospy.Publisher('attitude', rospilot.msg.Attitude, queue_size=1)
         self.pub_rcstate = rospy.Publisher('rcstate', rospilot.msg.RCState, queue_size=1)
         self.pub_gpsraw = rospy.Publisher('gpsraw', rospilot.msg.GPSRaw, queue_size=1)
@@ -286,6 +287,8 @@ class MavlinkNode:
                             self.conn.target_system,
                             self.conn.target_component,
                             msg.seq + 1)
+            elif msg_type == "SYS_STATUS":
+                self.pub_battery.publish(msg.voltage_battery / 1000.0)
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")

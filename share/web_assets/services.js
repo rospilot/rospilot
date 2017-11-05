@@ -42,6 +42,7 @@ class Copter
         this.gyroscope = imu.map(message => message.gyro);
         this.magnetometer = imu.map(message => message.mag);
         this.attitude = rostopic.getTopic('/rospilot/attitude', 'rospilot/Attitude');
+        this.battery = rostopic.getTopic('/rospilot/battery', 'rospilot/Battery');
     }
 
     getRCChannels()
@@ -98,6 +99,11 @@ class Copter
     getAttitude()
     {
         return this.attitude;
+    }
+
+    getBattery()
+    {
+        return this.battery;
     }
 }
 

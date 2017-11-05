@@ -52,6 +52,7 @@ add_message_files(
   FILES
   Attitude.msg
   BasicStatus.msg
+  Battery.msg
   RCState.msg
   GPSRaw.msg
   Resolution.msg

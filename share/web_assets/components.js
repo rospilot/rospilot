@@ -128,6 +128,28 @@ class MagnetometerComponent
     }
 }
 
+class BatteryComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotbattery',
+            template: "<div>Battery: {{voltage | async | number:'1.2-2'}}V</div>"
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(copter)
+    {
+        this.voltage = copter.getBattery()
+            .map(battery => battery.voltage);
+    }
+}
+
 class RollGuageComponent
 {
     static get annotations()
@@ -844,7 +866,8 @@ class FlightControlPage
             templateUrl: '/static/flight_control.html',
             directives: [StatusComponent, ComeHereComponent, RollGuageComponent, CompassComponent,
                 MapComponent, WaypointComponent, AttitudeComponent, GlobalPositionComponent, RCStateComponent,
-                GyroscopeComponent, AccelerometerComponent, MagnetometerComponent]
+                GyroscopeComponent, AccelerometerComponent, MagnetometerComponent,
+                BatteryComponent]
         })];
     }
 
