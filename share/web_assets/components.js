@@ -50,6 +50,32 @@ class StatusComponent
     }
 }
 
+class AccelerometerClippingComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotaccelerometerclipping',
+            template: '<div>Accel clipping: IMU0: {{accel_0 | async}}, IMU1: {{accel_1 | async}}, IMU2: {{accel_2 | async}}</div>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(copter)
+    {
+        this.accel_0 = copter.getAccelerometerClippingCounts()
+            .map(clipping => clipping[0]);
+        this.accel_1 = copter.getAccelerometerClippingCounts()
+            .map(clipping => clipping[1]);
+        this.accel_2 = copter.getAccelerometerClippingCounts()
+            .map(clipping => clipping[2]);
+    }
+}
+
 class AccelerometerComponent
 {
     static get annotations()
@@ -147,6 +173,55 @@ class BatteryComponent
     {
         this.voltage = copter.getBattery()
             .map(battery => battery.voltage);
+    }
+}
+
+class VibrationComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotvibration',
+            template: `<div>Vibration:
+              x: <span [ngStyle]="x_style | async">{{x | async | number:'1.2-2'}}m/s<sup>2</sup></span>
+              y: <span [ngStyle]="y_style | async">{{y | async | number:'1.2-2'}}m/s<sup>2</sup></span>
+              z: <span [ngStyle]="z_style | async">{{z | async | number:'1.2-2'}}m/s<sup>2</sup></span>
+            </div>`
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    static qualityThreshold(value)
+    {
+        if (value < 15) {
+            return {"color": "green"};
+        }
+        else if (value < 30) {
+            return {"color": "yellow"};
+        }
+        else {
+            return {"color": "red"};
+        }
+    }
+
+    constructor(copter)
+    {
+        this.x = copter.getVibration()
+            .map(vibration => vibration.x);
+        this.x_style = this.x
+            .map(value => VibrationComponent.qualityThreshold(value));
+        this.y = copter.getVibration()
+            .map(vibration => vibration.y);
+        this.y_style = this.y
+            .map(value => VibrationComponent.qualityThreshold(value));
+        this.z = copter.getVibration()
+            .map(vibration => vibration.z);
+        this.z_style = this.z
+            .map(value => VibrationComponent.qualityThreshold(value));
     }
 }
 
@@ -867,7 +942,7 @@ class FlightControlPage
             directives: [StatusComponent, ComeHereComponent, RollGuageComponent, CompassComponent,
                 MapComponent, WaypointComponent, AttitudeComponent, GlobalPositionComponent, RCStateComponent,
                 GyroscopeComponent, AccelerometerComponent, MagnetometerComponent,
-                BatteryComponent]
+                BatteryComponent, AccelerometerClippingComponent, VibrationComponent]
         })];
     }
 

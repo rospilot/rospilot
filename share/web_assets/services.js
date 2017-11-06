@@ -39,6 +39,9 @@ class Copter
 
         var imu = rostopic.getTopic('/rospilot/imuraw', 'rospilot/IMURaw');
         this.accelerometer = imu.map(message => message.accel);
+        this.accelerometer_clipping_counts =
+            imu.map(message => message.accelerometer_clipping_counts);
+        this.vibration = imu.map(message => message.vibration);
         this.gyroscope = imu.map(message => message.gyro);
         this.magnetometer = imu.map(message => message.mag);
         this.attitude = rostopic.getTopic('/rospilot/attitude', 'rospilot/Attitude');
@@ -86,6 +89,11 @@ class Copter
         return this.accelerometer;
     }
 
+    getAccelerometerClippingCounts()
+    {
+        return this.accelerometer_clipping_counts;
+    }
+
     getGyroscope()
     {
         return this.gyroscope;
@@ -94,6 +102,11 @@ class Copter
     getMagnetometer()
     {
         return this.magnetometer;
+    }
+
+    getVibration()
+    {
+        return this.vibration;
     }
 
     getAttitude()

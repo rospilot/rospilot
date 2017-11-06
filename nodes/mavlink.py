@@ -73,6 +73,9 @@ class MavlinkNode:
         self.waypoint_read_in_progress = False
         self.waypoint_write_in_progress = False
         self.last_waypoint_message_time = 0
+        self.last_vibration_message_time = 0
+        self.vibration_vector = Vector3(0, 0, 0)
+        self.accelerometer_clipping_counts = [0, 0, 0]
 
     def reset_rc_override(self):
         # Send 0 to reset the channel
@@ -205,11 +208,18 @@ class MavlinkNode:
                     msg.lon / float(10 * 1000 * 1000),
                     msg.alt / float(1000), msg.satellites_visible)
             elif msg_type == "RAW_IMU":
+                if msg.time_usec - self.last_vibration_message_time > 10*1000*1000:
+                    # reset, since data is stale
+                    self.vibration_vector = Vector3(0, 0, 0)
+                    self.accelerometer_clipping_counts = [0, 0, 0]
+
                 self.pub_imuraw.publish(
                     msg.time_usec,
                     Vector3(msg.xgyro / 100.0, msg.ygyro / 100.0, msg.zgyro / 100.0),
                     Vector3(msg.xacc / 100.0, msg.yacc / 100.0, msg.zacc / 100.0),
-                    Vector3(msg.xmag / 100.0, msg.ymag / 100.0, msg.zmag / 100.0))
+                    Vector3(msg.xmag / 100.0, msg.ymag / 100.0, msg.zmag / 100.0),
+                    self.vibration_vector,
+                    self.accelerometer_clipping_counts)
             elif msg_type == "MISSION_COUNT":
                 if not self.waypoint_read_in_progress:
                     rospy.logwarn("Did not expect MISSION_COUNT message")
@@ -289,6 +299,16 @@ class MavlinkNode:
                             msg.seq + 1)
             elif msg_type == "SYS_STATUS":
                 self.pub_battery.publish(msg.voltage_battery / 1000.0)
+            elif msg_type == "VIBRATION":
+                self.last_vibration_message_time = msg.time_usec
+                self.vibration_vector = Vector3(
+                        msg.vibration_x,
+                        msg.vibration_y,
+                        msg.vibration_z)
+                self.accelerometer_clipping_counts = [
+                        msg.clipping_0,
+                        msg.clipping_1,
+                        msg.clipping_2]
 
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
