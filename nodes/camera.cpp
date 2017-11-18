@@ -229,9 +229,17 @@ private:
             }
             else {
                 if (videoCap.capabilities & V4L2_CAP_VIDEO_CAPTURE) {
-                    close(fd);
-                    closedir(dir);
-                    return path;
+                    v4l2_fmtdesc format;
+                    format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                    format.index = 0;
+                    while (ioctl(fd, VIDIOC_ENUM_FMT, &format) != -1) {
+                        if (format.pixelformat == v4l2_fourcc('M', 'J', 'P', 'G')) {
+                            close(fd);
+                            closedir(dir);
+                            return path;
+                        }
+                        format.index++;
+                    }
                 }
             }
             close(fd);
