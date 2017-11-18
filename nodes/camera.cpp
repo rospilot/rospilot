@@ -207,7 +207,7 @@ private:
 
     std::string findCameraDevice()
     {
-        // Look for the MFC
+        // Look for a suitable camera
         DIR *dir = opendir("/dev");
         dirent *dirEntry = nullptr;
         while ((dirEntry = readdir(dir)) != nullptr) {
