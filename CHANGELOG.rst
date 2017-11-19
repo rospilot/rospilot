@@ -2,6 +2,22 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add "follow me" mode
+* Add support for direct h264 capture from camera
+* Improve automatic camera selection
+* Add vibration data to display
+  Also includes accelerometer clipping counts
+* Add support for battery voltage monitoring
+* Enable pre-release tests
+* Add Travis integration
+* Refactor handling of NPM dependencies
+* Add native Systemd service
+* Set dns search domain for better compatibility
+* Update wifi setup script with proper dnsmasq dependency
+* Contributors: Christopher Berner
+
 1.3.8 (2017-09-13)
 ------------------
 * Remove dependency on nodejs-legacy
