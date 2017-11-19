@@ -543,6 +543,51 @@ class ComeHereComponent
     }
 }
 
+class FollowMeComponent
+{
+    static get annotations()
+    {
+        return [new ng.core.Component({
+            selector: 'rospilotfollowme',
+            template: '<button [ngClass]="style" type="button" class="btn" (click)="clicked()">Follow Me</button>'
+        })];
+    }
+
+    static get parameters()
+    {
+        return [Copter];
+    }
+
+    constructor(copter)
+    {
+        this.copter = copter;
+        this.following = false;
+        this.timeout_id = null;
+        this.style = "";
+    }
+
+    clicked()
+    {
+        this.following = !this.following;
+        if (this.following) {
+            this.updateWaypoint();
+            this.style = "active";
+        }
+        else {
+            clearTimeout(this.timeout_id);
+            this.style = "";
+        }
+    }
+
+    updateWaypoint()
+    {
+        navigator.geolocation.getCurrentPosition((loc) => {
+            this.copter.setWaypoint(loc.coords.latitude, loc.coords.longitude);
+        });
+        this.timeout_id = setTimeout(() => this.updateWaypoint(), 1000);
+    }
+}
+
 class AccelerometerGraphComponent
 {
     static get annotations()
@@ -939,7 +984,8 @@ class FlightControlPage
     {
         return [new ng.core.Component({
             templateUrl: '/static/flight_control.html',
-            directives: [StatusComponent, ComeHereComponent, RollGuageComponent, CompassComponent,
+            directives: [StatusComponent, ComeHereComponent, FollowMeComponent,
+                RollGuageComponent, CompassComponent,
                 MapComponent, WaypointComponent, AttitudeComponent, GlobalPositionComponent, RCStateComponent,
                 GyroscopeComponent, AccelerometerComponent, MagnetometerComponent,
                 BatteryComponent, AccelerometerClippingComponent, VibrationComponent]
