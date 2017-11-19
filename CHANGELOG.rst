@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2017-11-19)
+------------------
 * Add "follow me" mode
 * Add support for direct h264 capture from camera
 * Improve automatic camera selection
