@@ -43,6 +43,8 @@ public:
 
     virtual Resolutions getSupportedResolutions() = 0;
 
+    virtual bool isH264Encoded() = 0;
+
     virtual ~BaseCamera() {};
 };
 

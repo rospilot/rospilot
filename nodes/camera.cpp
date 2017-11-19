@@ -104,6 +104,7 @@ private:
     int cameraWidth;
     int cameraHeight;
     int framerate;
+    bool preferH264Capture;
     bool detectorEnabled = false;
 
     sensor_msgs::CompressedImage image;
@@ -112,10 +113,10 @@ private:
     bool sendPreview()
     {
         if(camera != nullptr && camera->getLiveImage(&image)) {
-            bool keyFrame = false;
-            bool transcodedSuccessfully = false;
-            imagePub.publish(image);
-            jpegDecoder->decodeInPlace(&image);
+            if (!camera->isH264Encoded()) {
+                imagePub.publish(image);
+                jpegDecoder->decodeInPlace(&image);
+            }
             liveStream->addFrame(&image);
             recorder->addFrame(&image);
             if (detector != nullptr) {
@@ -171,10 +172,19 @@ private:
                 liveH264Settings.width,
                 liveH264Settings.height,
                 pixelFormat);
-        liveStream = new BackgroundImageSink(
-                &h264Server,
-                createEncoder(liveH264Settings),
-                resizer);
+        if (camera->isH264Encoded()) {
+            // TODO: can we still do resizing?
+            liveStream = new BackgroundImageSink(
+                    &h264Server,
+                    nullptr,
+                    nullptr);
+        }
+        else {
+            liveStream = new BackgroundImageSink(
+                    &h264Server,
+                    createEncoder(liveH264Settings),
+                    resizer);
+        }
 
         if (videoRecorder != nullptr) {
             delete videoRecorder;
@@ -183,11 +193,21 @@ private:
         if (recorder != nullptr) {
             delete recorder;
         }
-        recorder = new BackgroundImageSink(
-                videoRecorder,
-                createEncoder(recordingH264Settings),
-                nullptr
-        );
+
+        if (camera->isH264Encoded()) {
+            recorder = new BackgroundImageSink(
+                    videoRecorder,
+                    nullptr,
+                    nullptr
+            );
+        }
+        else {
+            recorder = new BackgroundImageSink(
+                    videoRecorder,
+                    createEncoder(recordingH264Settings),
+                    nullptr
+            );
+        }
 
         node.param("detector_enabled", detectorEnabled, false);
         if (detector != nullptr) {
@@ -259,6 +279,8 @@ private:
         cameraWidth = std::stoi(resolution.substr(0, resolution.find('x')));
         cameraHeight = std::stoi(resolution.substr(resolution.find('x') + 1));
         node.param("framerate", framerate, 30);
+        // NOTE: when enabled live stream is always at native resolution (no resizing done)
+        node.param("h264_capture", preferH264Capture, false);
         node.param("media_path", mediaPath, std::string("~/.rospilot/media"));
         wordexp_t p;
         wordexp(mediaPath.c_str(), &p, 0);
@@ -280,8 +302,10 @@ private:
             return new PtpCamera();
         }
         else if (cameraType == "usb") {
-            ROS_INFO("Requesting camera res %dx%d", cameraWidth, cameraHeight);
-            UsbCamera *camera = new UsbCamera(videoDevice, cameraWidth, cameraHeight, framerate);
+            ROS_INFO("Requesting camera res %dx%d, fps %d, h264 capture: %s",
+                    cameraWidth, cameraHeight, framerate, preferH264Capture ? "yes" : "no");
+            UsbCamera *camera = new UsbCamera(videoDevice,
+                    cameraWidth, cameraHeight, framerate, preferH264Capture);
             // Read the width and height, since the camera may have altered it to
             // something it supports
             cameraWidth = camera->getWidth();

@@ -59,6 +59,7 @@ typedef enum {
   PIXEL_FORMAT_YUYV,
   PIXEL_FORMAT_UYVY,
   PIXEL_FORMAT_MJPEG,
+  PIXEL_FORMAT_H264,
 } usb_cam_pixel_format;
 
 // start camera
@@ -69,6 +70,8 @@ void usb_cam_camera_shutdown(void);
 void usb_cam_camera_grab_image(usb_cam_camera_image_t *image);
 // grabs the raw bytes for an mjpeg
 void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image);
+// grabs the raw bytes for an h264 frame
+void usb_cam_camera_grab_h264(std::vector<unsigned char>* image, bool *keyframe);
 // enables/disable auto focus
 void usb_cam_camera_set_auto_focus(int value);
 

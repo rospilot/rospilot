@@ -701,7 +701,7 @@ static void init_userp(unsigned int buffer_size)
   }
 }
 
-static void init_device(int image_width, int image_height, int framerate)
+static void init_device(int image_width, int image_height, int framerate, bool compressed)
 {
   struct v4l2_capability cap;
   struct v4l2_cropcap cropcap;
@@ -793,6 +793,10 @@ static void init_device(int image_width, int image_height, int framerate)
   min = fmt.fmt.pix.bytesperline*fmt.fmt.pix.height;
   if (fmt.fmt.pix.sizeimage<min)
     fmt.fmt.pix.sizeimage = min;
+  if (compressed) {
+    // https://linuxtv.org/downloads/v4l-dvb-apis/uapi/v4l/pixfmt-v4l2.html#c.v4l2_pix_format
+    fmt.fmt.pix.bytesperline = 0;
+  }
 
   image_width = fmt.fmt.pix.width;
   image_height = fmt.fmt.pix.height;
@@ -865,6 +869,7 @@ usb_cam_camera_image_t *usb_cam_camera_start(
 
   usb_cam_camera_image_t *image;
   io = io_method;
+  bool compressed = false;
   if(pixel_format == PIXEL_FORMAT_YUYV)
     pixelformat = V4L2_PIX_FMT_YUYV;
   else if(pixel_format == PIXEL_FORMAT_UYVY)
@@ -872,6 +877,11 @@ usb_cam_camera_image_t *usb_cam_camera_start(
   else if(pixel_format == PIXEL_FORMAT_MJPEG) {
     pixelformat = V4L2_PIX_FMT_MJPEG;
     init_mjpeg_decoder(image_width, image_height);
+    compressed = true;
+  }
+  else if(pixel_format == PIXEL_FORMAT_H264) {
+    pixelformat = V4L2_PIX_FMT_H264;
+    compressed = true;
   }
   else {
     ROS_ERROR("Unknown pixelformat.\n");
@@ -882,7 +892,7 @@ usb_cam_camera_image_t *usb_cam_camera_start(
   if (fd == -1) {
       return NULL;
   }
-  init_device(image_width, image_height, framerate);
+  init_device(image_width, image_height, framerate, compressed);
   start_capturing();
 
   image = (usb_cam_camera_image_t *) calloc(1, sizeof(usb_cam_camera_image_t));
@@ -918,7 +928,7 @@ void usb_cam_camera_shutdown(void)
   avframe_rgb = NULL;
 }
 
-void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image)
+void usb_cam_camera_grab_raw(std::vector<unsigned char>* image, bool *keyframe)
 {
   fd_set fds;
   struct timeval tv;
@@ -995,6 +1005,7 @@ void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image)
     assert (buf.index < n_buffers);
     len = buf.bytesused;
     process_image(buffers[buf.index].start, len, image);
+    *keyframe = buf.flags & V4L2_BUF_FLAG_KEYFRAME;
 
     if (-1==xioctl(fd, VIDIOC_QBUF, &buf))
       errno_exit("VIDIOC_QBUF");
@@ -1029,6 +1040,7 @@ void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image)
     assert (i < n_buffers);
     len = buf.bytesused;
     process_image((void *) buf.m.userptr, len, image);
+    *keyframe = buf.flags & V4L2_BUF_FLAG_KEYFRAME;
 
     if (-1==xioctl(fd, VIDIOC_QBUF, &buf))
       errno_exit("VIDIOC_QBUF");
@@ -1037,8 +1049,21 @@ void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image)
   }
 }
 
+void usb_cam_camera_grab_h264(std::vector<unsigned char>* image, bool *keyframe)
+{
+  assert(io != IO_METHOD_READ);
+  usb_cam_camera_grab_raw(image, keyframe);
+}
+
+void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image)
+{
+  bool keyframe;
+  usb_cam_camera_grab_raw(image, &keyframe);
+}
+
 void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
 {
+  assert(pixelformat != V4L2_PIX_FMT_H264);
   fd_set fds;
   struct timeval tv;
   int r;

@@ -47,6 +47,11 @@ rospilot::Resolutions PtpCamera::getSupportedResolutions()
     return rospilot::Resolutions();
 }
 
+bool PtpCamera::isH264Encoded()
+{
+    return false;
+}
+
 bool PtpCamera::captureImage(sensor_msgs::CompressedImage *image)
 {
     // Read from camera

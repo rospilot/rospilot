@@ -42,7 +42,7 @@ static void asyncWorker(Resizer *_resizer,
                 H264Encoder *_encoder,
                 ImageSink *_sink,
                 sensor_msgs::CompressedImage *image) {
-    bool keyFrame = false;
+    bool keyFrame = (image->format == "h264_keyframe");
     bool transcoded = true;
     if (_resizer != nullptr) {
         _resizer->resizeInPlace(image);

@@ -46,10 +46,25 @@ rospilot::Resolutions UsbCamera::getSupportedResolutions()
     return resolutions;
 }
 
+bool UsbCamera::isH264Encoded()
+{
+    return h264Encoded;
+}
+
 bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
 {
-    image->format = "jpeg";
-    usb_cam_camera_grab_mjpeg(&(image->data));
+    image->format = h264Encoded ? "h264" : "jpeg";
+    if (h264Encoded) {
+        bool keyframe;
+        usb_cam_camera_grab_h264(&(image->data), &keyframe);
+        if (keyframe) {
+            // XXX: pretty hacky...
+            image->format = "h264_keyframe";
+        }
+    }
+    else {
+        usb_cam_camera_grab_mjpeg(&(image->data));
+    }
     image->header.stamp = ros::Time::now();
     return true;
 }
@@ -59,7 +74,7 @@ bool UsbCamera::captureImage(sensor_msgs::CompressedImage *image)
     return getLiveImage(image);
 }
 
-bool tryResolution(int fd, Resolution resolution)
+bool tryResolution(int fd, Resolution resolution, uint32_t pixelformat)
 {
     v4l2_format format;
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -68,6 +83,7 @@ bool tryResolution(int fd, Resolution resolution)
     }
     format.fmt.pix.width = resolution.width;
     format.fmt.pix.height = resolution.height;
+    format.fmt.pix.pixelformat = pixelformat;
     if (ioctl(fd, VIDIOC_TRY_FMT, &format) == -1) {
         ROS_FATAL("Can't try resolution");
     }
@@ -83,7 +99,7 @@ rospilot::Resolution res(int width, int height)
     return resolution;
 }
 
-UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
+UsbCamera::UsbCamera(std::string device, int width, int height, int framerate, bool preferH264)
 {
     usb_cam_camera_image_t *image;
 
@@ -91,8 +107,23 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
     int fd;
     v4l2_format format;
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    format.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+    uint32_t desiredPixelFormat = V4L2_PIX_FMT_MJPEG;
     if ((fd = open(device.c_str(), O_RDONLY)) == -1){
         ROS_FATAL("Can't open %s", device.c_str());
+    }
+
+    if (preferH264) {
+        v4l2_fmtdesc formatDescription;
+        formatDescription.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        formatDescription.index = 0;
+        while (ioctl(fd, VIDIOC_ENUM_FMT, &formatDescription) != -1) {
+            if (formatDescription.pixelformat == V4L2_PIX_FMT_H264) {
+                ROS_INFO("Selecting H264 camera capture format");
+                desiredPixelFormat = formatDescription.pixelformat;
+            }
+            formatDescription.index++;
+        }
     }
 
     if (ioctl(fd, VIDIOC_G_FMT, &format) == -1) {
@@ -101,6 +132,7 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
     else {
         format.fmt.pix.width = width;
         format.fmt.pix.height = height;
+        format.fmt.pix.pixelformat = desiredPixelFormat;
         ioctl(fd, VIDIOC_TRY_FMT, &format);
         width = format.fmt.pix.width;
         height = format.fmt.pix.height;
@@ -122,7 +154,7 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
         res(352, 288), res(1280, 1024), res(2560, 2048)
     };
     for (rospilot::Resolution resolution : CANDIDATE_RESOLUTIONS) {
-        if (tryResolution(fd, resolution)) {
+        if (tryResolution(fd, resolution, desiredPixelFormat)) {
             resolutions.resolutions.push_back(resolution);
         }
     }
@@ -130,11 +162,12 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
 
     this->width = width;
     this->height = height;
+    this->h264Encoded = (desiredPixelFormat == V4L2_PIX_FMT_H264);
 
     ROS_INFO("device: %s", device.c_str());
     image = usb_cam_camera_start(device.c_str(),
                                    IO_METHOD_MMAP,
-                                   PIXEL_FORMAT_MJPEG,
+                                   this->h264Encoded ? PIXEL_FORMAT_H264 : PIXEL_FORMAT_MJPEG,
                                    width,
                                    height,
                                    framerate);
@@ -142,7 +175,7 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate)
         usleep(1000000);
         image = usb_cam_camera_start(device.c_str(),
                                        IO_METHOD_MMAP,
-                                       PIXEL_FORMAT_MJPEG,
+                                       this->h264Encoded ? PIXEL_FORMAT_H264 : PIXEL_FORMAT_MJPEG,
                                        width,
                                        height,
                                        framerate);

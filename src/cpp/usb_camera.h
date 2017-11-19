@@ -30,6 +30,7 @@ private:
     int width;
     int height;
     rospilot::Resolutions resolutions;
+    bool h264Encoded;
 
 public:
     int getWidth();
@@ -38,11 +39,13 @@ public:
     
     rospilot::Resolutions getSupportedResolutions() override;
 
+    bool isH264Encoded() override;
+
     bool getLiveImage(sensor_msgs::CompressedImage *image) override;
     
     bool captureImage(sensor_msgs::CompressedImage *image) override;
 
-    UsbCamera(std::string device, int width, int height, int framerate);
+    UsbCamera(std::string device, int width, int height, int framerate, bool preferH264);
 
     ~UsbCamera();
 };
