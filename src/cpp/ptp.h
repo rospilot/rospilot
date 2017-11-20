@@ -42,7 +42,7 @@ public:
     
     rospilot::Resolutions getSupportedResolutions() override;
 
-    bool isH264Encoded() override;
+    uint32_t getPixelFormat() override;
 
 private:
     void checkErrorCode(int errorCode, std::string message);

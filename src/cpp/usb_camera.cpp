@@ -46,15 +46,25 @@ rospilot::Resolutions UsbCamera::getSupportedResolutions()
     return resolutions;
 }
 
-bool UsbCamera::isH264Encoded()
+uint32_t UsbCamera::getPixelFormat()
 {
-    return h264Encoded;
+    return pixelformat;
 }
 
 bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
 {
-    image->format = h264Encoded ? "h264" : "jpeg";
-    if (h264Encoded) {
+    switch (this->pixelformat) {
+        case V4L2_PIX_FMT_H264:
+            image->format = "h264";
+            break;
+        case V4L2_PIX_FMT_MJPEG:
+            image->format = "jpeg";
+            break;
+        default:
+            ROS_FATAL("Unknown pixel format");
+            break;
+    }
+    if (this->pixelformat == V4L2_PIX_FMT_H264) {
         bool keyframe;
         usb_cam_camera_grab_h264(&(image->data), &keyframe);
         if (keyframe) {
@@ -162,12 +172,12 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate, b
 
     this->width = width;
     this->height = height;
-    this->h264Encoded = (desiredPixelFormat == V4L2_PIX_FMT_H264);
+    this->pixelformat = desiredPixelFormat;
 
     ROS_INFO("device: %s", device.c_str());
     image = usb_cam_camera_start(device.c_str(),
                                    IO_METHOD_MMAP,
-                                   this->h264Encoded ? PIXEL_FORMAT_H264 : PIXEL_FORMAT_MJPEG,
+                                   desiredPixelFormat,
                                    width,
                                    height,
                                    framerate);
@@ -175,7 +185,7 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate, b
         usleep(1000000);
         image = usb_cam_camera_start(device.c_str(),
                                        IO_METHOD_MMAP,
-                                       this->h264Encoded ? PIXEL_FORMAT_H264 : PIXEL_FORMAT_MJPEG,
+                                       desiredPixelFormat,
                                        width,
                                        height,
                                        framerate);

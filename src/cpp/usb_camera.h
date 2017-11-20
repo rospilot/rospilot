@@ -30,7 +30,7 @@ private:
     int width;
     int height;
     rospilot::Resolutions resolutions;
-    bool h264Encoded;
+    uint32_t pixelformat;
 
 public:
     int getWidth();
@@ -39,7 +39,7 @@ public:
     
     rospilot::Resolutions getSupportedResolutions() override;
 
-    bool isH264Encoded() override;
+    uint32_t getPixelFormat() override;
 
     bool getLiveImage(sensor_msgs::CompressedImage *image) override;
     

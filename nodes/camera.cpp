@@ -113,7 +113,7 @@ private:
     bool sendPreview()
     {
         if(camera != nullptr && camera->getLiveImage(&image)) {
-            if (!camera->isH264Encoded()) {
+            if (camera->getPixelFormat() == V4L2_PIX_FMT_MJPEG) {
                 imagePub.publish(image);
                 jpegDecoder->decodeInPlace(&image);
             }
@@ -172,7 +172,7 @@ private:
                 liveH264Settings.width,
                 liveH264Settings.height,
                 pixelFormat);
-        if (camera->isH264Encoded()) {
+        if (camera->getPixelFormat() == V4L2_PIX_FMT_H264) {
             // TODO: can we still do resizing?
             liveStream = new BackgroundImageSink(
                     &h264Server,
@@ -194,7 +194,7 @@ private:
             delete recorder;
         }
 
-        if (camera->isH264Encoded()) {
+        if (camera->getPixelFormat() == V4L2_PIX_FMT_H264) {
             recorder = new BackgroundImageSink(
                     videoRecorder,
                     nullptr,

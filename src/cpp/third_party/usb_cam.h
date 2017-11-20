@@ -55,15 +55,8 @@ typedef enum {
   IO_METHOD_USERPTR,
 } usb_cam_io_method;
 
-typedef enum {
-  PIXEL_FORMAT_YUYV,
-  PIXEL_FORMAT_UYVY,
-  PIXEL_FORMAT_MJPEG,
-  PIXEL_FORMAT_H264,
-} usb_cam_pixel_format;
-
 // start camera
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io, usb_cam_pixel_format pf, int image_width, int image_height, int framerate);
+usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io, uint32_t pf, int image_width, int image_height, int framerate);
 // shutdown camera
 void usb_cam_camera_shutdown(void);
 // grabs a new image from the camera

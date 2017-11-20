@@ -24,6 +24,9 @@
 #include<iostream>
 #include<gphoto2/gphoto2.h>
 #include<gphoto2/gphoto2-context.h>
+extern "C" {
+#include <linux/videodev2.h>
+}
 
 #include<ros/ros.h>
 #include<sensor_msgs/CompressedImage.h>
@@ -47,9 +50,9 @@ rospilot::Resolutions PtpCamera::getSupportedResolutions()
     return rospilot::Resolutions();
 }
 
-bool PtpCamera::isH264Encoded()
+uint32_t PtpCamera::getPixelFormat()
 {
-    return false;
+    return V4L2_PIX_FMT_MJPEG;
 }
 
 bool PtpCamera::captureImage(sensor_msgs::CompressedImage *image)
