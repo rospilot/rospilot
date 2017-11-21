@@ -61,6 +61,8 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
 void usb_cam_camera_shutdown(void);
 // grabs a new image from the camera
 void usb_cam_camera_grab_image(usb_cam_camera_image_t *image);
+// grabs the raw bytes for an image
+void usb_cam_camera_grab_raw(std::vector<unsigned char>* image);
 // grabs the raw bytes for an mjpeg
 void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image);
 // grabs the raw bytes for an h264 frame

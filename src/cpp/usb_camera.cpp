@@ -48,7 +48,40 @@ rospilot::Resolutions UsbCamera::getSupportedResolutions()
 
 uint32_t UsbCamera::getPixelFormat()
 {
+    if (pixelformat == V4L2_PIX_FMT_YUYV) {
+        // Gets transcoded in getLiveImage()
+        return V4L2_PIX_FMT_YUV420;
+    }
     return pixelformat;
+}
+
+void convertYUYVToYUV420P(const std::vector<unsigned char> &yuyv,
+        std::vector<unsigned char> *yuv420p, int width)
+{
+    // TODO: maybe should be using FFMPEG, like PeopleDetector
+
+    // copy Y plane
+    for (int i = 0; i < yuyv.size(); i += 2) {
+        yuv420p->push_back(yuyv[i]);
+    }
+
+    // copy U and drop every other row
+    for (int i = 1; i < yuyv.size(); i += 4) {
+        int row = i / (width * 2);
+        if (row % 2 == 1) {
+            continue;
+        }
+        yuv420p->push_back(yuyv[i]);
+    }
+
+    // copy V and drop every other row
+    for (int i = 3; i < yuyv.size(); i += 4) {
+        int row = i / (width * 2);
+        if (row % 2 == 1) {
+            continue;
+        }
+        yuv420p->push_back(yuyv[i]);
+    }
 }
 
 bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
@@ -59,6 +92,9 @@ bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
             break;
         case V4L2_PIX_FMT_MJPEG:
             image->format = "jpeg";
+            break;
+        case V4L2_PIX_FMT_YUYV:
+            image->format = "yuv420p";
             break;
         default:
             ROS_FATAL("Unknown pixel format");
@@ -71,6 +107,13 @@ bool UsbCamera::getLiveImage(sensor_msgs::CompressedImage *image)
             // XXX: pretty hacky...
             image->format = "h264_keyframe";
         }
+    }
+    else if (this->pixelformat == V4L2_PIX_FMT_YUYV) {
+        std::vector<unsigned char> temp;
+        temp.reserve(2*width*height);
+        usb_cam_camera_grab_raw(&temp);
+        image->data.reserve(3*width*height/2);
+        convertYUYVToYUV420P(temp, &(image->data), width);
     }
     else {
         usb_cam_camera_grab_mjpeg(&(image->data));
@@ -109,7 +152,7 @@ rospilot::Resolution res(int width, int height)
     return resolution;
 }
 
-UsbCamera::UsbCamera(std::string device, int width, int height, int framerate, bool preferH264)
+UsbCamera::UsbCamera(std::string device, int width, int height, int framerate, bool preferH264, bool preferRaw)
 {
     usb_cam_camera_image_t *image;
 
@@ -123,14 +166,20 @@ UsbCamera::UsbCamera(std::string device, int width, int height, int framerate, b
         ROS_FATAL("Can't open %s", device.c_str());
     }
 
-    if (preferH264) {
+    if (preferH264 || preferRaw) {
         v4l2_fmtdesc formatDescription;
         formatDescription.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         formatDescription.index = 0;
         while (ioctl(fd, VIDIOC_ENUM_FMT, &formatDescription) != -1) {
-            if (formatDescription.pixelformat == V4L2_PIX_FMT_H264) {
+            if (preferH264 && formatDescription.pixelformat == V4L2_PIX_FMT_H264) {
                 ROS_INFO("Selecting H264 camera capture format");
                 desiredPixelFormat = formatDescription.pixelformat;
+                break;
+            }
+            if (preferRaw && formatDescription.pixelformat == V4L2_PIX_FMT_YUYV) {
+                ROS_INFO("Selecting YUYV camera capture format");
+                desiredPixelFormat = formatDescription.pixelformat;
+                break;
             }
             formatDescription.index++;
         }

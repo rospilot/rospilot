@@ -45,7 +45,7 @@ public:
     
     bool captureImage(sensor_msgs::CompressedImage *image) override;
 
-    UsbCamera(std::string device, int width, int height, int framerate, bool preferH264);
+    UsbCamera(std::string device, int width, int height, int framerate, bool preferH264, bool preferRaw);
 
     ~UsbCamera();
 };

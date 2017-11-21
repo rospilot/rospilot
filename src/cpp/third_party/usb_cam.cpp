@@ -1060,6 +1060,12 @@ void usb_cam_camera_grab_mjpeg(std::vector<unsigned char>* image)
   usb_cam_camera_grab_raw(image, &keyframe);
 }
 
+void usb_cam_camera_grab_raw(std::vector<unsigned char>* image)
+{
+  bool keyframe;
+  usb_cam_camera_grab_raw(image, &keyframe);
+}
+
 void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
 {
   assert(pixelformat != V4L2_PIX_FMT_H264);
