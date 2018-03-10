@@ -30,13 +30,13 @@ fi
 rosrun rospilot get_mapnik_shapefiles.sh
 echo "Copying mapnik files to rospilot data directory"
 sudo mv -f $tempdir/data $(catkin_find --share rospilot share/mapnik-style/)
-wget -O kathmandu.osm "http://api.openstreetmap.org/api/0.6/map?bbox=27.713,85.308,27.717,85.312"
+wget -O kathmandu.osm "https://api.openstreetmap.org/api/0.6/map?bbox=27.713,85.308,27.717,85.312"
 rosrun rospilot load_osm.sh kathmandu.osm
 rm -rf $tempdir
 
 echo "Install more map data by downloading the appropriate osm/osm.pbf file \
 (you can find some at \
-http://wiki.openstreetmap.org/wiki/Planet.osm#Country_and_area_extracts) \
+https://wiki.openstreetmap.org/wiki/Planet.osm#Country_and_area_extracts) \
 then run 'rosrun rospilot load_osm.sh --append <file>'"
 
 echo -n "Setup wifi access point? [y/n]"
