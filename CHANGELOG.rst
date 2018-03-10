@@ -2,6 +2,14 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Switch to HTTPS for openstreetmap.org
+* Workaround camera drivers that don't set keyframe flag
+* Add support for reading raw YUV from camera
+* Refactor pixel format handling
+* Contributors: Christopher Berner
+
 1.4.0 (2017-11-19)
 ------------------
 * Add "follow me" mode
