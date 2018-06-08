@@ -39,7 +39,7 @@ namespace rospilot {
 
 using namespace std::chrono;
 
-SoftwareVideoRecorder::SoftwareVideoRecorder(PixelFormat pixelFormat, H264Settings settings, std::string mediaPath)
+SoftwareVideoRecorder::SoftwareVideoRecorder(AVPixelFormat pixelFormat, H264Settings settings, std::string mediaPath)
 {
     av_register_all();
     this->width = settings.width;

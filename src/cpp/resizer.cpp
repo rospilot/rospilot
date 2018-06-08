@@ -87,7 +87,7 @@ Resizer::Resizer(
         int originalHeight,
         int targetWidth,
         int targetHeight,
-        PixelFormat pixelFormat)
+        AVPixelFormat pixelFormat)
 {
     this->pixelFormat = pixelFormat;
     this->originalWidth = originalWidth;

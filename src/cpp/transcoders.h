@@ -73,7 +73,7 @@ private:
     int height;
     int frameCounter = 0;
     AVCodec *encoder;
-    PixelFormat pixelFormat;
+    AVPixelFormat pixelFormat;
     AVFrame *sourceFrame;
     AVCodecContext *context;
 
@@ -103,14 +103,14 @@ private:
     AVCodecContext *context;
     AVFrame *sourceFrame;
     AVFrame *outputFrame;
-    PixelFormat outputPixelFormat;
+    AVPixelFormat outputPixelFormat;
     uint8_t *outputBuffer = new uint8_t[1];
     int outputBufferSize = 1;
 
 public:
     bool decodeInPlace(sensor_msgs::CompressedImage *image) override;
 
-    FFmpegJpegDecoder(int width, int height, PixelFormat outputPixelFormat);
+    FFmpegJpegDecoder(int width, int height, AVPixelFormat outputPixelFormat);
 
     ~FFmpegJpegDecoder() override;
 };
@@ -127,7 +127,7 @@ private:
 public:
     bool decodeInPlace(sensor_msgs::CompressedImage *image) override;
 
-    TurboJpegDecoder(int width, int height, PixelFormat outputPixelFormat);
+    TurboJpegDecoder(int width, int height, AVPixelFormat outputPixelFormat);
 
     ~TurboJpegDecoder() override;
 };

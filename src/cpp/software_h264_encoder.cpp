@@ -102,7 +102,7 @@ SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
     avcodec_register_all();
     this->width = settings.width;
     this->height = settings.height;
-    this->pixelFormat = PIX_FMT_YUV420P;
+    this->pixelFormat = AV_PIX_FMT_YUV420P;
     
     encoder = avcodec_find_encoder(AV_CODEC_ID_H264);
     if (!encoder) {

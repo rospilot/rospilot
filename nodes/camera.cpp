@@ -137,7 +137,7 @@ private:
         }
         camera = createCamera();
         resolutionsTopic.publish(camera->getSupportedResolutions());
-        PixelFormat pixelFormat = PIX_FMT_YUV420P;
+        AVPixelFormat pixelFormat = AV_PIX_FMT_YUV420P;
 
         H264Settings recordingH264Settings;
         recordingH264Settings.height = cameraHeight;

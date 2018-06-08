@@ -79,10 +79,10 @@ bool FFmpegJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
     }
 
     image->data.clear();
-    if (outputPixelFormat == PIX_FMT_YUV420P) {
+    if (outputPixelFormat == AV_PIX_FMT_YUV420P) {
         image->format = "yuv420p";
     }
-    else if (outputPixelFormat == PIX_FMT_YUVJ422P) {
+    else if (outputPixelFormat == AV_PIX_FMT_YUVJ422P) {
         image->format = "yuvj422p";
     }
     else {
@@ -94,7 +94,7 @@ bool FFmpegJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
     return true;
 }
 
-FFmpegJpegDecoder::FFmpegJpegDecoder(int width, int height, PixelFormat outputPixelFormat)
+FFmpegJpegDecoder::FFmpegJpegDecoder(int width, int height, AVPixelFormat outputPixelFormat)
 {
     avcodec_register_all();
     this->width = width;
@@ -123,7 +123,7 @@ FFmpegJpegDecoder::FFmpegJpegDecoder(int width, int height, PixelFormat outputPi
     context->width = width;
     context->height = height;
 
-    context->pix_fmt = PIX_FMT_YUV422P;
+    context->pix_fmt = AV_PIX_FMT_YUV422P;
     context->codec_type = AVMEDIA_TYPE_VIDEO;
 
     if (avcodec_open2(context, decoder, nullptr) < 0) {
@@ -197,7 +197,7 @@ bool TurboJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
     return true;   
 }
 
-TurboJpegDecoder::TurboJpegDecoder(int width, int height, PixelFormat outputPixelFormat)
+TurboJpegDecoder::TurboJpegDecoder(int width, int height, AVPixelFormat outputPixelFormat)
 {
     handle = tjInitDecompress();
     this->width = width;

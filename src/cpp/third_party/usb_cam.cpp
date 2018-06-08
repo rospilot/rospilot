@@ -305,19 +305,19 @@ static int init_mjpeg_decoder(int image_width, int image_height)
   avframe_camera = av_frame_alloc();
   avframe_rgb = av_frame_alloc();
 
-  avpicture_alloc((AVPicture *)avframe_rgb, PIX_FMT_RGB24, image_width, image_height);
+  avpicture_alloc((AVPicture *)avframe_rgb, AV_PIX_FMT_RGB24, image_width, image_height);
 
   avcodec_context->codec_id = AV_CODEC_ID_MJPEG;
   avcodec_context->width = image_width;
   avcodec_context->height = image_height;
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
-  avcodec_context->pix_fmt = PIX_FMT_YUV422P;
+  avcodec_context->pix_fmt = AV_PIX_FMT_YUV422P;
   avcodec_context->codec_type = AVMEDIA_TYPE_VIDEO;
 #endif
 
-  avframe_camera_size = avpicture_get_size(PIX_FMT_YUV422P, image_width, image_height);
-  avframe_rgb_size = avpicture_get_size(PIX_FMT_RGB24, image_width, image_height);
+  avframe_camera_size = avpicture_get_size(AV_PIX_FMT_YUV422P, image_width, image_height);
+  avframe_rgb_size = avpicture_get_size(AV_PIX_FMT_RGB24, image_width, image_height);
 
   /* open it */
   if (avcodec_open2(avcodec_context, avcodec, &avoptions) < 0)
@@ -365,11 +365,11 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     return;
   }
 
-  video_sws = sws_getContext( xsize, ysize, avcodec_context->pix_fmt, xsize, ysize, PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
+  video_sws = sws_getContext( xsize, ysize, avcodec_context->pix_fmt, xsize, ysize, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
   sws_scale(video_sws, avframe_camera->data, avframe_camera->linesize, 0, ysize, avframe_rgb->data, avframe_rgb->linesize );
   sws_freeContext(video_sws);  
 
-  int size = avpicture_layout((AVPicture *) avframe_rgb, PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size);
+  int size = avpicture_layout((AVPicture *) avframe_rgb, AV_PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size);
   if (size != avframe_rgb_size) {
     ROS_ERROR("webcam: avpicture_layout error: %d\n",size);
     return;

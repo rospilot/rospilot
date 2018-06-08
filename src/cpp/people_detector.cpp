@@ -35,8 +35,8 @@ PeopleDetector::PeopleDetector(ros::Publisher *topic, int width, int height)
     this->height = height;
     hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
     handle = tjInitDecompress();
-    context = sws_getContext(width, height, PIX_FMT_YUV420P,
-                             width, height, PIX_FMT_BGR24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+    context = sws_getContext(width, height, AV_PIX_FMT_YUV420P,
+                             width, height, AV_PIX_FMT_BGR24, SWS_BILINEAR, nullptr, nullptr, nullptr);
 }
 
 void PeopleDetector::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)

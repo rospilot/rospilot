@@ -32,7 +32,7 @@ using namespace rospilot;
 int main(int argc, char **argv)
 {
     // XXX: Assumes that the input image 1600x1200
-    PixelFormat pixelFormat = PIX_FMT_YUV420P;
+    AVPixelFormat pixelFormat = AV_PIX_FMT_YUV420P;
     JpegDecoder *jpegDecoder = new FFmpegJpegDecoder(1600, 1200, pixelFormat);
 
     sensor_msgs::CompressedImage image;

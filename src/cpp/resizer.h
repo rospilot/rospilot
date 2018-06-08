@@ -40,7 +40,7 @@ private:
     AVFrame *outputFrame;
     uint8_t *outputBuffer;
     int outputBufferSize;
-    PixelFormat pixelFormat;
+    AVPixelFormat pixelFormat;
     int originalWidth, originalHeight, targetWidth, targetHeight;
 
 public:
@@ -51,7 +51,7 @@ public:
         int originalHeight,
         int targetWidth,
         int targetHeight,
-        PixelFormat pixelFormat);
+        AVPixelFormat pixelFormat);
 
     ~Resizer();
 };
