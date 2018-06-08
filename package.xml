@@ -53,7 +53,7 @@
   <build_depend>libturbojpeg</build_depend>
   <build_depend>libnl-3-dev</build_depend>
   <build_depend>libmicrohttpd</build_depend>
-  <build_depend>opencv3</build_depend>
+  <build_depend>libopencv-dev</build_depend>
 
   <run_depend>vision_opencv</run_depend>
   <run_depend>libnl-3</run_depend>
@@ -78,7 +78,7 @@
   <run_depend>mapnik-utils</run_depend>
   <run_depend>gdal-bin</run_depend>
   <run_depend>osm2pgsql</run_depend>
-  <run_depend>postgresql-9.x-postgis</run_depend>
+  <run_depend>postgresql-postgis</run_depend>
   <run_depend>curl</run_depend>
   <run_depend>unzip</run_depend>
 
