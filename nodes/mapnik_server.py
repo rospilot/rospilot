@@ -22,6 +22,7 @@ import os
 import rospy
 import cherrypy
 import TileStache
+import mapnik
 from os.path import expanduser
 from TileStache.Config import buildConfiguration
 from catkin.find_in_workspaces import find_in_workspaces
@@ -44,6 +45,8 @@ class MapnikNode(object):
             style_file = style_file[0]
 
         config = expanduser(rospy.get_param('~tilestache_config_file'))
+        # XXX: Monkey patch Mapnik because Tilestache doesn't work with the newest version
+        mapnik.FontEngine.instance = staticmethod(lambda: mapnik.FontEngine)
         config = buildConfiguration({
             "cache": {"name": "Test"},
             "layers": {
