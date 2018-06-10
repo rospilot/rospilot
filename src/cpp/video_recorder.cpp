@@ -187,7 +187,10 @@ bool SoftwareVideoRecorder::start(const char *name)
         return false;
     }
 
-    avformat_write_header(formatContext, nullptr);
+    if(avformat_write_header(formatContext, nullptr) < 0) {
+        ROS_FATAL("Failed to write video output header");
+        return false;
+    }
     foundKeyframe = false;
     recording = true;
     ROS_INFO("Start recording output to %s as %s with vcodec %d, short name = %s", 
