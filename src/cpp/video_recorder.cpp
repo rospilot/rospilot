@@ -203,13 +203,10 @@ bool SoftwareVideoRecorder::stop()
     std::lock_guard<std::mutex> guard(lock);
     recording = false;
     av_write_trailer(formatContext);
+    AVIOContext *pb = formatContext->pb;
     avcodec_close(videoStream->codec);
-    for (int i = 0; i < formatContext->nb_streams; i++) {
-        av_freep(&formatContext->streams[i]->codec);
-        av_freep(&formatContext->streams[i]);
-    }
-    avio_close(formatContext->pb);
-    av_free(formatContext);
+    avformat_free_context(formatContext);
+    avio_close(pb);
     ROS_INFO("Finializing video file: %s", filename.c_str());
     if(rename(tempFilename.c_str(), filename.c_str()) != 0) {
         ROS_ERROR("Error moving temp file: %s", strerror(errno));
