@@ -117,6 +117,7 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
 
     stream->time_base.den = FPS;
     stream->time_base.num = 1;
+    codecContext->time_base = stream->time_base;
 
     codecContext->bit_rate = this->settings.bit_rate;
     codecContext->width = this->width;
