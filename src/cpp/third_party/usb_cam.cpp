@@ -335,8 +335,6 @@ static int init_mjpeg_decoder(int image_width, int image_height)
 static void
 mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 {
-  int got_picture;
-
   memset(RGB, 0, avframe_rgb_size);
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
@@ -346,20 +344,29 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   
   avpkt.size = len;
   avpkt.data = (unsigned char*)MJPEG;
-  decoded_len = avcodec_decode_video2(avcodec_context, avframe_camera, &got_picture, &avpkt);
-
-  if (decoded_len < 0) {
+  if (avcodec_send_packet(avcodec_context, &avpkt) != 0) {
       ROS_ERROR("Error while decoding frame.\n");
       return;
   }
+  int receiveReturnCode = avcodec_receive_frame(avcodec_context, avframe_camera);
+  if (receiveReturnCode != 0 && receiveReturnCode != AVERROR(EAGAIN)) {
+      ROS_ERROR("Error while decoding frame.\n");
+      return;
+  }
+  if (receiveReturnCode == AVERROR(EAGAIN)) {
+      ROS_ERROR("Webcam: expected picture but didn't get it...\n");
+      return;
+  }
 #else
+  int got_picture;
+
   avcodec_decode_video(avcodec_context, avframe_camera, &got_picture, (uint8_t *) MJPEG, len);
-#endif
 
   if (!got_picture) {
     ROS_ERROR("Webcam: expected picture but didn't get it...\n");
     return;
   }
+#endif
 
   int xsize = avcodec_context->width;
   int ysize = avcodec_context->height;

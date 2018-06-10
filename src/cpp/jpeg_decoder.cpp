@@ -51,11 +51,17 @@ bool FFmpegJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
 
     packet.size = image->data.size();
     packet.data = (unsigned char*) image->data.data();
-    int gotPicture;
-    int decodedLength = avcodec_decode_video2(context, sourceFrame, &gotPicture, &packet);
-
-    if (decodedLength <= 0) {
-        ROS_ERROR("Error decoding frame: %d", decodedLength);
+    if (avcodec_send_packet(context, &packet) != 0) {
+        ROS_ERROR("Error decoding frame");
+        return false;
+    }
+    int receiveReturnCode = avcodec_receive_frame(context, sourceFrame);
+    if (receiveReturnCode != 0 && receiveReturnCode != AVERROR(EAGAIN)) {
+        ROS_ERROR("Error decoding frame");
+        return false;
+    }
+    if (receiveReturnCode == AVERROR(EAGAIN)) {
+        // Frame decoded yet. Must send more packets.
         return false;
     }
 
