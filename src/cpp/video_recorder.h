@@ -47,6 +47,7 @@ private:
     bool recording = false;
     AVFormatContext *formatContext;
     AVStream *videoStream;
+    AVCodecContext *codecContext;
     time_point<high_resolution_clock> firstFrameTime;
     int lastPTS = 0;
     bool foundKeyframe = false;
