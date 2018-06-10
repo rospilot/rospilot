@@ -27,6 +27,7 @@ extern "C" {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
 #include <libavutil/frame.h>
 #endif
+#include <libavutil/imgutils.h>
 }
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
@@ -64,17 +65,24 @@ bool FFmpegJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
             outputFrame->data, outputFrame->linesize );
     sws_freeContext(video_sws);  
     
-    int outputSize = avpicture_get_size(outputPixelFormat, width, height);
+    int outputSize = av_image_get_buffer_size(outputPixelFormat, width, height, 1);
     if (outputSize > outputBufferSize) {
         delete[] outputBuffer;
         outputBuffer = new uint8_t[outputSize];
         outputBufferSize = outputSize;
     }
 
-    int size = avpicture_layout((AVPicture *) outputFrame, outputPixelFormat, width, height,
-            outputBuffer, outputSize);
+    int size = av_image_copy_to_buffer(
+            outputBuffer,
+            outputSize,
+            outputFrame->data,
+            outputFrame->linesize,
+            outputPixelFormat,
+            width,
+            height,
+            1);
     if (size != outputSize) {
-        ROS_ERROR("avpicture_layout failed: %d",size);
+        ROS_ERROR("av_image_copy_to_buffer failed: %d",size);
         return false;
     }
 
@@ -117,7 +125,10 @@ FFmpegJpegDecoder::FFmpegJpegDecoder(int width, int height, AVPixelFormat output
     sourceFrame = av_frame_alloc();
     outputFrame = av_frame_alloc();
 
-    avpicture_alloc((AVPicture *)outputFrame, outputPixelFormat, width, height);
+    outputFrame->format = outputPixelFormat;
+    outputFrame->width = width;
+    outputFrame->height = height;
+    av_frame_get_buffer(outputFrame, 1);
 
     context->codec_id = decoder->id;
     context->width = width;

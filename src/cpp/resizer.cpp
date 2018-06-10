@@ -28,6 +28,7 @@ extern "C" {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
 #include <libavutil/frame.h>
 #endif
+#include <libavutil/imgutils.h>
 }
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
@@ -46,12 +47,14 @@ bool Resizer::resizeInPlace(sensor_msgs::CompressedImage *image)
         return true;
     }
 
-    avpicture_fill(
-            (AVPicture*) sourceFrame,
+    av_image_fill_arrays(
+            sourceFrame->data,
+            sourceFrame->linesize,
             image->data.data(),
             pixelFormat,
             originalWidth,
-            originalHeight);
+            originalHeight,
+            1);
 
     sws_scale(
             context,
@@ -63,15 +66,17 @@ bool Resizer::resizeInPlace(sensor_msgs::CompressedImage *image)
             outputFrame->linesize);
 
 
-    int size = avpicture_layout(
-            (AVPicture *) outputFrame,
+    int size = av_image_copy_to_buffer(
+            outputBuffer,
+            outputBufferSize,
+            outputFrame->data,
+            outputFrame->linesize,
             pixelFormat,
             targetWidth,
             targetHeight,
-            outputBuffer,
-            outputBufferSize);
+            1);
     if (size != outputBufferSize) {
-        ROS_ERROR("avpicture_layout failed: %d",size);
+        ROS_ERROR("av_image_copy_to_buffer failed: %d",size);
         return false;
     }
 
@@ -95,11 +100,14 @@ Resizer::Resizer(
     this->targetWidth = targetWidth;
     this->targetHeight = targetHeight;
     
-    outputBufferSize = avpicture_get_size(pixelFormat, targetWidth, targetHeight);
+    outputBufferSize = av_image_get_buffer_size(pixelFormat, targetWidth, targetHeight, 1);
     outputBuffer = new uint8_t[outputBufferSize];
 
     outputFrame = av_frame_alloc();
-    avpicture_alloc((AVPicture*) outputFrame, pixelFormat, targetWidth, targetHeight);
+    outputFrame->format = pixelFormat;
+    outputFrame->width = targetWidth;
+    outputFrame->height = targetHeight;
+    av_frame_get_buffer(outputFrame, 1);
     
     sourceFrame = av_frame_alloc();
     sourceFrame->width = originalWidth;

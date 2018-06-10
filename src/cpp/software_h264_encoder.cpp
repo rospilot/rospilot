@@ -29,6 +29,7 @@ extern "C" {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
 #include <libavutil/frame.h>
 #endif
+#include <libavutil/imgutils.h>
 }
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
@@ -91,9 +92,9 @@ AVFrame *SoftwareH264Encoder::allocFrame()
     int size;
 
     frame = av_frame_alloc();
-    size = avpicture_get_size(pixelFormat, width, height);
+    size = av_image_get_buffer_size(pixelFormat, width, height, 1);
     buf = (uint8_t*) av_malloc(size);
-    avpicture_fill((AVPicture *)frame, buf, pixelFormat, width, height);
+    av_image_fill_arrays(frame->data, frame->linesize, buf, pixelFormat, width, height, 1);
     return frame;
 }
 
