@@ -16,19 +16,72 @@
  * limitations under the License.
  */
 const routes = [
-{path: 'flight_control', component: FlightControlPage},
-{path: 'graphs', component: GraphsPage},
-{path: 'settings', component: SettingsPage},
-{path: 'camera', component: CameraPage},
-{path: '', redirectTo: 'flight_control', terminal: true}
+{path: 'flight_control', component: FlightControlPage, pathMatch: 'full'},
+{path: 'graphs', component: GraphsPage, pathMatch: 'full'},
+{path: 'settings', component: SettingsPage, pathMatch: 'full'},
+{path: 'camera', component: CameraPage, pathMatch: 'full'},
+{path: '', redirectTo: 'flight_control', pathMatch: 'full'}
 ];
 
-const APP_ROUTER_PROVIDERS = [
-  ng.router.provideRouter(routes)
-];
+class RospilotBootstrapModule
+{
+    static get annotations()
+    {
+        return [new ng.core.NgModule({
+            declarations: [
+                RospilotApp,
+                FlightControlPage,
+                GraphsPage,
+                SettingsPage,
+                CameraPage,
+                StatusComponent,
+                ComeHereComponent,
+                FollowMeComponent,
+                RollGuageComponent,
+                CompassComponent,
+                MapComponent,
+                WaypointComponent,
+                AttitudeComponent,
+                GlobalPositionComponent,
+                RCStateComponent,
+                GyroscopeComponent,
+                AccelerometerComponent,
+                MagnetometerComponent,
+                BatteryComponent,
+                AccelerometerClippingComponent,
+                VibrationComponent,
+                AccelerometerGraphComponent,
+                VideoDevicesComponent,
+                CameraResolutionsComponent,
+                ComputerVisionToggle,
+                ShutdownComponent,
+                VideoDisplay,
+                RecordingButton,
+                TakePictureButton,
+                FPSDisplay,
+                MediaListComponent
+            ],
+            imports: [
+                ng.router.RouterModule.forRoot(routes, {useHash: true}),
+                ng.common.CommonModule,
+                ng.platformBrowser.BrowserModule,
+                ng.forms.FormsModule,
+                ng.http.HttpModule
+            ],
+            providers: [
+                RosTopic,
+                RosService,
+                RosParam,
+                RosLib,
+                Copter,
+                Camera,
+                OnboardComputer,
+                VideoStream
+            ],
+            bootstrap: [RospilotApp]
+        })];
+    }
+}
 
-ng.platformBrowserDynamic.bootstrap(RospilotApp, [ng.http.HTTP_PROVIDERS, APP_ROUTER_PROVIDERS,
-        // Use # for routing links
-        {provide: ng.common.LocationStrategy, useClass: ng.common.HashLocationStrategy},
-        RosTopic, RosService, RosParam, RosLib, Copter, Camera, OnboardComputer, VideoStream])
+ng.platformBrowserDynamic.platformBrowserDynamic().bootstrapModule(RospilotBootstrapModule)
     .catch(err => console.error(err));

@@ -968,7 +968,6 @@ class RospilotApp
         return [new ng.core.Component({
             selector: 'rospilotapp',
             templateUrl: '/static/app.html',
-            directives: [ng.router.ROUTER_DIRECTIVES]
         })];
     }
 
@@ -984,11 +983,6 @@ class FlightControlPage
     {
         return [new ng.core.Component({
             templateUrl: '/static/flight_control.html',
-            directives: [StatusComponent, ComeHereComponent, FollowMeComponent,
-                RollGuageComponent, CompassComponent,
-                MapComponent, WaypointComponent, AttitudeComponent, GlobalPositionComponent, RCStateComponent,
-                GyroscopeComponent, AccelerometerComponent, MagnetometerComponent,
-                BatteryComponent, AccelerometerClippingComponent, VibrationComponent]
         })];
     }
 
@@ -1004,7 +998,6 @@ class GraphsPage
     {
         return [new ng.core.Component({
             templateUrl: '/static/graphs.html',
-            directives: [AccelerometerGraphComponent]
         })];
     }
 
@@ -1020,7 +1013,6 @@ class CameraPage
     {
         return [new ng.core.Component({
             templateUrl: '/static/camera.html',
-            directives: [VideoDisplay, RecordingButton, TakePictureButton, FPSDisplay, MediaListComponent]
         })];
     }
 
@@ -1036,7 +1028,6 @@ class SettingsPage
     {
         return [new ng.core.Component({
             templateUrl: '/static/settings.html',
-            directives: [VideoDevicesComponent, CameraResolutionsComponent, ComputerVisionToggle, ShutdownComponent]
         })];
     }
 
