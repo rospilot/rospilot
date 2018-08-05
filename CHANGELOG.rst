@@ -2,6 +2,24 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Upgrade to Angular 5.2.11
+* Upgrade Highcharts
+* Set both pts and dts in video recorder
+* Properly set time_base on video recorder codec
+* Remove usage of deprecated encoding/decoding functions
+* Remove usage of deprecated AVPicture
+* Fix AVStream::codec deprecation warnings
+* Add error handling for call to avformat_write_header()
+* Cleanup VideoRecorder::stop()
+* Switch Travis to build melodic
+* Update ffmpeg usage to compile against newest version
+* Update environment variable to PGPASSWORD
+* Switch to Melodic-friendly dependencies
+* Hack: monkey patch Mapnik to fix Tilestache dependency
+* Contributors: Christopher Berner
+
 1.4.1 (2018-03-10)
 ------------------
 * Switch to HTTPS for openstreetmap.org
