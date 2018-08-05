@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2018-08-04)
+------------------
 * Upgrade to Angular 5.2.11
 * Upgrade Highcharts
 * Set both pts and dts in video recorder
