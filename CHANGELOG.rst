@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.1 (2018-09-03)
+------------------
 * Fix wlan configuration on Bionic
 * Fix Systemd service to work on Melodic
 * Contributors: Christopher Berner
