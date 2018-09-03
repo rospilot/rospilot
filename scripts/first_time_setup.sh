@@ -70,12 +70,9 @@ if [ "$wifi_requested" == "y" ]; then
         echo "$(tput setaf 1)Passphrase does not match$(tput sgr 0)"
     done
 
-    cp $(catkin_find --share rospilot share/ap_config/interfaces.template) $tempdir
-    cp /etc/network/interfaces $tempdir
-    cat $tempdir/interfaces.template | sed "s/WLAN_PLACEHOLDER/$wlan/g" > $tempdir/interfaces.add
-    # Add to interfaces, if not already there
-    grep -q -f $tempdir/interfaces.add $tempdir/interfaces || cat $tempdir/interfaces.add >> $tempdir/interfaces
-    sudo mv $tempdir/interfaces /etc/network/interfaces
+    cp $(catkin_find --share rospilot share/ap_config/netplan.template) $tempdir
+    cat $tempdir/netplan.template | sed "s/WLAN_PLACEHOLDER/$wlan/g" > $tempdir/netplan.yaml
+    sudo mv $tempdir/netplan.yaml /etc/netplan/99-rospilot.yaml
     
     cp $(catkin_find --share rospilot share/ap_config/dnsmasq.conf.template) $tempdir
     cat $tempdir/dnsmasq.conf.template | sed "s/WLAN_PLACEHOLDER/$wlan/g" > $tempdir/dnsmasq.conf

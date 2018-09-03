@@ -1,0 +1,7 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    WLAN_PLACEHOLDER:
+     dhcp4: no
+     addresses: [10.0.0.1/24]
