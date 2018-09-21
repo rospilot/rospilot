@@ -56,23 +56,21 @@ bool SoftwareH264Encoder::encodeInPlace(sensor_msgs::CompressedImage *image,
     frameCounter++;
 
     AVPacket packet;
-    av_init_packet(&packet);
-    packet.data = new uint8_t[image->data.size()];
-    packet.size = image->data.size();
+    av_new_packet(&packet, image->data.size());
     if (avcodec_send_frame(context, sourceFrame) != 0) {
         ROS_ERROR("Error during h264 encoding");
-        delete[] packet.data;
+        av_packet_unref(&packet);
         return false;
     }
     int receiveReturnCode = avcodec_receive_packet(context, &packet);
     if (receiveReturnCode != 0 && receiveReturnCode != AVERROR(EAGAIN)) {
         ROS_ERROR("Error during h264 encoding");
-        delete[] packet.data;
+        av_packet_unref(&packet);
         return false;
     }
     if (receiveReturnCode == AVERROR(EAGAIN)) {
         // No packet received. Must send more frames.
-        delete[] packet.data;
+        av_packet_unref(&packet);
         return false;
     }
 
@@ -86,7 +84,7 @@ bool SoftwareH264Encoder::encodeInPlace(sensor_msgs::CompressedImage *image,
     for (int i = 0; i < packet.size; i++) {
         image->data.push_back(packet.data[i]);
     }
-    delete[] packet.data;
+    av_packet_unref(&packet);
 
     return true;
 }
