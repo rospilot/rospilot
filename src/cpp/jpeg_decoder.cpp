@@ -179,7 +179,7 @@ bool TurboJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
 
     long size = tjBufSizeYUV(width, height, sub);
     if (outputBufferSize < size) {
-        delete outputBuffer;
+        delete[] outputBuffer;
         outputBuffer = new uint8_t[size];
         outputBufferSize = size;
     }
@@ -224,7 +224,7 @@ TurboJpegDecoder::TurboJpegDecoder(int width, int height, AVPixelFormat outputPi
 TurboJpegDecoder::~TurboJpegDecoder()
 {
     tjDestroy(handle);
-    delete outputBuffer;
+    delete[] outputBuffer;
 }
 
 }
