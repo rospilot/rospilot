@@ -2,6 +2,19 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix compiler warnings
+* Fix SPS & PPS ordering when using MFC encoder
+  SPS should always be before PPS, as PPS references the SPS packet
+* Remove unnecessary C++11 compiler flag
+* Fix undefined behavior in AVPacket buffer management
+  Use the provided av_new_packet() and av_packet_unref()
+  functions instead of manual management of .data field
+* Fix undefined behavior in memory deallocation
+  This buffer is an array, and therefore must be deallocated with delete[]
+* Contributors: Christopher Berner
+
 1.5.1 (2018-09-03)
 ------------------
 * Fix wlan configuration on Bionic
