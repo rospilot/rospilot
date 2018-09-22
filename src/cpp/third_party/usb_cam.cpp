@@ -338,7 +338,6 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   memset(RGB, 0, avframe_rgb_size);
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
-  int decoded_len;
   AVPacket avpkt;
   av_init_packet(&avpkt);
   
