@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.2 (2018-09-22)
+------------------
 * Fix compiler warnings
 * Fix SPS & PPS ordering when using MFC encoder
   SPS should always be before PPS, as PPS references the SPS packet
