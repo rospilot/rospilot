@@ -29,6 +29,7 @@ class ImageSink
 public:
     // thread-safe
     virtual void addFrame(sensor_msgs::CompressedImage *image, bool keyFrame) = 0;
+    virtual ~ImageSink() {};
 };
 
 }
