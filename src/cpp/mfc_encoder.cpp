@@ -90,8 +90,8 @@ bool ExynosMultiFormatCodecH264Encoder::encodeInPlace(sensor_msgs::CompressedIma
         // This ensures that those frames are completely independent for streaming
         // and in case the receiver (recorder) picks up in the middle of a stream
         if (*keyFrame) {
-            image->data.insert(image->data.begin(), sps.begin(), sps.end());
             image->data.insert(image->data.begin(), pps.begin(), pps.end());
+            image->data.insert(image->data.begin(), sps.begin(), sps.end());
         }
     }
 
