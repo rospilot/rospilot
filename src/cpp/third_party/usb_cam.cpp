@@ -1078,7 +1078,7 @@ void usb_cam_camera_grab_h264(std::vector<unsigned char>* image, bool *keyframe)
     return;
   }
   // XXX: workaround buggy drivers, that don't set V4L2_BUF_FLAG_KEYFRAME
-  for (int i = 3; i < image->size(); i++) {
+  for (size_t i = 3; i < image->size(); i++) {
     // NAL header is 00 00 01 0b0xxyyyyy
     // Where xx is the 2-bit nal_ref_idc and yyyyy is the 5-bit nal_type
     // nal_type 5 is a IDR frame

@@ -54,7 +54,7 @@ private:
     // Bridge to get output from MFC
     io_dev *outputBridge;
     io_dev *deviceChain[3];
-    int numPixels;
+    unsigned int numPixels;
 
     void tryExtractSPSandPPS(std::vector<uint8_t> &data);
 

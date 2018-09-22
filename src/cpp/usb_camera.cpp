@@ -61,12 +61,12 @@ void convertYUYVToYUV420P(const std::vector<unsigned char> &yuyv,
     // TODO: maybe should be using FFMPEG, like PeopleDetector
 
     // copy Y plane
-    for (int i = 0; i < yuyv.size(); i += 2) {
+    for (size_t i = 0; i < yuyv.size(); i += 2) {
         yuv420p->push_back(yuyv[i]);
     }
 
     // copy U and drop every other row
-    for (int i = 1; i < yuyv.size(); i += 4) {
+    for (size_t i = 1; i < yuyv.size(); i += 4) {
         int row = i / (width * 2);
         if (row % 2 == 1) {
             continue;
@@ -75,7 +75,7 @@ void convertYUYVToYUV420P(const std::vector<unsigned char> &yuyv,
     }
 
     // copy V and drop every other row
-    for (int i = 3; i < yuyv.size(); i += 4) {
+    for (size_t i = 3; i < yuyv.size(); i += 4) {
         int row = i / (width * 2);
         if (row % 2 == 1) {
             continue;

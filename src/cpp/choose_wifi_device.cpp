@@ -351,9 +351,9 @@ int main(int argc, char **argv)
     }
 
     int deviceIndex = -1;
-    while (deviceIndex < 1 || deviceIndex > devices.size()) {
+    while (deviceIndex < 1 || deviceIndex > (int) devices.size()) {
         std::cout << "Select wifi card:" << std::endl;
-        for (int i = 0; i < devices.size(); i++) {
+        for (size_t i = 0; i < devices.size(); i++) {
             std::cout << (i + 1) << ": " << devices[i].name << "(" << devices[i].mac << ")" << std::endl;
         }
         std::cin >> deviceIndex;
@@ -362,9 +362,9 @@ int main(int argc, char **argv)
 
     int channelIndex = -1;
     std::vector<Channel> channels = chosenDevice.channels;
-    while (channelIndex < 1 || channelIndex > channels.size()) {
+    while (channelIndex < 1 || channelIndex > (int) channels.size()) {
         std::cout << "Select channel:" << std::endl;
-        for (int i = 0; i < channels.size(); i++) {
+        for (size_t i = 0; i < channels.size(); i++) {
             std::cout << (i + 1) << ": " << channels[i].mhz << "(max " << channels[i].maxTxDbm << "Dbm)" << std::endl;
         }
         std::cin >> channelIndex;
