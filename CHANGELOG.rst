@@ -2,6 +2,11 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix dnsmasq dependency on wlan device
+* Contributors: Christopher Berner
+
 1.5.2 (2018-09-22)
 ------------------
 * Fix compiler warnings
