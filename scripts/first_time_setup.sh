@@ -95,7 +95,11 @@ if [ "$wifi_requested" == "y" ]; then
     sudo mv $tempdir/hostapd /etc/default/hostapd
 
     sudo mkdir -p /etc/systemd/system/dnsmasq.service.d/
-    echo "After=sys-subsystem-net-devices-$wlan.device" > $tempdir/override.conf
+    echo "[Service]" > $tempdir/override.conf
+    echo "# XXX: resolve race with wlan device" >> $tempdir/override.conf
+    echo "ExecStartPre=/bin/sleep 10" >> $tempdir/override.conf
+    echo "[Unit]" >> $tempdir/override.conf
+    echo "After=sys-subsystem-net-devices-$wlan.device" >> $tempdir/override.conf
     sudo mv $tempdir/override.conf /etc/systemd/system/dnsmasq.service.d/override.conf
     sudo systemctl daemon-reload
 
