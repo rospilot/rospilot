@@ -18,6 +18,7 @@
  *
  *********************************************************************/
 #include "transcoders.h"
+#include "h264_utils.h"
 
 #include<vector>
 
@@ -84,7 +85,7 @@ bool ExynosMultiFormatCodecH264Encoder::encodeInPlace(sensor_msgs::CompressedIma
     if (outPriv->readSuccessful) {
         image->format = "h264";
         if (sps.size() == 0 || pps.size() == 0) {
-            tryExtractSPSandPPS(image->data);
+            tryExtractSPSandPPS(image->data, this->sps, this->pps);
         }
         // Insert the PPS and SPS if this is a keyframe.
         // This ensures that those frames are completely independent for streaming
@@ -98,45 +99,14 @@ bool ExynosMultiFormatCodecH264Encoder::encodeInPlace(sensor_msgs::CompressedIma
     return outPriv->readSuccessful;
 }
 
-int nextNALStart(std::vector<uint8_t> &data, size_t start, uint8_t *nalType)
+std::vector<uint8_t> ExynosMultiFormatCodecH264Encoder::getSPS()
 {
-    for (size_t i = start; i + 2 < data.size(); i++) {
-        if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 1) {
-            if (i + 3 < data.size()) {
-                *nalType = data[i + 3];
-            }
-            else {
-                ROS_WARN("Expected NAL type");
-            }
-            if (i - 1 >= 0 && data[i - 1] == 0) {
-                return i - 1;
-            }
-            return i;
-        }
-    }
-    return -1;
+    return this->sps;
 }
 
-void ExynosMultiFormatCodecH264Encoder::tryExtractSPSandPPS(std::vector<uint8_t> &data)
+std::vector<uint8_t> ExynosMultiFormatCodecH264Encoder::getPPS()
 {
-    uint8_t nalType;
-    for (int i = nextNALStart(data, 0, &nalType); i != -1 && i + 3 < (int) data.size();) {
-        uint8_t nextNalType;
-        int j = nextNALStart(data, i + 4, &nextNalType);
-        if (j == -1) {
-            j = data.size();
-        }
-        if ((nalType & 0x1f) == 7) {
-            sps.insert(sps.begin(), data.begin() + i, data.begin() + j);
-            ROS_INFO("Found SPS");
-        }
-        if ((nalType & 0x1f) == 8) {
-            pps.insert(pps.begin(), data.begin() + i, data.begin() + j);
-            ROS_INFO("Found PPS");
-        }
-        i = j;
-        nalType = nextNalType;
-    }
+    return this->pps;
 }
 
 static int copyToMFCBuffer(io_dev *dev, int nbufs, char **bufs, int *lens)

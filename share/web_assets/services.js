@@ -293,6 +293,40 @@ class VideoStream
         // Generate a random client id for fetching the stream
         var clientId = Math.floor(Math.random() * 1000 * 1000 * 1000);
         this.url = 'http://' + server_name + ':8666/h264/' + clientId;
+        this.sps_pps_url = 'http://' + server_name + ':8666/h264_sps_pps';
+    }
+
+    startVideo()
+    {
+        let req = new XMLHttpRequest();
+        req.open('get', this.sps_pps_url);
+        req.responseType = "arraybuffer";
+        req.onreadystatechange = () => {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    console.log(req.response);
+                    this.player.decode(new Uint8Array(req.response));
+                    if (this.canvas_subscribers > 0) {
+                        this.timeout_id = setTimeout(() => this.nextFrame(), 1);
+                    }
+                }
+                else {
+                    if (this.canvas_subscribers > 0) {
+                        this.timeout_id = setTimeout(() => this.nextFrame(), 1000);
+                    }
+                }
+            }
+        };
+        req.send();
+        // TODO: the below code should work, but data.arrayBuffer() isn't implemented in Angular 2 yet
+        //http.get(h264Url)
+        //    .subscribe(data => {
+        //        player.decode(new Uint8Array(data.arrayBuffer()));
+        //        setTimeout(nextFrame, 1);
+        //    },
+        //    () => {
+        //        setTimeout(nextFrame, 1000);
+        //    });
     }
 
     nextFrame()
@@ -343,7 +377,7 @@ class VideoStream
             this.canvas_subscribers++;
             if (this.canvas_subscribers == 1) {
                 // Start fetching frames for the first subscriber
-                this.nextFrame();
+                this.startVideo();
             }
             observer.next(this.player.canvas);
             return () => {

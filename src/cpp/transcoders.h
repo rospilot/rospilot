@@ -36,6 +36,9 @@ class H264Encoder
 public:
     virtual bool encodeInPlace(sensor_msgs::CompressedImage *image, 
             bool *keyFrame) = 0;
+    
+    virtual std::vector<uint8_t> getSPS() = 0;
+    virtual std::vector<uint8_t> getPPS() = 0;
 
     virtual ~H264Encoder() {};
 };
@@ -56,10 +59,10 @@ private:
     io_dev *deviceChain[3];
     unsigned int numPixels;
 
-    void tryExtractSPSandPPS(std::vector<uint8_t> &data);
-
 public:
     bool encodeInPlace(sensor_msgs::CompressedImage *image, bool *keyFrame) override;
+    std::vector<uint8_t> getSPS();
+    std::vector<uint8_t> getPPS();
     
     ExynosMultiFormatCodecH264Encoder(std::string path, H264Settings settings);
 
@@ -79,6 +82,8 @@ private:
 
 public:
     bool encodeInPlace(sensor_msgs::CompressedImage *image, bool *keyFrame) override;
+    std::vector<uint8_t> getSPS();
+    std::vector<uint8_t> getPPS();
     
     SoftwareH264Encoder(H264Settings settings);
 

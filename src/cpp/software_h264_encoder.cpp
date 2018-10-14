@@ -18,6 +18,7 @@
  *
  *********************************************************************/
 #include "transcoders.h"
+#include "h264_utils.h"
 
 #include<ros/ros.h>
 #include<sensor_msgs/CompressedImage.h>
@@ -102,6 +103,30 @@ AVFrame *SoftwareH264Encoder::allocFrame()
     return frame;
 }
 
+std::vector<uint8_t> SoftwareH264Encoder::getSPS()
+{
+    std::vector<uint8_t> temp;
+    for (int i = 0; i < context->extradata_size; i++) {
+        temp.push_back(context->extradata[i]);
+    }
+    std::vector<uint8_t> sps;
+    std::vector<uint8_t> pps;
+    tryExtractSPSandPPS(temp, sps, pps);
+    return sps;
+}
+
+std::vector<uint8_t> SoftwareH264Encoder::getPPS()
+{
+    std::vector<uint8_t> temp;
+    for (int i = 0; i < context->extradata_size; i++) {
+        temp.push_back(context->extradata[i]);
+    }
+    std::vector<uint8_t> sps;
+    std::vector<uint8_t> pps;
+    tryExtractSPSandPPS(temp, sps, pps);
+    return pps;
+}
+
 SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
 {
     avcodec_register_all();
@@ -132,6 +157,7 @@ SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
     context->time_base = (AVRational){1, 25};
     context->gop_size = settings.gop_size;
     context->level = settings.level;
+    context->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
     // Not sure this does anything, so set the "profile" on priv_data also
     if (settings.profile == CONSTRAINED_BASELINE) {

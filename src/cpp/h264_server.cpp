@@ -40,9 +40,18 @@ int static handleRequest(void *custom,
         void **session)
 {
     H264Server *server = (H264Server*) custom;
-    MHD_Response *response = server->readFrames(url);
+    MHD_Response *response;
+    if (strncmp(url, "/h264/", 6) == 0) {
+        response = server->readFrames(url);
+    }
+    else if (strncmp(url, "/h264_sps_pps", 13) == 0) {
+        response = server->readSPSAndPPS();
+    }
+    else {
+        ROS_ERROR("Bad URL requested: %s", url);
+    }
     int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
-    MHD_destroy_response (response);
+    MHD_destroy_response(response);
     return ret;
 }
 
@@ -74,6 +83,22 @@ void H264Server::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
     frameAvailable.notify_all();
 }
 
+MHD_Response* H264Server::readSPSAndPPS()
+{
+    std::unique_lock<std::mutex> guard(lock);
+    std::vector<uint8_t> data;
+    data.insert(data.end(), this->sps.begin(), this->sps.end());
+    data.insert(data.end(), this->pps.begin(), this->pps.end());
+    MHD_Response *response =
+        MHD_create_response_from_buffer(data.size(),
+                (void *) data.data(),
+                MHD_RESPMEM_MUST_COPY);
+    MHD_add_response_header(response, "Content-Type", "video/h264_sps_pps");
+    // TODO: Change this to only be localhost and the local hostname
+    MHD_add_response_header(response, "Access-Control-Allow-Origin", "*");
+    return response;
+}
+
 MHD_Response* H264Server::readFrames(std::string client)
 {
     std::unique_lock<std::mutex> guard(lock);
@@ -93,6 +118,13 @@ MHD_Response* H264Server::readFrames(std::string client)
     session.keyFrame = false;
     session.lastAccessTime = high_resolution_clock::now();
     return response;
+}
+
+void H264Server::setSPSAndPPS(std::vector<uint8_t> sps_data, std::vector<uint8_t> pps_data)
+{
+    std::lock_guard<std::mutex> guard(lock);
+    this->sps.insert(sps.begin(), sps_data.begin(), sps_data.end());
+    this->pps.insert(pps.begin(), pps_data.begin(), pps_data.end());
 }
 
 void H264Server::start()

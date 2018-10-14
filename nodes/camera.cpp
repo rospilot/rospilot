@@ -182,9 +182,11 @@ private:
                     nullptr);
         }
         else {
+            H264Encoder *encoder = createEncoder(liveH264Settings);
+            h264Server.setSPSAndPPS(encoder->getSPS(), encoder->getPPS());
             liveStream = new BackgroundImageSink(
                     &h264Server,
-                    createEncoder(liveH264Settings),
+                    encoder,
                     resizer);
         }
 

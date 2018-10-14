@@ -157,6 +157,7 @@ add_executable(camera_node
     src/cpp/background_image_sink.cpp
     src/cpp/jpeg_decoder.cpp
     src/cpp/h264_server.cpp
+    src/cpp/h264_utils.cpp
     src/cpp/people_detector.cpp
     src/cpp/resizer.cpp
     src/cpp/software_h264_encoder.cpp
