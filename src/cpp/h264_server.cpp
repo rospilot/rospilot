@@ -69,6 +69,11 @@ void H264Server::addFrame(sensor_msgs::CompressedImage *image, bool keyFrame)
             iter++;
         }
     }
+
+    if (keyFrame) {
+        latestKeyFrame = image->data;
+    }
+
     // Add data to all the clients, so they can fetch at their own pace
     for (auto &entry : clients) {
         if (keyFrame || !entry.second.keyFrame) {
@@ -102,6 +107,10 @@ MHD_Response* H264Server::readSPSAndPPS()
 MHD_Response* H264Server::readFrames(std::string client)
 {
     std::unique_lock<std::mutex> guard(lock);
+    if (clients.count(client) == 0) {
+        // Send new clients the latest key frame
+        clients[client].frameData = latestKeyFrame;
+    }
     if (clients[client].frameData.size() == 0) {
         // Wait up to 100ms to see if a frame arrives
         frameAvailable.wait_for(guard, duration<double>(0.1));

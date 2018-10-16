@@ -53,6 +53,7 @@ private:
     std::condition_variable frameAvailable;
     std::mutex lock;
     std::map<std::string, ClientSession> clients;
+    std::vector<uint8_t> latestKeyFrame;
     std::vector<uint8_t> sps;
     std::vector<uint8_t> pps;
     MHD_Daemon *daemon = nullptr;
