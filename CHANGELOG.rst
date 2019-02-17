@@ -2,6 +2,17 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update vendored NPM deps
+* Remove hard npm dependency
+  npm deps must now be vendored
+* Remove Highcharts and accelerometer graph page
+* Added missing wget dependency to package.xml that was found in first_time_setup.sh.
+* Improve cold start H264 streaming to new clients
+* Refactor H264 streaming to allow Android app support
+* Contributors: Anders Fischer, Christopher Berner
+
 1.5.3 (2018-10-08)
 ------------------
 * Fix dnsmasq dependency on wlan device
