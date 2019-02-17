@@ -30,3 +30,4 @@ nosetests.xml
 *.swp
 
 .ropeproject
+.idea/
