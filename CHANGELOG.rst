@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.4 (2019-02-17)
+------------------
 * Update vendored NPM deps
 * Remove hard npm dependency
   npm deps must now be vendored
