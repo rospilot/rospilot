@@ -17,7 +17,6 @@
  */
 const routes = [
 {path: 'flight_control', component: FlightControlPage, pathMatch: 'full'},
-{path: 'graphs', component: GraphsPage, pathMatch: 'full'},
 {path: 'settings', component: SettingsPage, pathMatch: 'full'},
 {path: 'camera', component: CameraPage, pathMatch: 'full'},
 {path: '', redirectTo: 'flight_control', pathMatch: 'full'}
@@ -31,7 +30,6 @@ class RospilotBootstrapModule
             declarations: [
                 RospilotApp,
                 FlightControlPage,
-                GraphsPage,
                 SettingsPage,
                 CameraPage,
                 StatusComponent,
@@ -50,7 +48,6 @@ class RospilotBootstrapModule
                 BatteryComponent,
                 AccelerometerClippingComponent,
                 VibrationComponent,
-                AccelerometerGraphComponent,
                 VideoDevicesComponent,
                 CameraResolutionsComponent,
                 ComputerVisionToggle,

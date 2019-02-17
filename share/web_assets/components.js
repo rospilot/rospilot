@@ -588,101 +588,6 @@ class FollowMeComponent
     }
 }
 
-class AccelerometerGraphComponent
-{
-    static get annotations()
-    {
-        return [new ng.core.Component({
-            selector: 'accelerometergraph',
-            template: '<div id="accel_z_chart" style="min-width: 400px; height: 400px; margin: 0 auto;"></div>'
-        })];
-    }
-
-    static get parameters()
-    {
-        return [Copter];
-    }
-
-    constructor(copter)
-    {
-        this.copter = copter;
-    }
-
-    ngOnInit()
-    {
-        Highcharts.setOptions({
-            global: {
-                useUTC: false
-            }
-        });
-
-        var chart;
-        $('#accel_z_chart').highcharts({
-            chart: {
-                type: 'spline',
-                animation: false,
-                marginRight: 10,
-            },
-            title: {
-                text: 'Accelerometer'
-            },
-            xAxis: {
-                type: 'datetime',
-                tickPixelInterval: 150,
-                minRange: 15000
-            },
-            yAxis: {
-                title: {
-                    text: 'Value'
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
-            },
-            tooltip: {
-                formatter: function() {
-                        return '<b>'+ this.series.name +'</b><br/>'+
-                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
-                        Highcharts.numberFormat(this.y, 2);
-                }
-            },
-            legend: {
-                enabled: false
-            },
-            exporting: {
-                enabled: false
-            },
-            series: [{
-                name: 'data',
-                data: [],
-            }]
-        });
-
-        var last_redraw = new Date().getTime();
-        this.subscription = this.copter.getAccelerometer().subscribe(accel => {
-            if ($('#accel_z_chart').length > 0) {
-                var series = $('#accel_z_chart').highcharts().series[0];
-                var x = (new Date()).getTime();
-                var redraw = x - last_redraw > 500;
-                var extremes = series.xAxis.getExtremes();
-                // Shift out the data if there's more than 15secs on-screen
-                var shift = extremes.dataMax - extremes.dataMin > 15000;
-                if (redraw) {
-                    last_redraw = x;
-                }
-                series.addPoint([x, accel.z], redraw, shift);
-            }
-        });
-    }
-
-    ngOnDestroy()
-    {
-        this.subscription.unsubscribe();
-    }
-}
-
 class RecordingButton
 {
     static get annotations()
@@ -983,21 +888,6 @@ class FlightControlPage
     {
         return [new ng.core.Component({
             templateUrl: '/static/flight_control.html',
-        })];
-    }
-
-    static get parameters()
-    {
-        return [];
-    }
-}
-
-class GraphsPage
-{
-    static get annotations()
-    {
-        return [new ng.core.Component({
-            templateUrl: '/static/graphs.html',
         })];
     }
 
