@@ -1,0 +1,26 @@
+{
+    "name": "drmonty/leaflet-awesome-markers",
+    "description": "Colorful, iconic & retina-proof markers for Leaflet, based on the Font Awesome/Twitter Bootstrap icons.",
+    "type": "component",
+    "homepage": "http://github.com/lvoogdt/Leaflet.awesome-markers",
+    "license": "MIT",
+    "author": {
+        "url": "http://github.com/lvoogdt/Leaflet.awesome-markers",
+        "name": "Lennard Voogdt <lvoogdt@gmail.com>"
+    },
+    "require": {
+        "robloach/component-installer": "*"
+    },
+    "extra": {
+        "component": {
+            "scripts": [
+                "js/leaflet.awesome-markers.js"
+            ],
+            "files": [
+                "js/leaflet.awesome-markers.min.js",
+                "css/leaflet.awesome-markers.css",
+                "css/images/*.png"
+            ]
+        }
+    }
+}
