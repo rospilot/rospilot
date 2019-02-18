@@ -32,8 +32,6 @@ from catkin.find_in_workspaces import find_in_workspaces
 
 STATIC_PATH = find_in_workspaces(['share'], 'rospilot',
                                  'share/web_assets/', first_match_only=True)[0]
-NODEJS_DEPS_PATH = find_in_workspaces(['share'], 'rospilot',
-                                      'nodejs_deps/node_modules/', first_match_only=True)[0]
 PORT_NUMBER = 8085
 
 
@@ -101,10 +99,6 @@ class WebUiNode(object):
                 }
             })
         conf = {
-            '/static/node_modules': {
-                'tools.staticdir.on': True,
-                'tools.staticdir.dir': NODEJS_DEPS_PATH
-            },
             '/static': {
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': STATIC_PATH
@@ -126,7 +120,6 @@ class WebUiNode(object):
         rospy.init_node('rospilot_webui')
         rospy.loginfo("Web UI is running")
         rospy.loginfo("Serving static files from: {}".format(STATIC_PATH))
-        rospy.loginfo("Serving nodejs files from: {}".format(NODEJS_DEPS_PATH))
         cherrypy.engine.start()
         rospy.spin()
         cherrypy.engine.exit()
