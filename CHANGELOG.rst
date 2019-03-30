@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.5 (2019-03-29)
+------------------
 * Fix web_ui.py serving of nodejs dependencies
 * Upgrade Bootstrap to fix CVEs
 * Contributors: Christopher Berner
