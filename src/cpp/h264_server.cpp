@@ -142,12 +142,16 @@ void H264Server::start()
     if (daemon != nullptr) {
         return;
     }
-    daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION,
+    daemon = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY,
             PORT,
             nullptr,
             nullptr,
             &handleRequest,
             this,
+            // Support up to 8 clients
+            MHD_OPTION_THREAD_POOL_SIZE, 8,
+            // Since this is a video stream, the data is unlikely to be useful to the client after 1sec
+            MHD_OPTION_CONNECTION_TIMEOUT, 1,
             MHD_OPTION_END);
 }
 
