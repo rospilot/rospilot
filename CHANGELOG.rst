@@ -2,6 +2,13 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Avoid thread exhaustion in h264 server
+  Previously, connections didn't timeout, so a badly behaved client
+  could exhaust all the threads on the host
+* Contributors: Christopher Berner
+
 1.5.5 (2019-03-29)
 ------------------
 * Fix web_ui.py serving of nodejs dependencies
