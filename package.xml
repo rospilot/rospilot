@@ -73,7 +73,6 @@
   <run_depend>python-colorama</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>python-mapnik</run_depend>
-  <run_depend>python-tilestache</run_depend>
   <run_depend>mapnik-utils</run_depend>
   <run_depend>gdal-bin</run_depend>
   <run_depend>osm2pgsql</run_depend>
