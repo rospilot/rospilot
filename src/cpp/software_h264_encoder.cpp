@@ -157,7 +157,7 @@ SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
     context->time_base = (AVRational){1, 25};
     context->gop_size = settings.gop_size;
     context->level = settings.level;
-    context->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     // Not sure this does anything, so set the "profile" on priv_data also
     if (settings.profile == CONSTRAINED_BASELINE) {

@@ -141,7 +141,7 @@ AVStream *SoftwareVideoRecorder::createVideoStream(AVFormatContext *oc)
     }
     codecContext->level = this->settings.level;
     codecContext->pix_fmt = this->pixelFormat;
-    codecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     avcodec_parameters_from_context(stream->codecpar, codecContext);
 
