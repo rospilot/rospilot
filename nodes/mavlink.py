@@ -310,6 +310,7 @@ class MavlinkNode:
                         msg.clipping_1,
                         msg.clipping_2]
 
+
 if __name__ == '__main__':
     parser = OptionParser("rospilot.py <options>")
     parser.add_option(

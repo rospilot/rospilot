@@ -82,6 +82,7 @@ class MapnikNode(object):
         rospy.spin()
         cherrypy.engine.exit()
 
+
 if __name__ == '__main__':
     node = MapnikNode()
     node.run()

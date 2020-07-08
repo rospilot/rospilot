@@ -124,6 +124,7 @@ class WebUiNode(object):
         rospy.spin()
         cherrypy.engine.exit()
 
+
 if __name__ == '__main__':
     parser = OptionParser("web_ui.py <options>")
     parser.add_option(

@@ -79,6 +79,7 @@ class OdroidShowNode(object):
                 return True
         return False
 
+
 if __name__ == '__main__':
     while not path.exists("/dev/odroid_show"):
         sleep(1.0)
