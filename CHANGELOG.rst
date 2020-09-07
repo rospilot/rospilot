@@ -2,6 +2,13 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add support for Noetic
+* Update to Python3
+* Upgrade jquery to fix CVE
+* Contributors: Christopher Berner
+
 1.5.6 (2019-03-30)
 ------------------
 * Avoid thread exhaustion in h264 server
