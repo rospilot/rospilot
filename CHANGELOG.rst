@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2020-09-06)
+------------------
 * Add support for Noetic
 * Update to Python3
 * Upgrade jquery to fix CVE
