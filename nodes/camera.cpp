@@ -52,28 +52,6 @@ extern "C" {
 
 namespace rospilot {
 
-static int ffmpegLockManager(void **mtx, enum AVLockOp op)
-{
- switch(op) {
- case AV_LOCK_CREATE:
-   *mtx = new std::mutex();
-   if(!*mtx)
-     return 1;
-   return 0;
- case AV_LOCK_OBTAIN:
-   ((std::mutex *) *mtx)->lock();
-   return 0;
- case AV_LOCK_RELEASE:
-   ((std::mutex *) *mtx)->unlock();
-   return 0;
- case AV_LOCK_DESTROY:
-   delete (std::mutex *) *mtx;
-   *mtx = nullptr;
-   return 0;
- }
- return 1;
-}
-
 using namespace std::chrono;
 
 class CameraNode
@@ -360,11 +338,6 @@ public:
             mfcPath = findMfcDevice();
         }
 
-        // Install lock manager to make ffmpeg thread-safe
-        if (av_lockmgr_register(ffmpegLockManager)) {
-            ROS_FATAL("Failed to make ffmpeg thread-safe");
-        }
-
         initCameraAndEncoders();
     }
 
@@ -442,7 +415,6 @@ public:
         if (peopleDetector != nullptr) {
             delete peopleDetector;
         }
-        av_lockmgr_register(nullptr);
     }
 
     bool spin()

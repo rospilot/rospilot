@@ -110,7 +110,6 @@ bool FFmpegJpegDecoder::decodeInPlace(sensor_msgs::CompressedImage *image)
 
 FFmpegJpegDecoder::FFmpegJpegDecoder(int width, int height, AVPixelFormat outputPixelFormat)
 {
-    avcodec_register_all();
     this->width = width;
     this->height = height;
     this->outputPixelFormat = outputPixelFormat;

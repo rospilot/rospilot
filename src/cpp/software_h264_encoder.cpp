@@ -129,7 +129,6 @@ std::vector<uint8_t> SoftwareH264Encoder::getPPS()
 
 SoftwareH264Encoder::SoftwareH264Encoder(H264Settings settings)
 {
-    avcodec_register_all();
     this->width = settings.width;
     this->height = settings.height;
     this->pixelFormat = AV_PIX_FMT_YUV420P;

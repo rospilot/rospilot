@@ -41,7 +41,6 @@ using namespace std::chrono;
 
 SoftwareVideoRecorder::SoftwareVideoRecorder(AVPixelFormat pixelFormat, H264Settings settings, std::string mediaPath)
 {
-    av_register_all();
     this->width = settings.width;
     this->height = settings.height;
     this->pixelFormat = pixelFormat;
@@ -171,9 +170,9 @@ bool SoftwareVideoRecorder::start(const char *name)
     // Clear the file before we start writing
     remove(tempFilename.c_str());
 
-    strncpy(formatContext->filename, 
+    strncpy(formatContext->url,
             tempFilename.c_str(),
-            sizeof(formatContext->filename));
+            sizeof(formatContext->url));
     // Check that this is a valid combination
     if(avformat_query_codec(formatContext->oformat, codecId, FF_COMPLIANCE_NORMAL) != 1) {
         ROS_FATAL("Codec %d not compatible with output format %s", codecId, 
