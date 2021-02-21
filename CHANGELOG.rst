@@ -2,8 +2,8 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.1 (2021-02-21)
+------------------
 * Fix systemd service to use noetic
 * Remove map server
   Tilestache is no longer supported on modern Ubuntu
