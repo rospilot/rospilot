@@ -2,6 +2,16 @@
 Changelog for package rospilot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix systemd service to use noetic
+* Remove map server
+  Tilestache is no longer supported on modern Ubuntu
+* Remove firmware directory
+* Switch to Github Actions for CI
+* Remove calls to deprecated ffmpeg functions
+* Contributors: Christopher Berner
+
 1.6.0 (2020-09-06)
 ------------------
 * Add support for Noetic
