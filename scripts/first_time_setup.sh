@@ -9,36 +9,6 @@ echo "$(tput setaf 1)${message}$(tput sgr 0)"
 sudo systemctl enable rospilot
 sudo systemctl daemon-reload
 
-echo "Setting up postgis"
-# Change to /tmp because postgres user might not be able to see the cwd,
-# so suppress any warnings about that
-cd /tmp
-sudo -u postgres createuser --no-superuser --no-createdb --no-createrole rospilot
-sudo -u postgres createdb gis
-echo "GRANT ALL ON DATABASE gis TO rospilot;" | sudo -u postgres psql -Upostgres gis
-echo "ALTER USER rospilot WITH PASSWORD 'rospilot_password'" | sudo -u postgres psql -Upostgres gis
-echo "CREATE EXTENSION postgis;" | sudo -u postgres psql -Upostgres gis
-echo "CREATE EXTENSION hstore;" | sudo -u postgres psql -Upostgres gis
-
-echo "Setting up mapnik"
-tempdir=$(mktemp -d)
-cd $tempdir
-if [ $(catkin_find --share rospilot share/mapnik-style/ | wc -l) -ne 1 ]; then
-    echo "$(tput setaf 1)Multiple installations of rospilot found. Cannot continue.$(tput sgr 0)"
-    exit 1
-fi
-rosrun rospilot get_mapnik_shapefiles.sh
-echo "Copying mapnik files to rospilot data directory"
-sudo mv -f $tempdir/data $(catkin_find --share rospilot share/mapnik-style/)
-wget -O kathmandu.osm "https://api.openstreetmap.org/api/0.6/map?bbox=27.713,85.308,27.717,85.312"
-rosrun rospilot load_osm.sh kathmandu.osm
-rm -rf $tempdir
-
-echo "Install more map data by downloading the appropriate osm/osm.pbf file \
-(you can find some at \
-https://wiki.openstreetmap.org/wiki/Planet.osm#Country_and_area_extracts) \
-then run 'rosrun rospilot load_osm.sh --append <file>'"
-
 echo -n "Setup wifi access point? [y/n]"
 read wifi_requested
 

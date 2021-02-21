@@ -37,7 +37,6 @@ class RospilotBootstrapModule
                 FollowMeComponent,
                 RollGuageComponent,
                 CompassComponent,
-                MapComponent,
                 WaypointComponent,
                 AttitudeComponent,
                 GlobalPositionComponent,

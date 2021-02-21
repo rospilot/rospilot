@@ -1,6 +1,5 @@
 <launch>
 <group ns="rospilot">
-<param name="/rospilot/mapnik_server_port" value="8086" />
 <node name="mavlink"
       pkg="rospilot"
       type="mavlink.py"
@@ -18,13 +17,6 @@
       respawn="false"
       output="screen"
       args="--media_path=~/.rospilot/media" />
-<node name="mapnik_server"
-      pkg="rospilot"
-      type="mapnik_server.py"
-      respawn="false"
-      output="screen">
-    <param name="tilestache_config_file" value="~/.rospilot/mapnik/ts/ts.config" />
-</node>
 <node name="camera"
       pkg="rospilot"
       type="camera_node"
