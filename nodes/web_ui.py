@@ -93,6 +93,7 @@ class WebUiNode(object):
 
         cherrypy.server.socket_port = PORT_NUMBER
         cherrypy.server.socket_host = '0.0.0.0'
+        cherrypy.lib.caching.expires(0)
         cherrypy.config.update({
             'global': {
                 'environment': 'production'

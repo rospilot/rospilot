@@ -70,17 +70,9 @@
   <run_depend>rosbridge_suite</run_depend>
   <run_depend>python3-cherrypy3</run_depend>
   <run_depend>python3-colorama</run_depend>
-  <run_depend>python3-mapnik</run_depend>
   <run_depend>python3-psutil</run_depend>
   <run_depend>python3-serial</run_depend>
   <run_depend>roslaunch</run_depend>
-  <run_depend>mapnik-utils</run_depend>
-  <run_depend>gdal-bin</run_depend>
-  <run_depend>osm2pgsql</run_depend>
-  <run_depend>postgresql-postgis</run_depend>
-  <run_depend>curl</run_depend>
-  <run_depend>unzip</run_depend>
-  <run_depend>wget</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
